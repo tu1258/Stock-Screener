@@ -1,5 +1,7 @@
 import pandas as pd
 import os
+import sys
+sys.path.append("src")
 from rs import get_stock_data, get_spx_data, calculate_total_rs, calculate_rs_ranking
 
 # 建立 output 資料夾
