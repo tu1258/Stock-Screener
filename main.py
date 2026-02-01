@@ -3,7 +3,11 @@ import yfinance as yf
 import sys
 sys.path.append("src")
 from rs import get_stock_data, get_spx_data, calculate_total_rs, calculate_rs_ranking
+import os
 
+if not os.path.exists("output"):
+    os.makedirs("output")
+           
 # 先固定股票清單
 tickers = ["AAPL", "MSFT", "NVDA", "TSLA", "META", "AMZN", 
            "NFLX", "SPOT", "CRWD", "CRWV", "SNDK", "MU", "FCX"]
