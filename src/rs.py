@@ -4,6 +4,7 @@ import yfinance as yf
 def calculate_total_rs(stock_close: pd.Series, spx_close: pd.Series) -> float:
     """
     計算單檔股票 total RS score
+    依據 IBD RS Rating 方法：最後一季權重加倍
     """
     n63, n126, n189, n252 = 63, 126, 189, 252
 
@@ -26,18 +27,26 @@ def calculate_total_rs(stock_close: pd.Series, spx_close: pd.Series) -> float:
 def calculate_rs_ranking(rs_scores: pd.Series) -> pd.Series:
     """
     將 total RS score 對應全市場百分位 -> RS Ranking 1~99
+    使用 pandas qcut 模擬 Fred 官方方法
     """
-    # 排序百分位
-    rs_rank = rs_scores.rank(pct=True) * 99
-    rs_rank = rs_rank.round(0)
-    rs_rank[rs_rank < 1] = 1
-    return rs_rank.astype(int)
+    # 用 qcut 分成 100 個百分位，duplicates="drop" 避免邊界重複
+    rs_rank = pd.qcut(rs_scores, 100, labels=False, duplicates="drop")
 
-def get_stock_data(ticker: str):
+    # 轉換成 1~99
+    rs_rank = (rs_rank + 1).astype(int)  # qcut labels 從 0 開始，所以 +1
+    rs_rank[rs_rank > 99] = 99          # 確保不超過 99
+    rs_rank[rs_rank < 1] = 1            # 確保不低於 1
+    
+    return rs_rank
+
+def get_stock_data(ticker: str) -> pd.Series:
     """
-    下載股票資料
+    下載股票收盤價資料
     """
     return yf.download(ticker, period="400d", interval="1d", auto_adjust=True)['Close']
 
-def get_spx_data():
+def get_spx_data() -> pd.Series:
+    """
+    下載 S&P500 收盤價
+    """
     return yf.download("^GSPC", period="400d", interval="1d", auto_adjust=True)['Close']
