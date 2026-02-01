@@ -3,7 +3,7 @@ from rs import get_stock_data, get_spx_data, calculate_total_rs, calculate_rs_ra
 
 # 先固定股票清單
 tickers = ["AAPL", "MSFT", "NVDA", "TSLA", "META", "AMZN", 
-           "NFLX", "SPOT", "CRWD", "CRWV", "SNDK", "MU", "FCX"]
+           "NFLX", "SPOT", "CRWD", "CRWV", "SNDK", "MU", "FCX", "ALUB"]
 
 # 取得 SPX 收盤價
 spx_close = get_spx_data()
