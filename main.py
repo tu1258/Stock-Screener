@@ -11,31 +11,27 @@ spx_close = get_spx_data()
 # 記錄每檔股票的 RS score
 rs_scores = {}
 
+
+# 2. 計算每檔股票的 RS score
 for ticker in tickers:
-    print(f"Downloading {ticker} data...")
-    close_prices = get_stock_data(ticker)
-    if len(close_prices) < 252:  # 確保有足夠資料
-        print(f"{ticker} 資料不足，跳過")
+    data = yf.download(ticker, period="400d", interval="1d", auto_adjust=True)['Close']
+    if len(data) < 30:
+        print(f"{ticker} 資料少於30天，跳過")
         continue
-    rs_score = calculate_total_rs(close_prices, spx_close)
-    rs_scores[ticker] = rs_score
+    rs = calculate_total_rs(data, spx_close)
+    rs_scores[ticker] = rs
 
-# 將 RS score 轉為 Series
-rs_series = pd.Series(rs_scores)
+# 3. 轉成 DataFrame
+df = pd.DataFrame.from_dict(rs_scores, orient='index', columns=['RS'])
+df.index.name = 'Ticker'
 
-# 計算 RS ranking
-rs_ranking = calculate_rs_ranking(rs_series)
+# 4. 計算 RS Ranking（百分位 1~99）
+df['RS_Rank'] = pd.qcut(df['RS'], 100, labels=False, duplicates='drop')
+df['RS_Rank'] = df['RS_Rank'] + 1  # qcut labels 從0開始，改成1~99
 
-# 組成 dataframe
-df = pd.DataFrame({
-    "Ticker": rs_series.index,
-    "RS_Score": rs_series.values,
-    "RS_Rank": rs_ranking.values
-})
+# 5. 排序
+df = df.sort_values('RS', ascending=False)
 
-# 排序、顯示 top
-df = df.sort_values("RS_Rank", ascending=False)
 print(df)
-
 # 可存檔
 df.to_csv("output/rs_ranking.csv", index=False)
