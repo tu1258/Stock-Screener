@@ -2,7 +2,7 @@ name: RS Screener
 
 on:
   schedule:
-    - cron: '0 21 * * 1-5' # 每週一到五台灣時間 21:00
+    - cron: '0 22 * * 0-4' # 每週一到五台灣時間 21:00
   workflow_dispatch:
 
 jobs:
