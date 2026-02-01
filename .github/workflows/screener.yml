@@ -24,8 +24,10 @@ jobs:
       - name: Run RS Screener
         run: python main.py
 
-      - name: Upload Screener CSV
-        uses: actions/upload-artifact@v3
+        
+      - name: Upload output CSV
+        uses: actions/upload-artifact@v4 
         with:
-          name: rs_screener_result
-          path: rs_screener_result.csv
+          name: rs_stocks
+          path: output/rs_stocks.csv
+  
