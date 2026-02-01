@@ -55,17 +55,17 @@ def calculate_total_rs(stock_close: pd.Series, spx_close: pd.Series) -> float:
 def calculate_rs_ranking(rs_scores: pd.Series) -> pd.Series:
     """
     將 total RS score 對應全市場百分位 -> RS Ranking 1~99
-    使用 pandas qcut 模擬 Fred 官方方法
     """
-    # 用 qcut 分成 100 個百分位，duplicates="drop" 避免邊界重複
-    rs_rank = pd.qcut(rs_scores, 100, labels=False, duplicates="drop")
-
-    # 轉換成 1~99
-    rs_rank = (rs_rank + 1).astype(int)  # qcut labels 從 0 開始，所以 +1
-    rs_rank[rs_rank > 99] = 99          # 確保不超過 99
-    rs_rank[rs_rank < 1] = 1            # 確保不低於 1
+    # 重置 index，只保留值
+    rs_values = rs_scores.reset_index(drop=True)
     
-    return rs_rank
+    # 用 qcut 算百分位
+    rs_rank = pd.qcut(rs_values, 100, labels=False, duplicates="drop")
+    
+    # 放大到 1~99
+    rs_rank = rs_rank + 1
+    return rs_rank.astype(int)
+
 
 def get_stock_data(ticker: str) -> pd.Series:
     """
