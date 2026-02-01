@@ -1,29 +1,41 @@
-from src.rs import calculate_total_rs, calculate_rs_ranking, get_stock_data, get_spx_data
 import pandas as pd
+from rs import get_stock_data, get_spx_data, calculate_total_rs, calculate_rs_ranking
 
-# 1️⃣ 股票清單，可以用 S&P500 成分股
-tickers = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies")[0]['Symbol'].tolist()
+# 先固定股票清單
+tickers = ["AAPL", "MSFT", "NVDA", "TSLA", "META", "AMZN", 
+           "NFLX", "SPOT", "CRWD", "CRWV", "SNDK", "MU", "FCX"]
 
-# 2️⃣ 下載 SP500 收盤價
+# 取得 SPX 收盤價
 spx_close = get_spx_data()
 
-# 3️⃣ 計算所有股票 total RS score
+# 記錄每檔股票的 RS score
 rs_scores = {}
-for t in tickers:
-    try:
-        data = get_stock_data(t)
-        rs_scores[t] = calculate_total_rs(data, spx_close)
-    except Exception as e:
-        print(f"{t} error:", e)
 
-rs_scores = pd.Series(rs_scores)
+for ticker in tickers:
+    print(f"Downloading {ticker} data...")
+    close_prices = get_stock_data(ticker)
+    if len(close_prices) < 252:  # 確保有足夠資料
+        print(f"{ticker} 資料不足，跳過")
+        continue
+    rs_score = calculate_total_rs(close_prices, spx_close)
+    rs_scores[ticker] = rs_score
 
-# 4️⃣ 計算 RS Ranking
-rs_ranking = calculate_rs_ranking(rs_scores)
+# 將 RS score 轉為 Series
+rs_series = pd.Series(rs_scores)
 
-# 5️⃣ 過濾 RS Ranking > 80
-screener_result = rs_ranking[rs_ranking >= 80]
+# 計算 RS ranking
+rs_ranking = calculate_rs_ranking(rs_series)
 
-# 6️⃣ 輸出 CSV
-screener_result.to_csv("rs_screener_result.csv", header=['RS Ranking'])
-print(screener_result)
+# 組成 dataframe
+df = pd.DataFrame({
+    "Ticker": rs_series.index,
+    "RS_Score": rs_series.values,
+    "RS_Rank": rs_ranking.values
+})
+
+# 排序、顯示 top
+df = df.sort_values("RS_Rank", ascending=False)
+print(df)
+
+# 可存檔
+df.to_csv("output/rs_ranking.csv", index=False)
