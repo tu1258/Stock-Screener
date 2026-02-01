@@ -1,0 +1,31 @@
+name: RS Screener
+
+on:
+  schedule:
+    - cron: '0 21 * * 1-5' # 每週一到五台灣時間 21:00
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas yfinance openpyxl lxml
+
+      - name: Run RS Screener
+        run: python main.py
+
+      - name: Upload Screener CSV
+        uses: actions/upload-artifact@v3
+        with:
+          name: rs_screener_result
+          path: rs_screener_result.csv
