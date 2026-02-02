@@ -1,5 +1,6 @@
 rs_data
 改名成stock data
+基準SPY改SPX
 ticker: primary listing(nasdaq可能資料不足)
 output股價成交量csv
 
