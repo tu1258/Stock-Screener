@@ -149,9 +149,12 @@ def get_tickers_from_nasdaq(tickers):
 SECURITIES = get_resolved_securities().values()
 
 def write_to_file(dict, file):
-    with open(file, "w", encoding='utf8') as fp:
-        json.dump(dict, fp, ensure_ascii=False)
-
+#    with open(file, "w", encoding='utf8') as fp:
+#        json.dump(dict, fp, ensure_ascii=False)
+    for ticker, df in dict.items():
+        if isinstance(df, pd.DataFrame):
+            df.to_json(f"output/{ticker}.json", orient='split')  # 'split' 可以保留 columns + index
+        
 def write_price_history_file(tickers_dict):
     write_to_file(tickers_dict, PRICE_DATA_FILE)
 
