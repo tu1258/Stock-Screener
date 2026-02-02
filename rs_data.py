@@ -218,245 +218,70 @@ def load_ticker_info(ticker, info_dict):
         }
     info_dict[ticker] = ticker_info
 
-def load_prices_from_tda(securities, api_key, info = {}):
-    print("*** Loading Stocks from TD Ameritrade ***")
-    headers = {"Cache-Control" : "no-cache"}
-    params = tda_params(api_key)
-    tickers_dict = {}
-    start = time.time()
-    load_times = []
-    #new_entries = 0
-
-    for idx, sec in enumerate(securities):
-        print(new_entries)
-        ticker = sec["ticker"]
-        r_start = time.time()
-        response = requests.get(
-                TD_API % ticker,
-                params=params,
-                headers=headers
-        )
-        ticker_data = response.json()
-        if not ticker in TICKER_INFO_DICT:
-            #new_entries = new_entries + 1
-            load_ticker_info(ticker, TICKER_INFO_DICT)
-            #if new_entries % 25 == 0:
-            write_ticker_info_file(TICKER_INFO_DICT)
-        ticker_data["industry"] = TICKER_INFO_DICT[ticker]["info"]["industry"]
-        now = time.time()
-        current_load_time = now - r_start
-        load_times.append(current_load_time)
-        remaining_seconds = get_remaining_seconds(load_times, idx, len(securities))
-        enrich_ticker_data(ticker_data, sec)
-        tickers_dict[sec["ticker"]] = ticker_data
-        error_text = f' Error with code {response.status_code}' if response.status_code != 200 else ''
-        print_data_progress(sec["ticker"], sec["universe"], idx, securities, error_text, now - start, remaining_seconds)
-
-        # throttle if triggered from github
-        if info["forceTDA"]:
-            sleep(0.4)
-
-    write_price_history_file(tickers_dict)
 
 
-def get_yf_data(security, start_date, end_date):
-    ticker_data = {}
-    ticker = security["ticker"]
-    escaped_ticker = escape_ticker(ticker)
-    
-    try:
-        # Import the random user agent function
-        # First check if we need to import it
-        try:
-            from user_agents import get_random_user_agent
-        except ImportError:
-            # If import fails, use a default method
-            # Define the function inline if we can't import it
-            def get_random_user_agent():
-                import random
-                default_agents = [
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
-                ]
-                return random.choice(default_agents)
-        
-        # Set a random user agent
-        user_agent = get_random_user_agent()
-        
-        # Configure yfinance session with the random user agent
-        session = requests.Session()
-        session.headers['User-Agent'] = user_agent
-        
-        # Download data with auto_adjust=False (based on Reddit fix) and using our custom session
-        df = yf.download(
-            escaped_ticker, 
-            start=start_date, 
-            end=end_date, 
-            auto_adjust=False, 
-            progress=False,
-            session=session
-        )
-        
-        # Add a small delay to avoid rate limiting (adjust as needed)
-        time.sleep(0.1)
-        
-        # Check if DataFrame is empty
-        if df.empty:
-            print(f"No data found for {ticker}, symbol may be delisted or incorrect")
-            return None
-        
-        # Fix the MultiIndex columns by dropping the second level
-        if isinstance(df.columns, pd.MultiIndex):
-            df.columns = df.columns.droplevel(1)
-        
-        # Convert to dictionary and process as in the original simple function
-        yahoo_response = df.to_dict()
-        
-        # Check if we have all required columns
-        required_cols = ["Open", "Close", "Low", "High", "Volume"]
-        if not all(col in yahoo_response for col in required_cols):
-            print(f"Missing required columns for {ticker}. Available: {list(yahoo_response.keys())}")
-            return None
-        
-        timestamps = list(yahoo_response["Open"].keys())
-        timestamps = list(map(lambda timestamp: int(timestamp.timestamp()), timestamps))
-        
-        opens = list(yahoo_response["Open"].values())
-        closes = list(yahoo_response["Close"].values())
-        lows = list(yahoo_response["Low"].values())
-        highs = list(yahoo_response["High"].values())
-        volumes = list(yahoo_response["Volume"].values())
-        
-        candles = []
-        for i in range(0, len(opens)):
-            candle = {}
-            candle["open"] = opens[i]
-            candle["close"] = closes[i]
-            candle["low"] = lows[i]
-            candle["high"] = highs[i]
-            candle["volume"] = volumes[i]
-            candle["datetime"] = timestamps[i]
-            candles.append(candle)
-        
-        ticker_data["candles"] = candles
-        enrich_ticker_data(ticker_data, security)
-        return ticker_data
-    except Exception as e:
-        print(f"Error downloading data for {ticker}: {str(e)}")
-        # Check if it's a rate limit error and wait longer
-        if "Too Many Requests" in str(e) or "Rate limit" in str(e):
-            print(f"Rate limit hit for {ticker}, will retry later with longer delay")
-            # You might want to implement a more sophisticated retry mechanism here
-        
-        # Extensive debug info
-        if 'df' in locals() and not df.empty:
-            print(f"DataFrame shape: {df.shape}")
-            print(f"DataFrame columns: {df.columns}")
-            print(f"DataFrame index: {type(df.index)}")
-            try:
-                # Try printing the first row in different formats to help debugging
-                print(f"First row (head): {df.head(1)}")
-                
-                # Reset index and show columns
-                df_reset = df.reset_index()
-                print(f"Reset index columns: {df_reset.columns}")
-                print(f"First row after reset: {df_reset.iloc[0]}")
-            except Exception as inner_e:
-                print(f"Error during debug: {str(inner_e)}")
-        return None
-
-def load_prices_from_yahoo(securities, info = {}):
+def load_prices_from_yahoo(securities, info={}):
     print("*** Loading Stocks from Yahoo Finance ***")
     today = date.today()
     start = time.time()
-    start_date = today - dt.timedelta(days=1*365+183) # 183 = 6 months
+    start_date = today - dt.timedelta(days=365 + 183)  # 1.5 years
     tickers_dict = {}
     load_times = []
     failed_tickers = []
-    
-    # Add retry mechanism
+
     max_retries = 3
     base_delay = 2  # seconds
-    
+
     for idx, security in enumerate(securities):
         ticker = security["ticker"]
-        retry_count = 0
-        success = False
-        
-        while retry_count < max_retries and not success:
-            r_start = time.time()
-            
-            # If this is a retry, wait with exponential backoff
-            if retry_count > 0:
-                retry_delay = base_delay * (2 ** (retry_count - 1))  # Exponential backoff
-                print(f"Retry {retry_count}/{max_retries} for {ticker}, waiting {retry_delay}s...")
-                time.sleep(retry_delay)
-            
-            # Use the updated get_yf_data function
-            ticker_data = get_yf_data(security, start_date, today)
-            
-            # If successful, mark as success and break retry loop
-            if ticker_data is not None:
-                success = True
-            else:
-                retry_count += 1
-        
-        # Handle failed downloads after all retries
-        if not success:
-            print(f"Failed to download {ticker} after {max_retries} retries")
+        ticker_data = None
+
+        # 直接用 yfinance 抓資料
+        try:
+            yf_ticker = yf.Ticker(ticker)
+            df = yf_ticker.history(start=start_date, end=today)
+
+            if df.empty:
+                raise ValueError("Empty data returned")
+
+            # 轉成字典
+            ticker_data = df.to_dict("index")
+
+        except Exception as e:
+            print(f"Failed to download {ticker}: {str(e)}")
             failed_tickers.append(ticker)
             continue
-            
-        # Add industry info if available
-        if not ticker in TICKER_INFO_DICT:
-            try:
-                load_ticker_info(ticker, TICKER_INFO_DICT)
-                write_ticker_info_file(TICKER_INFO_DICT)
-            except Exception as e:
-                print(f"Error loading ticker info for {ticker}: {str(e)}")
-        
-        # Add industry data safely with error handling
-        try:
-            ticker_data["industry"] = TICKER_INFO_DICT[ticker]["info"]["industry"]
-        except (KeyError, TypeError):
-            # Set a default if industry info is missing
-            ticker_data["industry"] = "Unknown"
-            print(f"Warning: Could not find industry information for {ticker}")
-        
-        # Track timing and progress
+
+
+        # 記錄下載時間
         now = time.time()
-        current_load_time = now - r_start
-        load_times.append(current_load_time)
+        load_times.append(0)  # 可以保留時間追蹤，這裡簡化為 0
         remaining_seconds = get_remaining_seconds(load_times, idx, len(securities))
-        print_data_progress(ticker, security["universe"], idx, securities, "", time.time() - start, remaining_seconds)
-        
-        # Add to results dictionary
+        print_data_progress(ticker, security["universe"], idx, securities, "", 0, remaining_seconds)
+
+        # 儲存結果
         tickers_dict[ticker] = ticker_data
-        
-        # Periodically save results to avoid losing everything if the process fails
+
+        # 每 100 個 ticker 存一次檔案
         if idx > 0 and idx % 100 == 0:
             print(f"Saving intermediate results after {idx} tickers...")
             write_price_history_file(tickers_dict)
-    
-    # Report on failures
+
+    # 記錄抓不到的 ticker
     if failed_tickers:
         print(f"Failed for {len(failed_tickers)} tickers: {', '.join(failed_tickers[:10])}...")
         with open("failed_tickers.txt", "w") as f:
             f.write("\n".join(failed_tickers))
-        print(f"Saved list of failed tickers to failed_tickers.txt")
-    
-    # Write results to file
+        print("Saved list of failed tickers to failed_tickers.txt")
+
+    # 最後寫檔
     write_price_history_file(tickers_dict)
-    
+
     return tickers_dict
 
 def save_data(source, securities, api_key, info = {}):
     if source == "YAHOO":
         load_prices_from_yahoo(securities, info)
-    elif source == "TD_AMERITRADE":
-        load_prices_from_tda(securities, api_key, info)
-
 
 def main(forceTDA = False, api_key = API_KEY):
     dataSource = DATA_SOURCE if not forceTDA else "TD_AMERITRADE"
