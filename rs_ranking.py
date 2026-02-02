@@ -42,7 +42,7 @@ def main():
 
     # 基準股票收盤價
     df_ref = df_all[df_all['ticker'] == REFERENCE_TICKER].sort_values("date")
-    closes_ref = df_ref['Close'].reset_index(drop=True)
+    closes_ref = df_ref['close'].reset_index(drop=True)
 
     # 記錄每個 ticker 的 RS
     rs_dict = {}
