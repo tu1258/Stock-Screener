@@ -1,13 +1,13 @@
 import pandas as pd
 import yfinance as yf
-"""
+
 def calculate_total_rs(stock_close: pd.Series, spx_close: pd.Series) -> float:
-    
+    """
     計算單檔股票 total RS score
     依據 IBD RS Rating 方法：最後一季權重加倍
     
     n63, n126, n189, n252 = 63, 126, 189, 252
-
+    """
     perf_stock = (
         0.4*(stock_close.iloc[-1]/stock_close.iloc[-n63-1]) +
         0.2*(stock_close.iloc[-1]/stock_close.iloc[-n126-1]) +
@@ -25,10 +25,10 @@ def calculate_total_rs(stock_close: pd.Series, spx_close: pd.Series) -> float:
     return total_rs_score
 """
 def calculate_total_rs(stock_close: pd.Series, spx_close: pd.Series) -> float:
-    """
+    
     計算單檔股票 total RS score
     可處理最少30天的資料
-    """
+    
     n_days = [63, 126, 189, 252]
     weights = [0.4, 0.2, 0.2, 0.2]
 
@@ -50,7 +50,7 @@ def calculate_total_rs(stock_close: pd.Series, spx_close: pd.Series) -> float:
 
     total_rs_score = perf_stock / perf_spx * 100
     return total_rs_score
-
+"""
 
 def calculate_rs_ranking(rs_scores: pd.Series) -> pd.Series:
     """
