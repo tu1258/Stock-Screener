@@ -38,7 +38,7 @@ def quarters_perf(closes, n):
 # ----------------- Main ----------------- #
 def main():
     df_all = pd.read_csv(PRICE_DATA_CSV, parse_dates=["date"])
-    tickers = df_all[''].unique()
+    tickers = df_all['ticker'].unique()
 
     # 基準股票收盤價
     df_ref = df_all[df_all['ticker'] == REFERENCE_TICKER].sort_values("date")
