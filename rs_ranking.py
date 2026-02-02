@@ -124,8 +124,8 @@ def rankings():
         try:
             closes = list(map(lambda candle: candle["close"], json[ticker]["candles"]))
             closes_ref = list(map(lambda candle: candle["close"], ref["candles"]))
-            industry = TICKER_INFO_DICT[ticker]["info"]["industry"] if json[ticker]["industry"] == "unknown" else json[ticker]["industry"]
-            sector = TICKER_INFO_DICT[ticker]["info"]["sector"] if json[ticker]["sector"] == "unknown" else json[ticker]["sector"]
+            #industry = TICKER_INFO_DICT[ticker]["info"]["industry"] if json[ticker]["industry"] == "unknown" else json[ticker]["industry"]
+            #sector = TICKER_INFO_DICT[ticker]["info"]["sector"] if json[ticker]["sector"] == "unknown" else json[ticker]["sector"]
             if len(closes) >= 6*20:
                 closes_series = pd.Series(closes)
                 closes_ref_series = pd.Series(closes_ref)
@@ -140,9 +140,9 @@ def rankings():
                 if rs < 590:
                     # stocks output
                     ranks.append(len(ranks)+1)
-                    relative_strengths.append((0, ticker, sector, industry, json[ticker]["universe"], rs, tmp_percentile, rs1m, rs3m, rs6m))
+                    relative_strengths.append((0, ticker, """sector, industry,""" json[ticker]["universe"], rs, tmp_percentile, rs1m, rs3m, rs6m))
                     stock_rs[ticker] = rs
-
+"""
                     # industries output
                     if industry not in industries:
                         industries[industry] = {
@@ -159,13 +159,14 @@ def rankings():
                     industries[industry][TITLE_3M].append(rs3m)
                     industries[industry][TITLE_6M].append(rs6m)
                     industries[industry][TITLE_TICKERS].append(ticker)
+"""
         except KeyError:
             print(f'Ticker {ticker} has corrupted data.')
     dfs = []
     suffix = ''
 
     # stocks
-    df = pd.DataFrame(relative_strengths, columns=[TITLE_RANK, TITLE_TICKER, TITLE_SECTOR, TITLE_INDUSTRY, TITLE_UNIVERSE, TITLE_RS, TITLE_PERCENTILE, TITLE_1M, TITLE_3M, TITLE_6M])
+    df = pd.DataFrame(relative_strengths, columns=[TITLE_RANK, TITLE_TICKER, """TITLE_SECTOR, TITLE_INDUSTRY,""" TITLE_UNIVERSE, TITLE_RS, TITLE_PERCENTILE, TITLE_1M, TITLE_3M, TITLE_6M])
     df[TITLE_PERCENTILE] = pd.qcut(df[TITLE_RS], 100, labels=False, duplicates="drop")
     df[TITLE_1M] = pd.qcut(df[TITLE_1M], 100, labels=False, duplicates="drop")
     df[TITLE_3M] = pd.qcut(df[TITLE_3M], 100, labels=False, duplicates="drop")
@@ -206,7 +207,8 @@ def rankings():
 
     df.to_csv(os.path.join(DIR, "output", f'rs_stocks{suffix}.csv'), index = False)
     dfs.append(df)
-    
+
+"""
     # industries
     def getDfView(industry_entry):
         return industry_entry["info"]
@@ -239,7 +241,7 @@ def rankings():
 
     df_industries.to_csv(os.path.join(DIR, "output", f'rs_industries{suffix}.csv'), index = False)
     dfs.append(df_industries)
-
+"""
     return dfs
 
 
