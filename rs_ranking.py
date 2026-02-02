@@ -29,8 +29,8 @@ MIN_PERCENTILE = cfg("MIN_PERCENTILE")
 POS_COUNT_TARGET = cfg("POSITIONS_COUNT_TARGET")
 REFERENCE_TICKER = cfg("REFERENCE_TICKER")
 ALL_STOCKS = cfg("USE_ALL_LISTED_STOCKS")
-TICKER_INFO_FILE = os.path.join(DIR, "data_persist", "ticker_info.json")
-TICKER_INFO_DICT = read_json(TICKER_INFO_FILE)
+#TICKER_INFO_FILE = os.path.join(DIR, "data_persist", "ticker_info.json")
+#TICKER_INFO_DICT = read_json(TICKER_INFO_FILE)
 
 TITLE_RANK = "Rank"
 TITLE_TICKER = "Ticker"
