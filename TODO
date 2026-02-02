@@ -5,4 +5,5 @@ output股價成交量csv
 
 rs_screener
 RS 計算與screener(技術分析指標) 
+RS計算超過30天就列入
 output所有股票RS的csv跟符合screener的股票txt
