@@ -26,7 +26,7 @@ jobs:
 
       - name: Run RS data script
         run: |
-          python rs_data_min.py
+          python rs_data.py
 
       - name: Commit output files
         run: |
