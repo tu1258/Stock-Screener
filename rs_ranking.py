@@ -7,7 +7,7 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 PRICE_DATA_CSV = os.path.join(DIR, "stock_data.csv")      # 原始 OHLCV
 OUTPUT_CSV = os.path.join(DIR, "stock_data_rs.csv")    # 最終輸出
 REFERENCE_TICKER = "SPX"  # 基準股票
-MIN_DATA_POINTS = 120     # 至少六個月以上 (~6*20天)
+MIN_DATA_POINTS = 21     # 至少3個月以上 (~3*21天)
 
 # ----------------- Relative Strength ----------------- #
 def relative_strength(closes, closes_ref):
@@ -60,14 +60,42 @@ def main():
             continue
 
         rs = relative_strength(closes, closes_ref)
-        rs_dict[ticker] = rs
+        if rs < 500:
+            rs_dict[ticker] = rs
+        else:
+            rs_dict[ticker] = np.nan
 
     # 把 RS append 到原本的 dataframe
-    df_all['RS'] = df_all['ticker'].map(rs_dict)
-
-    # 儲存到 CSV
-    df_all.to_csv(OUTPUT_CSV, index=False)
-    print(f"RS 已經計算完成並存到 {OUTPUT_CSV}")
+    df = pd.DataFrame(
+        relative_strengths,
+        columns=[
+            "RANK",
+            "TICKER",
+            "RS",
+            "PERCENTILE",
+        ]
+    )
+    
+    # === Fred 核心：用整個市場做 percentile ===
+    df["PERCENTILE"] = pd.qcut(df["RS"], 100, labels=False, duplicates="drop")
+    
+    # RS 大的在前
+    df = df.sort_values("RS", ascending=False)
+    
+    # 這個 rank 只是序號（Fred 也是）
+    df["RANK"] = ranks
+    
+    # ===== TradingView RS RATING（完全照抄 Fred）=====
+    percentile_values = [98, 89, 69, 49, 29, 9, 1]
+    first_rs_values = {}
+    
+    for percentile in percentile_values:
+        first_row = df[df["PERCENTILE"] == percentile].iloc[0]
+        first_rs_values[percentile] = first_row["RS"]
+    
+    # ===== 最終輸出 =====
+    df.to_csv("stock_rs.csv", index=False)
+        print(f"RS 已經計算完成並存到 {OUTPUT_CSV}")
 
 if __name__ == "__main__":
     main()
