@@ -94,8 +94,7 @@ def main():
         first_rs_values[percentile] = first_row["RS"]
     
     # ===== 最終輸出 =====
-    df.to_csv("stock_rs.csv", index=False)
-        print(f"RS 已經計算完成並存到 {OUTPUT_CSV}")
+    df.to_csv("stock_data_rs.csv", index=False)
 
 if __name__ == "__main__":
     main()
