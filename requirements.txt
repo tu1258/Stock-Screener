@@ -7,7 +7,7 @@ pandas>=1.5.3
 scipy>=1.10.1
 
 # 資料讀取
-pandas_datareader>=0.10.0
+pandas_datareader>=0.9.0
 
 # 網頁解析
 beautifulsoup4>=4.12.0
@@ -17,3 +17,4 @@ PyYAML>=6.0
 
 # yfinance (穩定版本)
 yfinance>=0.2.34
+
