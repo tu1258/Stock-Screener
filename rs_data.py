@@ -231,7 +231,7 @@ def load_prices_from_yahoo(securities, info={}):
     tickers_dict = {}
     load_times = []
     failed_tickers = []
-    securities = securities[:10]
+    securities = list(securities)[:10]
 
     max_retries = 3
     base_delay = 2  # seconds
