@@ -1,11 +1,9 @@
 requests>=2.31.0
-numpy==1.21.6
-pandas==1.3.5
-scipy==1.7.3
-pandas_datareader==0.10.0
-beautifulsoup4==4.12.0
-PyYAML==6.0
-yfinance==1.1.0
-
-
+numpy>=1.25.2        # Python 3.11 支援
+pandas>=3.0.0
+scipy>=1.10.1
+pandas_datareader>=0.10.0
+beautifulsoup4>=4.12.0
+PyYAML>=6.0
+yfinance>=1.1.0
 
