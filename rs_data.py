@@ -1,93 +1,85 @@
-import yfinance as yf
 import pandas as pd
-import time
-import re
+import yfinance as yf
 from ftplib import FTP
 from io import StringIO
+import re
 from datetime import date, timedelta
-import json
+import time
 
-# ---------- CONFIG ----------
-MAX_TICKERS = 10          # 先抓 10 檔
-DAYS = 365 + 183          # 1.5 years
-OUTPUT_JSON = "rs_data.json"
-OUTPUT_CSV = "rs_data.csv"
-# ----------------------------
+OUTPUT_FILE = "rs_data.csv"
+MAX_TICKERS = 100        # 先測，之後拿掉
+DAYS = 365              # 1 年
 
-def get_nasdaq_tickers(limit=10):
+def get_nasdaq_tickers(limit=None):
     ftp = FTP("ftp.nasdaqtrader.com")
     ftp.login()
     ftp.cwd("SymbolDirectory")
 
-    buf = StringIO()
-    ftp.retrlines("RETR nasdaqtraded.txt", lambda x: buf.write(x + "\n"))
+    data = StringIO()
+    ftp.retrlines("RETR nasdaqtraded.txt", lambda x: data.write(x + "\n"))
     ftp.quit()
 
-    buf.seek(0)
+    data.seek(0)
     tickers = []
 
-    for line in buf.readlines():
+    for line in data.readlines():
         cols = line.split("|")
         if len(cols) < 8:
             continue
         ticker = cols[1]
-        etf = cols[5]
-        test = cols[7]
+        is_etf = cols[5]
+        is_test = cols[7]
 
-        if re.match(r"^[A-Z]+$", ticker) and etf == "N" and test == "N":
+        if re.fullmatch(r"[A-Z]+", ticker) and is_etf == "N" and is_test == "N":
             tickers.append(ticker)
-        if len(tickers) >= limit:
-            break
 
-    return tickers
+    return tickers[:limit] if limit else tickers
 
-def fetch_close_from_yf(ticker, start, end):
-    df = yf.Ticker(ticker).history(start=start, end=end)
-    if df.empty:
-        return None
-
-    candles = []
-    for ts, row in df.iterrows():
-        candles.append({
-            "datetime": int(ts.timestamp()),
-            "close": float(row["Close"])
-        })
-    return candles
 
 def main():
-    today = date.today()
-    start_date = today - timedelta(days=DAYS)
+    end = date.today()
+    start = end - timedelta(days=DAYS)
 
     tickers = get_nasdaq_tickers(MAX_TICKERS)
-    print(f"Fetched {len(tickers)} tickers")
+    print(f"Downloading {len(tickers)} tickers")
 
-    rs_data = []
-    rs_json = {}
+    rows = []
 
-    for t in tickers:
-        print(f"Downloading {t}")
-        candles = fetch_close_from_yf(t, start_date, today)
-        if not candles:
-            print(f"  ❌ no data")
-            continue
+    for i, ticker in enumerate(tickers, 1):
+        try:
+            df = yf.download(
+                ticker,
+                start=start,
+                end=end,
+                progress=False,
+                auto_adjust=False,
+            )
 
-        rs_json[t] = candles
-        for c in candles:
-            rs_data.append([t, c["datetime"], c["close"]])
+            if df.empty:
+                continue
 
-        time.sleep(0.1)
+            df = df.reset_index()[["Date", "Open", "High", "Low", "Close", "Volume"]]
+            df.columns = ["date", "open", "high", "low", "close", "volume"]
+            df["ticker"] = ticker
+            df["date"] = df["date"].dt.strftime("%Y-%m-%d")
 
-    # JSON
-    with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
-        json.dump(rs_json, f, indent=2)
+            rows.append(df)
+            print(f"[{i}/{len(tickers)}] {ticker}")
 
-    # CSV
-    df = pd.DataFrame(rs_data, columns=["ticker", "datetime", "close"])
-    df.to_csv(OUTPUT_CSV, index=False)
+            time.sleep(0.1)  # 避免被 Yahoo ban
 
-    print("✅ Done")
-    print(f" - {OUTPUT_JSON}")
-    print(f" - {OUTPUT_CSV}")
+        except Exception as e:
+            print(f"Failed {ticker}: {e}")
+
+    if not rows:
+        raise RuntimeError("No data downloaded")
+
+    result = pd.concat(rows, ignore_index=True)
+    result = result[["ticker", "date", "open", "high", "low", "close", "volume"]]
+    result.to_csv(OUTPUT_FILE, index=False)
+
+    print(f"Saved {OUTPUT_FILE}, rows={len(result)}")
+
 
 if __name__ == "__main__":
     main()
