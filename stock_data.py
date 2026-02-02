@@ -7,7 +7,7 @@ from datetime import date, timedelta
 import time
 
 OUTPUT_FILE = "stock_data.csv"
-MAX_TICKERS = 100        # 先測，之後拿掉
+MAX_TICKERS = 10        # 先測，之後拿掉
 DAYS = 365              # 1 年
 
 def get_nasdaq_tickers(limit=None):
