@@ -148,16 +148,32 @@ def get_tickers_from_nasdaq(tickers):
 
 SECURITIES = get_resolved_securities().values()
 
-def write_to_file(dict, file):
-#    with open(file, "w", encoding='utf8') as fp:
-#        json.dump(dict, fp, ensure_ascii=False)
-    for ticker, df in dict.items():
-        if isinstance(df, pd.DataFrame):
-            df.to_json(f"output/{ticker}.json", orient='split')  # 'split' 可以保留 columns + index
-        
+def write_to_file(tickers_dict, price_file):
+    # 確保 output 資料夾存在
+    output_dir = os.path.join(DIR, "output")
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    combined_dict = {}
+    
+    for ticker, df_or_dict in tickers_dict.items():
+        # 如果是 DataFrame，存成 JSON
+        if isinstance(df_or_dict, pd.DataFrame):
+            df_or_dict.to_json(os.path.join(output_dir, f"{ticker}.json"), orient='split')
+            combined_dict[ticker] = df_or_dict.to_dict("index")
+        # 如果已經是 dict，也存成 JSON
+        elif isinstance(df_or_dict, dict):
+            with open(os.path.join(output_dir, f"{ticker}.json"), "w", encoding="utf-8") as f:
+                json.dump(df_or_dict, f, ensure_ascii=False, indent=2)
+            combined_dict[ticker] = df_or_dict
+    
+    # 同時寫 price_history.json
+    with open(price_file, "w", encoding="utf-8") as f:
+        json.dump(combined_dict, f, ensure_ascii=False, indent=2)
+
 def write_price_history_file(tickers_dict):
     write_to_file(tickers_dict, PRICE_DATA_FILE)
-
+        
 def write_ticker_info_file(info_dict):
     write_to_file(info_dict, TICKER_INFO_FILE)
 
@@ -231,16 +247,12 @@ def load_prices_from_yahoo(securities, info={}):
     tickers_dict = {}
     load_times = []
     failed_tickers = []
-    securities = list(securities)[:10]
-
-    max_retries = 3
-    base_delay = 2  # seconds
+    securities = list(securities)[:10]  # 前 10 支股票
 
     for idx, security in enumerate(securities):
         ticker = security["ticker"]
         ticker_data = None
 
-        # 直接用 yfinance 抓資料
         try:
             yf_ticker = yf.Ticker(ticker)
             df = yf_ticker.history(start=start_date, end=today)
@@ -248,7 +260,7 @@ def load_prices_from_yahoo(securities, info={}):
             if df.empty:
                 raise ValueError("Empty data returned")
 
-            # 轉成字典
+            # 轉成 dict
             ticker_data = df.to_dict("index")
 
         except Exception as e:
@@ -256,31 +268,20 @@ def load_prices_from_yahoo(securities, info={}):
             failed_tickers.append(ticker)
             continue
 
-
-        # 記錄下載時間
-        now = time.time()
-        load_times.append(0)  # 可以保留時間追蹤，這裡簡化為 0
-        remaining_seconds = get_remaining_seconds(load_times, idx, len(securities))
-        print_data_progress(ticker, security["universe"], idx, securities, "", 0, remaining_seconds)
-
-        # 儲存結果
         tickers_dict[ticker] = ticker_data
 
-        # 每 100 個 ticker 存一次檔案
-        if idx > 0 and idx % 100 == 0:
-            print(f"Saving intermediate results after {idx} tickers...")
-            write_price_history_file(tickers_dict)
+        # 印出進度
+        remaining_seconds = get_remaining_seconds(load_times + [0], idx, len(securities))
+        print_data_progress(ticker, security["universe"], idx, securities, "", 0, remaining_seconds)
 
-    # 記錄抓不到的 ticker
     if failed_tickers:
         print(f"Failed for {len(failed_tickers)} tickers: {', '.join(failed_tickers[:10])}...")
         with open("failed_tickers.txt", "w") as f:
             f.write("\n".join(failed_tickers))
         print("Saved list of failed tickers to failed_tickers.txt")
 
-    # 最後寫檔
+    # 寫檔
     write_price_history_file(tickers_dict)
-
     return tickers_dict
 
 def save_data(source, securities, api_key, info = {}):
