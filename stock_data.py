@@ -6,7 +6,7 @@ import re
 from datetime import date, timedelta
 import time
 
-OUTPUT_FILE = "rs_data.csv"
+OUTPUT_FILE = "stock_data.csv"
 MAX_TICKERS = 100        # 先測，之後拿掉
 DAYS = 365              # 1 年
 
