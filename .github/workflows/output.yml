@@ -29,7 +29,8 @@ jobs:
 
       - name: Run RS data script
         run: |
-          python rs_data.py
+          python stock_data.py
+          python rs_ranking.py
 
       - name: Commit output files
         run: |
