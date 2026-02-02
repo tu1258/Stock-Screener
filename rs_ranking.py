@@ -45,7 +45,8 @@ def main():
     closes_ref = df_ref['close'].reset_index(drop=True)
 
     # 記錄每個 ticker 的 RS
-    rs_dict = {}
+    relative_strengths = []
+    ranks = []
 
     for ticker in tickers:
         if ticker == REFERENCE_TICKER:
@@ -60,11 +61,16 @@ def main():
             continue
 
         rs = relative_strength(closes, closes_ref)
+        
+        # Fred 的防呆（異常資料）
         if rs < 500:
-            rs_dict[ticker] = rs
-        else:
-            rs_dict[ticker] = np.nan
-
+            ranks.append(len(ranks) + 1)
+            relative_strengths.append((
+                0,          # RANK placeholder
+                ticker,
+                rs,
+                100,        # PERCENTILE placeholder
+            ))
     # 把 RS append 到原本的 dataframe
     df = pd.DataFrame(
         relative_strengths,
@@ -78,7 +84,7 @@ def main():
     
     # === Fred 核心：用整個市場做 percentile ===
     df["PERCENTILE"] = pd.qcut(df["RS"], 100, labels=False, duplicates="drop")
-    
+ 
     # RS 大的在前
     df = df.sort_values("RS", ascending=False)
     
