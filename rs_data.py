@@ -5,7 +5,6 @@ import time
 import bs4 as bs
 import datetime as dt
 import os
-import pandas_datareader.data as web
 import pickle
 import requests
 import yaml
