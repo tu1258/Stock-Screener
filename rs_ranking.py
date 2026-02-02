@@ -6,7 +6,7 @@ import os
 from datetime import date
 from scipy.stats import linregress
 import yaml
-from rs_data import TD_API, cfg, read_json
+from rs_data import cfg, read_json
 from functools import reduce
 import datetime
 
