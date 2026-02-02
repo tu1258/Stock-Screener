@@ -84,22 +84,8 @@ def get_securities(url, ticker_pos = 1, table_pos = 1, sector_offset = 1, indust
 
 def get_resolved_securities():
     tickers = {REFERENCE_TICKER: REF_TICKER}
-    if ALL_STOCKS:
-        return get_tickers_from_nasdaq(tickers)
+    return get_tickers_from_nasdaq(tickers)
         # return {"1": {"ticker": "DTST", "sector": "MICsec", "industry": "MICind", "universe": "we"}, "2": {"ticker": "MIGI", "sector": "MIGIsec", "industry": "MIGIind", "universe": "we"}}
-    else:
-        return get_tickers_from_wikipedia(tickers)
-
-def get_tickers_from_wikipedia(tickers):
-    if cfg("NQ100"):
-        tickers.update(get_securities('https://en.wikipedia.org/wiki/Nasdaq-100', 2, 3, universe="Nasdaq 100"))
-    if cfg("SP500"):
-        tickers.update(get_securities('http://en.wikipedia.org/wiki/List_of_S%26P_500_companies', sector_offset=3, universe="S&P 500"))
-    if cfg("SP400"):
-        tickers.update(get_securities('https://en.wikipedia.org/wiki/List_of_S%26P_400_companies', 2, universe="S&P 400"))
-    if cfg("SP600"):
-        tickers.update(get_securities('https://en.wikipedia.org/wiki/List_of_S%26P_600_companies', 2, universe="S&P 600"))
-    return tickers
 
 def exchange_from_symbol(symbol):
     if symbol == "Q":
@@ -215,54 +201,37 @@ def load_ticker_info(ticker, info_dict):
         }
     info_dict[ticker] = ticker_info
 
-
-
 def load_prices_from_yahoo(securities, info={}):
     print("*** Loading Stocks from Yahoo Finance ***")
     today = date.today()
-    start = time.time()
     start_date = today - dt.timedelta(days=365 + 183)  # 1.5 years
     tickers_dict = {}
-    load_times = []
-    failed_tickers = []
-    securities = list(securities)[:100]  # 前 100 支股票
+    securities = list(securities)[:100]
 
     for idx, security in enumerate(securities):
         ticker = security["ticker"]
-        ticker_data = None
-        
-        try:
-            yf_ticker = yf.Ticker(ticker)
-            df = yf_ticker.history(start=start_date, end=today)
 
+        try:
+            df = yf.Ticker(ticker).history(start=start_date, end=today)
             if df.empty:
-                raise ValueError("Empty data returned")
-            
-            # 轉成 dict
-            ticker_data = df.to_dict("index")
-            
-            # 將 index 轉成字串，避免 JSON dump 出錯
-            df.index = df.index.strftime("%Y-%m-%d")
-            ticker_data = df.to_dict("index")
+                raise ValueError("Empty data")
+
+            candles = []
+            for ts, row in df.iterrows():
+                candles.append({
+                    "datetime": int(ts.timestamp()),
+                    "close": float(row["Close"])
+                })
+
+            tickers_dict[ticker] = {
+                "universe": security.get("universe", "unknown"),
+                "candles": candles
+            }
 
         except Exception as e:
-            print(f"Failed to download {ticker}: {str(e)}")
-            failed_tickers.append(ticker)
+            print(f"Failed {ticker}: {e}")
             continue
 
-        tickers_dict[ticker] = ticker_data
-
-        # 印出進度
-        remaining_seconds = get_remaining_seconds(load_times + [0], idx, len(securities))
-        print_data_progress(ticker, security["universe"], idx, securities, "", 0, remaining_seconds)
-
-    if failed_tickers:
-        print(f"Failed for {len(failed_tickers)} tickers: {', '.join(failed_tickers[:10])}...")
-        with open("failed_tickers.txt", "w") as f:
-            f.write("\n".join(failed_tickers))
-        print("Saved list of failed tickers to failed_tickers.txt")
-
-    # 寫檔
     write_price_history_file(tickers_dict)
     return tickers_dict
 
@@ -270,8 +239,8 @@ def save_data(source, securities, info = {}):
     if source == "YAHOO":
         load_prices_from_yahoo(securities, info)
 
-def main(forceTDA = False):
-    dataSource = DATA_SOURCE if not forceTDA else "TD_AMERITRADE"
+def main():
+    dataSource = DATA_SOURCE
     save_data(dataSource, SECURITIES, {"forceTDA": forceTDA})
     write_ticker_info_file(TICKER_INFO_DICT)
 
