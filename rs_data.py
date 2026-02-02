@@ -253,6 +253,9 @@ def load_prices_from_yahoo(securities, info={}):
         ticker = security["ticker"]
         ticker_data = None
 
+
+
+        
         try:
             yf_ticker = yf.Ticker(ticker)
             df = yf_ticker.history(start=start_date, end=today)
@@ -261,6 +264,10 @@ def load_prices_from_yahoo(securities, info={}):
                 raise ValueError("Empty data returned")
 
             # 轉成 dict
+            ticker_data = df.to_dict("index")
+            
+            # 將 index 轉成字串，避免 JSON dump 出錯
+            df.index = df.index.strftime("%Y-%m-%d")
             ticker_data = df.to_dict("index")
 
         except Exception as e:
