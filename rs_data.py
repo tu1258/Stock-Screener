@@ -247,7 +247,7 @@ def load_prices_from_yahoo(securities, info={}):
     tickers_dict = {}
     load_times = []
     failed_tickers = []
-    securities = list(securities)[:10]  # 前 10 支股票
+    securities = list(securities)[:100]  # 前 100 支股票
 
     for idx, security in enumerate(securities):
         ticker = security["ticker"]
