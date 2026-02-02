@@ -7,33 +7,32 @@ on:
     - cron: "0 22 * * *"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-  
-jobs:
-      build:
-        runs-on: ubuntu-latest
 
-        steps:
-          - name: checkout repo content
-            uses: actions/checkout@v3 # checkout the repository content to github runner.
-          - name: setup python
-            uses: actions/setup-python@v3
-            with:
-              python-version: 3.11 #install the python needed
-          - name: execute py script # aggregate current data
-            run: |
-              python -m pip install -r requirements.txt
-              python relative-strength.py true false ${{ secrets.API_KEY }}
-          
-          - name: push to log git
-            run: |
-              git clone https://Fred6725:${{ secrets.PAT }}@github.com/Fred6725/rs-log.git
-              rm ./rs-log/output/* && cp -a ./output/. ./rs-log/output
-              cd rs-log
-              git config user.name "CI" && git config user.email "ci@github.com"
-              git add --all
-              git commit -m "CI output update" || echo "nothing to commit"
-              git push || echo "nothing to push"
-          - uses: actions/upload-artifact@v4 # Force modification
-            with:
-              name: rs_stocks.csv
-              path: output
+jobs:
+  rs-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+
+      - name: Run RS data script
+        run: |
+          python rs_data_min.py
+
+      - name: Commit output files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add rs_data.json rs_data.csv
+          git commit -m "Update RS data" || echo "No changes to commit"
+          git push
+
