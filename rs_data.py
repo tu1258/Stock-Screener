@@ -259,10 +259,6 @@ def load_prices_from_yahoo(securities, info={}):
 
             if df.empty:
                 raise ValueError("Empty data returned")
-
-            # 印出最近一次收盤價
-            last_close = df['Close'].iloc[-1]
-            print(f"{ticker} last Close: {last_close}")
             
             # 轉成 dict
             ticker_data = df.to_dict("index")
