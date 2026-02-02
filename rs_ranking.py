@@ -37,11 +37,11 @@ def quarters_perf(closes, n):
 
 # ----------------- Main ----------------- #
 def main():
-    df_all = pd.read_csv(PRICE_DATA_CSV, parse_dates=["Date"])
-    tickers = df_all['Ticker'].unique()
+    df_all = pd.read_csv(PRICE_DATA_CSV, parse_dates=["date"])
+    tickers = df_all[''].unique()
 
     # 基準股票收盤價
-    df_ref = df_all[df_all['Ticker'] == REFERENCE_TICKER].sort_values("Date")
+    df_ref = df_all[df_all['ticker'] == REFERENCE_TICKER].sort_values("date")
     closes_ref = df_ref['Close'].reset_index(drop=True)
 
     # 記錄每個 ticker 的 RS
@@ -52,8 +52,8 @@ def main():
             rs_dict[ticker] = 100.0  # 基準固定 100
             continue
 
-        df = df_all[df_all['Ticker'] == ticker].sort_values("Date")
-        closes = df['Close'].reset_index(drop=True)
+        df = df_all[df_all['ticker'] == ticker].sort_values("date")
+        closes = df['close'].reset_index(drop=True)
 
         if len(closes) < MIN_DATA_POINTS:
             rs_dict[ticker] = np.nan
@@ -63,7 +63,7 @@ def main():
         rs_dict[ticker] = rs
 
     # 把 RS append 到原本的 dataframe
-    df_all['RS'] = df_all['Ticker'].map(rs_dict)
+    df_all['RS'] = df_all['ticker'].map(rs_dict)
 
     # 儲存到 CSV
     df_all.to_csv(OUTPUT_CSV, index=False)
