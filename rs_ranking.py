@@ -50,32 +50,32 @@ def main():
 
     for ticker in tickers:
         if ticker == REFERENCE_TICKER:
-            rs_dict[ticker] = 100.0  # 基準固定 100
-            continue
-
-        df = df_all[df_all['ticker'] == ticker].sort_values("date")
-        closes = df['close'].reset_index(drop=True)
-
-        if len(closes) < MIN_DATA_POINTS:
-            rs_dict[ticker] = np.nan
-            continue
-
+            rs = 100.0
+        else:
+            df = df_all[df_all['ticker'] == ticker].sort_values("date")
+            closes = df['close'].reset_index(drop=True)
+    
+            if len(closes) < MIN_DATA_POINTS:
+                rs = np.nan
+                continue  # 或者 rs = np.nan，然後 append
+            else:
+                rs = relative_strength(closes, closes_ref)
+                if rs > 500:  # 跟 Fred 一樣，假資料過濾
+                    continue
+    
+        # append 到 list
+        relative_strengths.append({
+            "TICKER": ticker,
+            "RS": rs,
+            "PERCENTILE": 100.
+        })
         rs = relative_strength(closes, closes_ref)
         
-        # Fred 的防呆（異常資料）
-        if rs < 500:
-            ranks.append(len(ranks) + 1)
-            relative_strengths.append((
-                0,          # RANK placeholder
-                ticker,
-                rs,
-                100,        # PERCENTILE placeholder
-            ))
+
     # 把 RS append 到原本的 dataframe
     df = pd.DataFrame(
         relative_strengths,
         columns=[
-            "RANK",
             "TICKER",
             "RS",
             "PERCENTILE",
@@ -87,10 +87,7 @@ def main():
  
     # RS 大的在前
     df = df.sort_values("RS", ascending=False)
-    
-    # 這個 rank 只是序號（Fred 也是）
-    df["RANK"] = ranks
-    
+       
     # ===== TradingView RS RATING（完全照抄 Fred）=====
     percentile_values = [98, 89, 69, 49, 29, 9, 1]
     first_rs_values = {}
