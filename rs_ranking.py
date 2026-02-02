@@ -4,7 +4,7 @@ import numpy as np
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
-PRICE_DATA_CSV = os.path.join(DIR, "rs_data.csv")      # 原始 OHLCV
+PRICE_DATA_CSV = os.path.join(DIR, "stock_data.csv")      # 原始 OHLCV
 OUTPUT_CSV = os.path.join(DIR, "stock_data_rs.csv")    # 最終輸出
 REFERENCE_TICKER = "SPY"  # 基準股票
 MIN_DATA_POINTS = 120     # 至少六個月以上 (~6*20天)
