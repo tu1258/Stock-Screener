@@ -56,8 +56,6 @@ def read_json(json_file):
     with open(json_file, "r", encoding="utf-8") as fp:
         return json.load(fp)
 
-API_KEY = cfg("API_KEY")
-TD_API = "https://api.tdameritrade.com/v1/marketdata/%s/pricehistory"
 PRICE_DATA_FILE = os.path.join(DIR, "data", "price_history.json")
 REFERENCE_TICKER = cfg("REFERENCE_TICKER")
 DATA_SOURCE = cfg("DATA_SOURCE")
@@ -148,28 +146,18 @@ def get_tickers_from_nasdaq(tickers):
 
 SECURITIES = get_resolved_securities().values()
 
-def write_to_file(tickers_dict, price_file):
-    # 確保 output 資料夾存在
-    output_dir = os.path.join(DIR, "output")
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    
-    combined_dict = {}
-    
-    for ticker, df_or_dict in tickers_dict.items():
-        # 如果是 DataFrame，存成 JSON
-        if isinstance(df_or_dict, pd.DataFrame):
-            df_or_dict.to_json(os.path.join(output_dir, f"{ticker}.json"), orient='split')
-            combined_dict[ticker] = df_or_dict.to_dict("index")
-        # 如果已經是 dict，也存成 JSON
-        elif isinstance(df_or_dict, dict):
-            with open(os.path.join(output_dir, f"{ticker}.json"), "w", encoding="utf-8") as f:
-                json.dump(df_or_dict, f, ensure_ascii=False, indent=2)
-            combined_dict[ticker] = df_or_dict
-    
-    # 同時寫 price_history.json
-    with open(price_file, "w", encoding="utf-8") as f:
-        json.dump(combined_dict, f, ensure_ascii=False, indent=2)
+def write_to_file(dict_of_dfs, file):
+    output = {}
+    for ticker, df in dict_of_dfs.items():
+        if isinstance(df, pd.DataFrame):
+            # 將 index 轉成字串
+            df_copy = df.copy()
+            df_copy.index = df_copy.index.astype(str)
+            output[ticker] = df_copy.to_dict('index')
+        else:
+            output[ticker] = df
+    with open(file, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
 
 def write_price_history_file(tickers_dict):
     write_to_file(tickers_dict, PRICE_DATA_FILE)
@@ -181,16 +169,6 @@ def enrich_ticker_data(ticker_response, security):
     ticker_response["sector"] = security["sector"]
     ticker_response["industry"] = security["industry"]
     ticker_response["universe"] = security["universe"]
-
-def tda_params(apikey, period_type="year", period=2, frequency_type="daily", frequency=1):
-    """Returns tuple of api get params. Uses clenow default values."""
-    return (
-           ("apikey", apikey),
-           ("periodType", period_type),
-           ("period", period),
-           ("frequencyType", frequency_type),
-           ("frequency", frequency)
-    )
 
 def print_data_progress(ticker, universe, idx, securities, error_text, elapsed_s, remaining_s):
     dt_ref = datetime.fromtimestamp(0)
@@ -288,13 +266,13 @@ def load_prices_from_yahoo(securities, info={}):
     write_price_history_file(tickers_dict)
     return tickers_dict
 
-def save_data(source, securities, api_key, info = {}):
+def save_data(source, securities, info = {}):
     if source == "YAHOO":
         load_prices_from_yahoo(securities, info)
 
-def main(forceTDA = False, api_key = API_KEY):
+def main(forceTDA = False):
     dataSource = DATA_SOURCE if not forceTDA else "TD_AMERITRADE"
-    save_data(dataSource, SECURITIES, api_key, {"forceTDA": forceTDA})
+    save_data(dataSource, SECURITIES, {"forceTDA": forceTDA})
     write_ticker_info_file(TICKER_INFO_DICT)
 
 if __name__ == "__main__":
