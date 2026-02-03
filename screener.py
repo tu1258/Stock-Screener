@@ -51,10 +51,10 @@ def main():
         price_df[price_df["ticker"].isin(rs_tickers)]
         .groupby("ticker", group_keys=False)
         .apply(compute_indicators)
+        .reset_index(drop=True)  # 這行很重要，清掉 multi-index
         .groupby("ticker", group_keys=False)
-        .tail(1)  # 最新一筆
+        .tail(1)
     )
-
     tech_filtered = tech_filtered[
         (tech_filtered["avg_value_10"] > 100_000_000) &
         (tech_filtered["atr_20_pct"] > 1) &
