@@ -35,15 +35,11 @@ def compute_indicators(df):
 def main():
     price_df = pd.read_csv(PRICE_CSV, parse_dates=["date"])
     rs_df = pd.read_csv(RS_CSV)
-
-    # RS > 90
-    rs_filtered = rs_df[rs_df["RS"] > 90]
+    rs_filtered = rs_df[rs_df["score"] > 90]
     rs_tickers = rs_filtered["ticker"].tolist()
-
-    # 只保留這些股票的歷史資料
+    
     price_filtered = price_df[price_df["ticker"].isin(rs_tickers)]
-
-    # 計算技術指標
+    
     latest_price = (
         price_filtered.groupby("ticker")
         .apply(compute_indicators)
@@ -51,8 +47,7 @@ def main():
         .tail(1)
         .reset_index(drop=True)
     )
-
-    # 技術面篩選
+    
     screened = latest_price[
         (latest_price["avg_value_10"] > 100_000_000) &
         (latest_price["atr_20_pct"] > 1) &
@@ -63,9 +58,16 @@ def main():
         (latest_price["dist_high5_pct"] <= 10) &
         (latest_price["dist_low5_pct"] <= 10)
     ]
+    
+    # 如果想保留 RS 排序，可以先 merge RS 再排序
+    screened = screened.merge(
+        rs_filtered[["ticker", "RS"]],
+        on="ticker",
+        how="left"
+    ).sort_values("RS", ascending=False)
+
 
     # 排序 & 輸出
-    screened = screened.sort_values("RS", ascending=False)
     screened.to_csv(OUTPUT_CSV, index=False)
     print(f"Saved screened result to {OUTPUT_CSV}, rows={len(screened)}")
 
