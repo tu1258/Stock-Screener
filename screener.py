@@ -47,12 +47,17 @@ def main():
     rs_tickers = rs_filtered["ticker"].tolist()
 
     # ---------- 2. 技術分析篩選 ----------
-    tech_filtered = (
-        price_df[price_df["ticker"].isin(rs_tickers)]
-        .groupby("ticker", group_keys=False)
-#        .apply(compute_indicators)
-        .tail(1)
+    # ---------- 2. 技術分析篩選 ----------
+    # 計算技術指標，確保 ticker 欄位存在
+    price_df = price_df.sort_values(["ticker", "date"])
+    price_df = (
+        price_df.groupby("ticker", group_keys=False)
+        .apply(compute_indicators)
+        .reset_index(drop=True)
     )
+
+    # 篩選符合 RS 的股票
+    tech_filtered = price_df[price_df["ticker"].isin(rs_tickers)]
 #    tech_filtered = tech_filtered[
 #        (tech_filtered["avg_value_10"] > 100_000_000) &
 #        (tech_filtered["atr_20_pct"] > 1) &
