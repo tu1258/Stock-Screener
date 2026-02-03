@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 PRICE_CSV = "stock_data.csv"
 RS_CSV = "stock_data_rs.csv"
@@ -11,35 +10,42 @@ def compute_indicators(df):
 
     df["avg_value_10"] = df["close"] * df["volume"].rolling(10).mean()
 
+    # ATR %
     hl = df["high"] - df["low"]
-    hc = (df["high"] - df["close"].shift(1)).abs()
-    lc = (df["low"] - df["close"].shift(1)).abs()
+    hc = (df["high"] - df["close"].shift()).abs()
+    lc = (df["low"] - df["close"].shift()).abs()
     tr = pd.concat([hl, hc, lc], axis=1).max(axis=1)
     df["atr_20_pct"] = tr.rolling(20).mean() / df["close"] * 100
 
+    # MA
     df["ma20"] = df["close"].rolling(20).mean()
     df["ma50"] = df["close"].rolling(50).mean()
     df["ma200"] = df["close"].rolling(200).mean()
-    df["ma200_prev"] = df["ma200"].shift(1)
+    df["ma200_prev"] = df["ma200"].shift()
 
-    df["high5"] = df["high"].rolling(5).max()
-    df["low5"] = df["low"].rolling(5).min()
-    df["dist_high5_pct"] = (df["high5"] - df["close"]) / df["high5"] * 100
-    df["dist_low5_pct"] = (df["close"] - df["low5"]) / df["low5"] * 100
+    # 5-day range
+    high5 = df["high"].rolling(5).max()
+    low5 = df["low"].rolling(5).min()
+    df["dist_high5_pct"] = (high5 - df["close"]) / high5 * 100
+    df["dist_low5_pct"] = (df["close"] - low5) / low5 * 100
 
     return df
 
 
 def main():
-    # ===== 1️⃣ RS universe（只篩一次）=====
+    # ===== RS universe =====
     rs_df = pd.read_csv(RS_CSV)
-    rs_universe = rs_df.loc[rs_df["RS"] > 90, ["ticker", "RS"]]
+    rs_df.columns = rs_df.columns.str.strip().str.lower()
 
-    # ===== 2️⃣ price 只留下 RS > 90 的股票 =====
+    rs_universe = rs_df.loc[rs_df["rs"] > 90, ["ticker", "rs"]]
+
+    # ===== Price data =====
     price_df = pd.read_csv(PRICE_CSV, parse_dates=["date"])
+    price_df.columns = price_df.columns.str.strip().str.lower()
+
     price_df = price_df[price_df["ticker"].isin(rs_universe["ticker"])]
 
-    # ===== 3️⃣ 技術指標 + 只取最新一根 =====
+    # ===== Indicators + latest bar =====
     latest = (
         price_df
         .groupby("ticker", group_keys=False)
@@ -49,8 +55,8 @@ def main():
         .reset_index(drop=True)
     )
 
-    # ===== 4️⃣ 技術面篩選 =====
-    screened = latest[
+    # ===== Technical filter =====
+    tech = latest[
         (latest["avg_value_10"] > 100_000_000) &
         (latest["atr_20_pct"] > 1) &
         (latest["close"] > latest["ma20"]) &
@@ -61,13 +67,15 @@ def main():
         (latest["dist_low5_pct"] <= 10)
     ]
 
-    # ===== 5️⃣ 把 RS 貼回來（不再篩）=====
-    screened = screened.merge(rs_universe, on="ticker", how="left")
+    # ===== RS sort only =====
+    watchlist = (
+        tech.merge(rs_universe, on="ticker", how="left")
+        .sort_values("rs", ascending=False)
+        [["ticker"]]
+    )
 
-    screened = screened.sort_values("RS", ascending=False)
-    screened.to_csv(OUTPUT_CSV, index=False)
-
-    print(f"Saved {OUTPUT_CSV}, rows={len(screened)}")
+    watchlist.to_csv(OUTPUT_CSV, index=False)
+    print(f"Saved {OUTPUT_CSV}, tickers={len(watchlist)}")
 
 
 if __name__ == "__main__":
