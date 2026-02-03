@@ -31,12 +31,13 @@ jobs:
         run: |
           python stock_data.py
           python rs_ranking.py
+          python screener.py
 
       - name: Commit output files
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add stock_data.csv stock_data_rs.csv
+          git add stock_data.csv stock_data_rs.csv watchlist.csv
           git commit -m "Update RS data" || echo "No changes to commit"
           git push
 
