@@ -1,5 +1,5 @@
 import pandas as pd
-import pandas_ta as ta  # 如果不用ta-lib也可以改成純pandas
+import pandas_ta_classic as ta  # 如果不用ta-lib也可以改成純pandas
 import numpy as np
 
 PRICE_CSV = "stock_data.csv"
