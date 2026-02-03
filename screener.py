@@ -7,13 +7,8 @@ def main():
     # 讀取 RS CSV
     rs_df = pd.read_csv(RS_CSV)
 
-    # 確保欄位小寫
-    rs_df.columns = [c.lower() for c in rs_df.columns]
-
     # 篩選 RS rank > 90
     rs_filtered = rs_df[rs_df["RS"] > 90].copy()
-
-
 
     # 輸出結果
     rs_filtered.to_csv(OUTPUT_CSV, index=False)
