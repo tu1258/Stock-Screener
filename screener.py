@@ -44,6 +44,10 @@ def main():
     price_df = pd.read_csv(PRICE_CSV, parse_dates=["date"])
     rs_df = pd.read_csv(RS_CSV)
 
+    # 統一欄位名稱小寫
+    price_df.columns = price_df.columns.str.strip().str.lower()
+    rs_df.columns = rs_df.columns.str.strip().str.lower()
+
     # 只取最新一筆做篩選
     latest_price = (
         price_df.sort_values("date")
@@ -54,31 +58,41 @@ def main():
         .reset_index(drop=True)
     )
 
-    # 合併RS
-    df = latest_price.merge(
-        rs_df[["TICKER", "RS score", "RS rank"]],
-        on="ticker",
-        how="inner"
-    )
-
     # ===============================
-    # 篩選條件
+    # 第一階段: 用技術指標篩選
     # ===============================
-    screened = df[
-        (df["avg_value_10"] > 100_000_000) &
-        (df["atr_20_pct"] > 1) &
-        (df["rs"] > 90) &
-        (df["close"] > df["ma20"]) &
-        (df["close"] > df["ma50"]) &
-        (df["ma50"] > df["ma200"]) &
-        (df["ma200"] > df["ma200_prev"]) &
-        (df["dist_high5_pct"] <= 10) &
-        (df["dist_low5_pct"] <= 10)
+    screened_price = latest_price[
+        (latest_price["avg_value_10"] > 100_000_000) &
+        (latest_price["atr_20_pct"] > 1) &
+        (latest_price["close"] > latest_price["ma20"]) &
+        (latest_price["close"] > latest_price["ma50"]) &
+        (latest_price["ma50"] > latest_price["ma200"]) &
+        (latest_price["ma200"] > latest_price["ma200_prev"]) &
+        (latest_price["dist_high5_pct"] <= 10) &
+        (latest_price["dist_low5_pct"] <= 10)
     ]
 
-    screened = screened.sort_values("rs", ascending=False)
-    screened.to_csv(OUTPUT_CSV, index=False)
-    print(f"Saved screened result to {OUTPUT_CSV}, rows={len(screened)}")
+    # ===============================
+    # 第二階段: 用 RS 篩選
+    # ===============================
+    screened = rs_df[
+        (rs_df["RS rank"] > 90) &
+        (rs_df["ticker"].isin(screened_price["ticker"]))
+    ]
+
+    # 把技術指標也合併回來
+    final_df = screened.merge(
+        screened_price,
+        on="ticker",
+        how="left"
+    )
+
+    # 排序
+    final_df = final_df.sort_values("RS rank", ascending=False)
+
+    # 輸出
+    final_df.to_csv(OUTPUT_CSV, index=False)
+    print(f"Saved screened result to {OUTPUT_CSV}, rows={len(final_df)}")
 
 
 if __name__ == "__main__":
