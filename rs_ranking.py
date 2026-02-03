@@ -7,7 +7,7 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 PRICE_DATA_CSV = os.path.join(DIR, "stock_data.csv")      # 原始 OHLCV
 OUTPUT_CSV = os.path.join(DIR, "stock_data_rs.csv")    # 最終輸出
 REFERENCE_TICKER = "SPX"  # 基準股票
-MIN_DATA_POINTS = 21     # 至少3個月以上 (~3*21天)
+MIN_DATA_POINTS = 21     # 至少1個月以上
 
 # ----------------- Relative Strength ----------------- #
 def relative_strength(closes, closes_ref):
@@ -60,7 +60,7 @@ def main():
                 continue  # 或者 rs = np.nan，然後 append
             else:
                 rs = relative_strength(closes, closes_ref)
-                if rs > 500:  # 跟 Fred 一樣，假資料過濾
+                if rs > 1000:
                     continue
     
         # append 到 list
@@ -97,7 +97,7 @@ def main():
         first_rs_values[percentile] = first_row["RS score"]
     
     # ===== 最終輸出 =====
-    df.to_csv("stock_data_rs.csv", index=False)
+    df.to_csv(OUTPUT_CSV, index=False)
 
 if __name__ == "__main__":
     main()
