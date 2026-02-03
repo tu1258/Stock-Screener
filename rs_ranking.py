@@ -66,7 +66,7 @@ def main():
         # append 到 list
         relative_strengths.append({
             "ticker": ticker,
-            "score": rs,
+            "score": rs_score,
             "RS": 100.
         })
         rs_score = relative_strength(closes, closes_ref)
