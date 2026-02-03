@@ -35,14 +35,12 @@ def compute_indicators(df):
 def main():
     # ===== RS universe =====
     rs_df = pd.read_csv(RS_CSV)
-    rs_df.columns = rs_df.columns.str.strip().str.lower()
-
+    rs_df.columns = rs_df.columns.str.strip()
     rs_universe = rs_df.loc[rs_df["RS"] > 90, ["ticker", "RS"]]
 
     # ===== Price data =====
     price_df = pd.read_csv(PRICE_CSV, parse_dates=["date"])
-    price_df.columns = price_df.columns.str.strip().str.lower()
-
+    price_df.columns = price_df.columns.str.strip()
     price_df = price_df[price_df["ticker"].isin(rs_universe["ticker"])]
 
     # ===== Indicators + latest bar =====
