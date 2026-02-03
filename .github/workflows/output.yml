@@ -31,7 +31,7 @@ jobs:
         run: |
           python stock_data.py
           python rs_ranking.py
-          python screener.py
+     #     python screener.py
 
       - name: Commit output files
         run: |
