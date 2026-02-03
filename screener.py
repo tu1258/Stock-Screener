@@ -45,7 +45,7 @@ def main():
         .apply(compute_indicators)
         .groupby("ticker")
         .tail(1)
-        .reset_index(drop=True)
+        .reset_index()
     )
     
     screened = latest_price[
