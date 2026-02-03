@@ -66,8 +66,8 @@ def main():
         # append 到 list
         relative_strengths.append({
             "TICKER": ticker,
-            "RS": rs,
-            "PERCENTILE": 100.
+            "RS score": rs,
+            "RS rank": 100.
         })
         rs = relative_strength(closes, closes_ref)
         
@@ -77,24 +77,24 @@ def main():
         relative_strengths,
         columns=[
             "TICKER",
-            "RS",
-            "PERCENTILE",
+            "RS score",
+            "RS rank",
         ]
     )
     
     # === Fred 核心：用整個市場做 percentile ===
-    df["PERCENTILE"] = pd.qcut(df["RS"], 100, labels=False, duplicates="drop")
+    df["RS rank"] = pd.qcut(df["RS score"], 100, labels=False, duplicates="drop")
  
     # RS 大的在前
-    df = df.sort_values("RS", ascending=False)
+    df = df.sort_values("RS score", ascending=False)
        
     # ===== TradingView RS RATING（完全照抄 Fred）=====
     percentile_values = [98, 89, 69, 49, 29, 9, 1]
     first_rs_values = {}
     
     for percentile in percentile_values:
-        first_row = df[df["PERCENTILE"] == percentile].iloc[0]
-        first_rs_values[percentile] = first_row["RS"]
+        first_row = df[df["RS rank"] == percentile].iloc[0]
+        first_rs_values[percentile] = first_row["RS score"]
     
     # ===== 最終輸出 =====
     df.to_csv("stock_data_rs.csv", index=False)
