@@ -5,7 +5,7 @@ import numpy as np
 PRICE_CSV = "stock_data.csv"
 RS_CSV = "stock_data_rs.csv"
 OUTPUT_CSV = "watchlist.csv"
-
+OUTPUT_TXT = "watchlist.txt"
 # ---------------- 技術指標計算 ---------------- #
 def compute_indicators_vectorized(df):
     # 確保按ticker與日期排序
@@ -62,17 +62,16 @@ def main():
     # 每個 ticker 只保留最後一天
     tech_filtered = tech_filtered.sort_values(["ticker", "date"]).groupby("ticker", group_keys=False).tail(1)
 
-    # 依 RS 排序，只輸出 ticker
+    # 依 RS 排序
     final_tickers = tech_filtered.merge(
         rs_filtered[["ticker", "RS"]],
         on="ticker",
         how="left"
     ).sort_values("RS", ascending=False)[["ticker", "RS"]]
 
-    # 輸出 CSV
+    # 輸出
     final_tickers.to_csv(OUTPUT_CSV, index=False, header=True)
-    print(f"Saved {len(final_tickers)} tickers to {OUTPUT_CSV}")
-
+    final_tickers["ticker"].to_csv(OUTPUT_TXT, index=False, header=False)
 
 if __name__ == "__main__":
     main()
