@@ -67,7 +67,7 @@ def main():
         rs_filtered[["ticker", "RS"]],
         on="ticker",
         how="left"
-    ).sort_values("RS", ascending=False)["ticker", "RS"]
+    ).sort_values("RS", ascending=False)["ticker"]
 
     # 輸出 CSV
     final_tickers.to_csv(OUTPUT_CSV, index=False, header=True)
