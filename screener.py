@@ -51,8 +51,6 @@ def main():
         price_df[price_df["ticker"].isin(rs_tickers)]
         .groupby("ticker", group_keys=False)
         .apply(compute_indicators)
-        .reset_index(drop=True)  # 這行很重要，清掉 multi-index
-        .groupby("ticker", group_keys=False)
         .tail(1)
     )
     tech_filtered = tech_filtered[
