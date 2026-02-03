@@ -65,7 +65,7 @@ def main():
     
         # append 到 list
         relative_strengths.append({
-            "TICKER": ticker,
+            "ticker": ticker,
             "RS score": rs,
             "RS rank": 100.
         })
@@ -76,7 +76,7 @@ def main():
     df = pd.DataFrame(
         relative_strengths,
         columns=[
-            "TICKER",
+            "ticker",
             "RS score",
             "RS rank",
         ]
