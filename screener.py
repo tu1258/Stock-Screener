@@ -39,22 +39,16 @@ def main():
     price_df = pd.read_csv(PRICE_CSV, parse_dates=["date"])
     rs_df = pd.read_csv(RS_CSV)
 
+    # ---------- 0. 計算技術指標 ----------
+    price_df = price_df.sort_values(["ticker", "date"])
+    price_df = price_df.groupby("ticker", group_keys=False).apply(compute_indicators).reset_index(drop=True)
+
     # ---------- 1. RS 篩選 ----------
     rs_filtered = rs_df[rs_df["RS"] > 90].copy()
     rs_filtered = rs_filtered.sort_values("RS", ascending=False)
     rs_tickers = rs_filtered["ticker"].tolist()
 
     # ---------- 2. 技術分析篩選 ----------
-    price_df = price_df.sort_values(["ticker", "date"])
-    price_df = price_df.groupby("ticker", group_keys=False).apply(compute_indicators).reset_index(drop=True)
-"""
-    tech_filtered = (
-        price_df[price_df["ticker"].isin(rs_tickers)]
-        .groupby("ticker", group_keys=False)
-#        .apply(compute_indicators)
-        .tail(1)
-    )
-"""
     tech_filtered = price_df[
         (price_df["ticker"].isin(rs_tickers)) &
         (price_df["avg_value_10"] > 100_000_000) &
@@ -67,9 +61,10 @@ def main():
         (price_df["dist_low5_pct"] <= 10)
     ]
 
+    # 取每個 ticker 的最新一筆
     tech_filtered = tech_filtered.sort_values(["ticker", "date"]).groupby("ticker", group_keys=False).tail(1)
 
-    # 依 RS 排序，只輸出 ticker
+    # ---------- 3. 依 RS 排序，只輸出 ticker ----------
     final_tickers = tech_filtered.merge(
         rs_filtered[["ticker", "RS"]],
         on="ticker",
@@ -78,6 +73,7 @@ def main():
 
     final_tickers.to_csv(OUTPUT_CSV, index=False, header=True)
     print(f"Saved {len(final_tickers)} tickers to {OUTPUT_CSV}")
+
 
 if __name__ == "__main__":
     main()
