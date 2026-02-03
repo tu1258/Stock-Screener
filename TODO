@@ -1,10 +1,11 @@
 rs_data
-改名成stock data
-基準SPY改SPX
 ticker: primary listing(nasdaq可能資料不足)
-output股價成交量csv
 
-rs_screener
-RS 計算與screener(技術分析指標) 
+
+rs_ranking
+RS 計算與
 RS計算超過30天就列入
-output所有股票RS的csv跟符合screener的股票txt
+output所有股票RS的csv跟
+
+screener(技術分析指標) 
+output所有符合screener的股票txt
