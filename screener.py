@@ -42,27 +42,32 @@ def main():
     # ---------- 1. RS 篩選 ----------
     rs_filtered = rs_df[rs_df["RS"] > 90].copy()
     rs_filtered = rs_filtered.sort_values("RS", ascending=False)
-
-    # 取得符合 RS 的 ticker
     rs_tickers = rs_filtered["ticker"].tolist()
 
     # ---------- 2. 技術分析篩選 ----------
+    price_df = price_df.sort_values(["ticker", "date"])
+    price_df = price_df.groupby("ticker", group_keys=False).apply(compute_indicators).reset_index(drop=True)
+"""
     tech_filtered = (
         price_df[price_df["ticker"].isin(rs_tickers)]
         .groupby("ticker", group_keys=False)
 #        .apply(compute_indicators)
         .tail(1)
     )
-#    tech_filtered = tech_filtered[
-#        (tech_filtered["avg_value_10"] > 100_000_000) &
-#        (tech_filtered["atr_20_pct"] > 1) &
-#        (tech_filtered["close"] > tech_filtered["ma20"]) &
-#        (tech_filtered["close"] > tech_filtered["ma50"]) &
-#        (tech_filtered["ma50"] > tech_filtered["ma200"]) &
-#        (tech_filtered["ma200"] > tech_filtered["ma200_prev"]) &
-#        (tech_filtered["dist_high5_pct"] <= 10) &
-#        (tech_filtered["dist_low5_pct"] <= 10)
-#    ]
+"""
+    tech_filtered = price_df[
+        (price_df["ticker"].isin(rs_tickers)) &
+        (price_df["avg_value_10"] > 100_000_000) &
+        (price_df["atr_20_pct"] > 1) &
+        (price_df["close"] > price_df["ma20"]) &
+        (price_df["close"] > price_df["ma50"]) &
+        (price_df["ma50"] > price_df["ma200"]) &
+        (price_df["ma200"] > price_df["ma200_prev"]) &
+        (price_df["dist_high5_pct"] <= 10) &
+        (price_df["dist_low5_pct"] <= 10)
+    ]
+
+    tech_filtered = tech_filtered.sort_values(["ticker", "date"]).groupby("ticker", group_keys=False).tail(1)
 
     # 依 RS 排序，只輸出 ticker
     final_tickers = tech_filtered.merge(
