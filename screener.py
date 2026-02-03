@@ -50,19 +50,19 @@ def main():
     tech_filtered = (
         price_df[price_df["ticker"].isin(rs_tickers)]
         .groupby("ticker", group_keys=False)
-        .apply(compute_indicators)
-        .tail(1)
+#        .apply(compute_indicators)
+#        .tail(1)
     )
-    tech_filtered = tech_filtered[
-        (tech_filtered["avg_value_10"] > 100_000_000) &
-        (tech_filtered["atr_20_pct"] > 1) &
-        (tech_filtered["close"] > tech_filtered["ma20"]) &
-        (tech_filtered["close"] > tech_filtered["ma50"]) &
-        (tech_filtered["ma50"] > tech_filtered["ma200"]) &
-        (tech_filtered["ma200"] > tech_filtered["ma200_prev"]) &
-        (tech_filtered["dist_high5_pct"] <= 10) &
-        (tech_filtered["dist_low5_pct"] <= 10)
-    ]
+#    tech_filtered = tech_filtered[
+#        (tech_filtered["avg_value_10"] > 100_000_000) &
+#        (tech_filtered["atr_20_pct"] > 1) &
+#        (tech_filtered["close"] > tech_filtered["ma20"]) &
+#        (tech_filtered["close"] > tech_filtered["ma50"]) &
+#        (tech_filtered["ma50"] > tech_filtered["ma200"]) &
+#        (tech_filtered["ma200"] > tech_filtered["ma200_prev"]) &
+#        (tech_filtered["dist_high5_pct"] <= 10) &
+#        (tech_filtered["dist_low5_pct"] <= 10)
+#    ]
 
     # 依 RS 排序，只輸出 ticker
     final_tickers = tech_filtered.merge(
