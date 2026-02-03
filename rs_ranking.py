@@ -50,26 +50,26 @@ def main():
 
     for ticker in tickers:
         if ticker == REFERENCE_TICKER:
-            rs = 100.0
+            rs_score = 100.0
         else:
             df = df_all[df_all['ticker'] == ticker].sort_values("date")
             closes = df['close'].reset_index(drop=True)
     
             if len(closes) < MIN_DATA_POINTS:
-                rs = np.nan
+                rs_score = np.nan
                 continue  # 或者 rs = np.nan，然後 append
             else:
-                rs = relative_strength(closes, closes_ref)
-                if rs > 1000:
+                rs_score = relative_strength(closes, closes_ref)
+                if rs_score > 1000:
                     continue
     
         # append 到 list
         relative_strengths.append({
             "ticker": ticker,
-            "RS score": rs,
-            "RS rank": 100.
+            "score": rs,
+            "RS": 100.
         })
-        rs = relative_strength(closes, closes_ref)
+        rs_score = relative_strength(closes, closes_ref)
         
 
     # 把 RS append 到原本的 dataframe
@@ -77,24 +77,24 @@ def main():
         relative_strengths,
         columns=[
             "ticker",
-            "RS score",
-            "RS rank",
+            "score",
+            "RS",
         ]
     )
     
     # === Fred 核心：用整個市場做 percentile ===
-    df["RS rank"] = pd.qcut(df["RS score"], 100, labels=False, duplicates="drop")
+    df["RS"] = pd.qcut(df["score"], 100, labels=False, duplicates="drop")
  
     # RS 大的在前
-    df = df.sort_values("RS score", ascending=False)
+    df = df.sort_values("score", ascending=False)
        
     # ===== TradingView RS RATING（完全照抄 Fred）=====
     percentile_values = [98, 89, 69, 49, 29, 9, 1]
     first_rs_values = {}
     
     for percentile in percentile_values:
-        first_row = df[df["RS rank"] == percentile].iloc[0]
-        first_rs_values[percentile] = first_row["RS score"]
+        first_row = df[df["RS"] == percentile].iloc[0]
+        first_rs_values[percentile] = first_row["score"]
     
     # ===== 最終輸出 =====
     df.to_csv(OUTPUT_CSV, index=False)
