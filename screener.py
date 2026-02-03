@@ -11,7 +11,7 @@ def main():
     rs_df.columns = [c.lower() for c in rs_df.columns]
 
     # 篩選 RS rank > 90
-    rs_filtered = rs_df[rs_df["RS"] > 90].copy()
+    rs_filtered = [rs_df["RS"] > 90].copy()
 
 
 
