@@ -5,15 +5,7 @@ PRICE_CSV = "stock_data.csv"
 RS_CSV = "stock_data_rs.csv"
 OUTPUT_CSV = "watchlist.csv"
 
-
 def compute_indicators(df):
-    """
-    計算各種技術指標
-    - 10日平均成交值 (volume * close)
-    - 20日ATR%
-    - 20/50/200日均線
-    - 5日高低距離
-    """
     df = df.sort_values("date")
     df["avg_value_10"] = df["close"] * df["volume"].rolling(10).mean()
 
@@ -38,17 +30,12 @@ def compute_indicators(df):
 
     return df
 
-
 def main():
     # 讀資料
     price_df = pd.read_csv(PRICE_CSV, parse_dates=["date"])
     rs_df = pd.read_csv(RS_CSV)
 
-    # 統一欄位名稱小寫
-    price_df.columns = price_df.columns.str.strip().str.lower()
-    rs_df.columns = rs_df.columns.str.strip().str.lower()
-
-    # 只取最新一筆做篩選
+    # 最新價格計算指標
     latest_price = (
         price_df.sort_values("date")
         .groupby("ticker")
@@ -59,9 +46,9 @@ def main():
     )
 
     # ===============================
-    # 第一階段: 用技術指標篩選
+    # Step 1: 技術指標篩選
     # ===============================
-    screened_price = latest_price[
+    tech_filtered = latest_price[
         (latest_price["avg_value_10"] > 100_000_000) &
         (latest_price["atr_20_pct"] > 1) &
         (latest_price["close"] > latest_price["ma20"]) &
@@ -73,27 +60,24 @@ def main():
     ]
 
     # ===============================
-    # 第二階段: 用 RS 篩選
+    # Step 2: RS 篩選
+    # 只保留第一步篩選出來的股票
     # ===============================
-    screened = rs_df[
-        (rs_df["RS rank"] > 90) &
-        (rs_df["ticker"].isin(screened_price["ticker"]))
+    rs_filtered = rs_df[
+        (rs_df["ticker"].isin(tech_filtered["ticker"])) &
+        (rs_df["RS rank"] > 90)
     ]
 
-    # 把技術指標也合併回來
-    final_df = screened.merge(
-        screened_price,
+    # 最後把技術指標加入 RS 篩選結果
+    final_df = rs_filtered.merge(
+        tech_filtered,
         on="ticker",
         how="left"
     )
 
-    # 排序
     final_df = final_df.sort_values("RS rank", ascending=False)
-
-    # 輸出
     final_df.to_csv(OUTPUT_CSV, index=False)
     print(f"Saved screened result to {OUTPUT_CSV}, rows={len(final_df)}")
-
 
 if __name__ == "__main__":
     main()
