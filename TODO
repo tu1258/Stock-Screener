@@ -1,9 +1,2 @@
-rs_data
-ticker: 自動更新 primary listing(nasdaq可能資料不足)
-
-
-screener(技術分析指標) 
-output所有符合screener的股票txt
-
 add_watchlist.py
 加到futu牛牛的清單並定期清洗
