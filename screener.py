@@ -51,7 +51,7 @@ def main():
         price_df[price_df["ticker"].isin(rs_tickers)]
         .groupby("ticker", group_keys=False)
 #        .apply(compute_indicators)
-#        .tail(1)
+        .tail(1)
     )
 #    tech_filtered = tech_filtered[
 #        (tech_filtered["avg_value_10"] > 100_000_000) &
