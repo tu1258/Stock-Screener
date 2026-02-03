@@ -56,7 +56,7 @@ def main():
 
     # 合併RS
     df = latest_price.merge(
-        rs_df[["ticker", "rs", "percentile"]],
+        rs_df[["TICKER", "RS score", "RS rank"]],
         on="ticker",
         how="inner"
     )
