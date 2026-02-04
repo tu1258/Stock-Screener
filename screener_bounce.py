@@ -61,43 +61,43 @@ def main():
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered_10 = latest_df[
         (latest_df["avg_value_10"] > 10) &
-        (latest_df["atr_20_pct"] > 1) &
-        (latest_df["close"] > latest_df["ma20"]) &
-        (latest_df["ma20"] > latest_df["ma50"]) &
-        (latest_df["ma50"] > latest_df["ma200"]) &
-        (latest_df["ma20"] > latest_df["ma20_prev"]) &
-        (latest_df["ma50"] > latest_df["ma50_prev"]) &
-        (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["close"] - latest_df["ma10"] < latest_df["atr_20"]) & 
-        (latest_df["close"] > latest_df["ma10"]) & 
-        (latest_df["high10"] == latest_df["52wH"])
+        (latest_df["atr_20_pct"] > 1) 
+#        (latest_df["close"] > latest_df["ma20"]) &
+#        (latest_df["ma20"] > latest_df["ma50"]) &
+#        (latest_df["ma50"] > latest_df["ma200"]) &
+#        (latest_df["ma20"] > latest_df["ma20_prev"]) &
+#        (latest_df["ma50"] > latest_df["ma50_prev"]) &
+#        (latest_df["ma200"] > latest_df["ma200_prev"]) &
+#        (latest_df["close"] - latest_df["ma10"] < latest_df["atr_20"]) & 
+#        (latest_df["close"] > latest_df["ma10"]) & 
+#        (latest_df["high10"] == latest_df["52wH"])
     ]
 
     tech_filtered_20 = latest_df[
         (latest_df["avg_value_10"] > 10) &
         (latest_df["atr_20_pct"] > 1) &
-        (latest_df["close"] > latest_df["ma20"]) &
-        (latest_df["ma20"] > latest_df["ma50"]) &
-        (latest_df["ma50"] > latest_df["ma200"]) &
-        (latest_df["ma20"] > latest_df["ma20_prev"]) &
-        (latest_df["ma50"] > latest_df["ma50_prev"]) &
-        (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["close"] - latest_df["ma20"] < latest_df["atr_20"]) & 
-        (latest_df["close"] > latest_df["ma20"]) & 
+#        (latest_df["close"] > latest_df["ma20"]) &
+#        (latest_df["ma20"] > latest_df["ma50"]) &
+#        (latest_df["ma50"] > latest_df["ma200"]) &
+#        (latest_df["ma20"] > latest_df["ma20_prev"]) &
+#        (latest_df["ma50"] > latest_df["ma50_prev"]) &
+#        (latest_df["ma200"] > latest_df["ma200_prev"]) &
+#        (latest_df["close"] - latest_df["ma20"] < latest_df["atr_20"]) & 
+#        (latest_df["close"] > latest_df["ma20"]) & 
         (latest_df["high20"] == latest_df["52wH"])
     ]    
 
     tech_filtered_50 = latest_df[
-        (latest_df["avg_value_10"] > 10) &
-        (latest_df["atr_20_pct"] > 1) &
-        (latest_df["close"] > latest_df["ma20"]) &
-        (latest_df["ma20"] > latest_df["ma50"]) &
-        (latest_df["ma50"] > latest_df["ma200"]) &
-        (latest_df["ma20"] > latest_df["ma20_prev"]) &
-        (latest_df["ma50"] > latest_df["ma50_prev"]) &
-        (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["close"] - latest_df["ma50"] < latest_df["atr_20"]) & 
-        (latest_df["close"] > latest_df["ma50"]) & 
+#        (latest_df["avg_value_10"] > 10) &
+#        (latest_df["atr_20_pct"] > 1) &
+#        (latest_df["close"] > latest_df["ma20"]) &
+#        (latest_df["ma20"] > latest_df["ma50"]) &
+#        (latest_df["ma50"] > latest_df["ma200"]) &
+#        (latest_df["ma20"] > latest_df["ma20_prev"]) &
+#       (latest_df["ma50"] > latest_df["ma50_prev"]) &
+#       (latest_df["ma200"] > latest_df["ma200_prev"]) &
+#       (latest_df["close"] - latest_df["ma50"] < latest_df["atr_20"]) & 
+#       (latest_df["close"] > latest_df["ma50"]) & 
         (latest_df["high50"] == latest_df["52wH"])
     ]
     # merge RS 並排序
@@ -106,6 +106,7 @@ def main():
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma10", "ma20", "ma50", "ma200",
+            "high10", "high20", "high50", "52wH",
             "atr_20", "atr_20_pct", "avg_value_10"
         ]]
     )
@@ -116,6 +117,7 @@ def main():
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma10", "ma20", "ma50", "ma200",
+            "high10", "high20", "high50", "52wH",
             "atr_20", "atr_20_pct", "avg_value_10"
         ]]
     )
@@ -126,6 +128,7 @@ def main():
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma10", "ma20", "ma50", "ma200",
+            "high10", "high20", "high50", "52wH",
             "atr_20", "atr_20_pct", "avg_value_10"
         ]]
     )
