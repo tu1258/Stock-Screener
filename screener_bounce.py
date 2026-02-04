@@ -52,15 +52,15 @@ def main():
 
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered_10 = price_df[
-        (price_df["avg_value_10"] > 10_000_000) &
-        (price_df["atr_20_pct"] > 1) &
-        (price_df["close"] > price_df["ma20"]) &
-        (price_df["ma20"] > price_df["ma50"]) &
-        (price_df["ma50"] > price_df["ma200"]) &
-        (price_df["ma20"] > price_df["ma20_prev"]) &
-        (price_df["ma50"] > price_df["ma50_prev"]) &
-        (price_df["ma200"] > price_df["ma200_prev"]) &
-        (price_df["high10"] == price_df["52wH"]) #&
+ #       (price_df["avg_value_10"] > 10_000_000) &
+ #       (price_df["atr_20_pct"] > 1) &
+ #       (price_df["close"] > price_df["ma20"]) &
+ #       (price_df["ma20"] > price_df["ma50"]) &
+ #       (price_df["ma50"] > price_df["ma200"]) &
+ #       (price_df["ma20"] > price_df["ma20_prev"]) &
+ #       (price_df["ma50"] > price_df["ma50_prev"]) &
+ #       (price_df["ma200"] > price_df["ma200_prev"]) &
+ #       (price_df["high10"] == price_df["52wH"]) #&
  #       (price_df["close"] - price_df["ma10"] < price_df["atr_20"])
     ]
 
