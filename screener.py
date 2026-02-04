@@ -12,7 +12,7 @@ def compute_indicators_vectorized(df):
     df = df.sort_values(["ticker", "date"]).copy()
 
     # 10日平均成交值
-    df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1000_000
+    df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
 
     # ATR 20日百分比 (用pandas-ta)
     df["atr_20"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=20)).reset_index(level=0, drop=True)
