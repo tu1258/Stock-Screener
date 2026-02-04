@@ -65,7 +65,7 @@ def main():
  #       (latest_df["ma50"] > latest_df["ma50_prev"]) &
  #       (latest_df["ma200"] > latest_df["ma200_prev"]) &
         (latest_df["close"] - latest_df["ma10"] < latest_df["atr_20"]) & 
-        (latest_df["close"] > latest_df["ma10"] & 
+        (latest_df["close"] > latest_df["ma10"]) & 
         (latest_df["high10"] == latest_df["52wH"])
     ]
   
