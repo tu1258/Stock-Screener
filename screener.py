@@ -53,14 +53,14 @@ def main():
     )
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
-        (latest_df["avg_value_10"] > 100_000_000) &
+        (latest_df["avg_value_10"] > 100_000) &
   #      (latest_df["atr_20_pct"] > 1) &
   #      (latest_df["close"] > latest_df["ma20"]) &
   #      (latest_df["close"] > latest_df["ma50"]) &
   #      (latest_df["ma50"] > latest_df["ma200"]) &
   #      (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["dist_high5_pct"] <= 10) &
-        (latest_df["dist_low5_pct"] <= 10)
+        (latest_df["dist_high5_pct"] <= 50) &
+        (latest_df["dist_low5_pct"] <= 50)
     ]
 
     # merge RS 並排序
