@@ -44,14 +44,13 @@ def main():
     rs_tickers = rs_filtered["ticker"].tolist()
 
     # ---------- 2. 計算技術指標 ----------
-    latest_df = (
-        price_df[price_df["ticker"].isin(rs_tickers)]
-        .sort_values(["ticker", "date"])
-        .groupby("ticker", group_keys=False)
-        .tail(1)
-    )
+    price_df = price_df[price_df["ticker"].isin(rs_tickers)]
     price_df = compute_indicators_vectorized(price_df)
-    
+    latest_df = (
+        price_df.sort_values(["ticker", "date"])
+                .groupby("ticker", group_keys=False)
+                .tail(1)
+    )
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
         (latest_df["avg_value_10"] > 100_000_000) &
@@ -68,7 +67,6 @@ def main():
     selected_tickers = tech_filtered["ticker"].unique()
     
     # 從完整 price_df 抓「真正最後一天」
-    
     latest_df = (
         price_df[price_df["ticker"].isin(selected_tickers)]
         .sort_values(["ticker", "date"])
