@@ -59,10 +59,10 @@ def main():
         (price_df["dist_low5_pct"] <= 10)
     ]
 
-    # 1️⃣ 只取符合條件的 ticker 名單
+    # 只取符合條件的 ticker 名單
     selected_tickers = tech_filtered["ticker"].unique()
     
-    # 2️⃣ 從完整 price_df 抓「真正最後一天」
+    # 從完整 price_df 抓「真正最後一天」
     latest_df = (
         price_df[price_df["ticker"].isin(selected_tickers)]
         .sort_values(["ticker", "date"])
@@ -70,7 +70,7 @@ def main():
         .tail(1)
     )
     
-    # 3️⃣ merge RS 並排序
+    # merge RS 並排序
     final_tickers = (
         latest_df.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
         .sort_values("RS", ascending=False)[[
@@ -80,6 +80,8 @@ def main():
             "dist_low5_pct", "avg_value_10"
         ]]
     )
+
+    final_tickers = final_tickers.round(3)
 
     # 輸出
     final_tickers.to_csv(OUTPUT_CSV, index=False, header=True)
