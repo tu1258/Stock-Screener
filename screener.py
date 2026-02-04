@@ -76,12 +76,11 @@ def main():
 """    
     # merge RS 並排序
     final_tickers = (
-        latest_df.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
+        tech_filtered.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma20", "ma50", "ma200",
-            "atr_20_pct", "dist_high5_pct",
-            "dist_low5_pct", "avg_value_10"
+            "atr_20_pct", "dist_high5_pct", "dist_low5_pct", "avg_value_10"
         ]]
     )
 
