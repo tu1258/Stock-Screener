@@ -48,19 +48,25 @@ def main():
     price_df = compute_indicators_vectorized(price_df)
 
     # ---------- 3. 技術分析篩選 ----------
-    tech_filtered = price_df[
-        (price_df["avg_value_10"] > 100_000_000) &
-        (price_df["atr_20_pct"] > 1) &
-        (price_df["close"] > price_df["ma20"]) &
-        (price_df["close"] > price_df["ma50"]) &
-        (price_df["ma50"] > price_df["ma200"]) &
-        (price_df["ma200"] > price_df["ma200_prev"]) &
-        (price_df["dist_high5_pct"] <= 10) &
-        (price_df["dist_low5_pct"] <= 10)
+    # 每個 ticker 只保留「真正最後一天」
+    latest_df = (
+        price_df.sort_values(["ticker", "date"])
+                .groupby("ticker", group_keys=False)
+                .tail(1)
+    )
+    
+    # 再套技術條件
+    tech_filtered = latest_df[
+        (latest_df["avg_value_10"] > 100_000_000) &
+        (latest_df["atr_20_pct"] > 1) &
+        (latest_df["close"] > latest_df["ma20"]) &
+        (latest_df["close"] > latest_df["ma50"]) &
+        (latest_df["ma50"] > latest_df["ma200"]) &
+        (latest_df["ma200"] > latest_df["ma200_prev"]) &
+        (latest_df["dist_high5_pct"] <= 10) &
+        (latest_df["dist_low5_pct"] <= 10)
     ]
 
-    # 每個 ticker 只保留最後一天
-    tech_filtered = tech_filtered.sort_values(["ticker", "date"]).groupby("ticker", group_keys=False).tail(1)
 
     # 依 RS 排序
     final_tickers = tech_filtered.merge(
