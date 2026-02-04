@@ -49,35 +49,28 @@ def main():
     # ---------- 2. 計算技術指標 ----------
     price_df = price_df[price_df["ticker"].isin(rs_tickers)]
     price_df = compute_indicators_vectorized(price_df)
-
-    # ---------- 3. 技術分析篩選 ----------
-    tech_filtered_10 = price_df[
- #       (price_df["avg_value_10"] > 10_000_000) &
- #       (price_df["atr_20_pct"] > 1) &
- #       (price_df["close"] > price_df["ma20"]) &
- #       (price_df["ma20"] > price_df["ma50"]) &
- #       (price_df["ma50"] > price_df["ma200"]) &
- #       (price_df["ma20"] > price_df["ma20_prev"]) &
- #       (price_df["ma50"] > price_df["ma50_prev"]) &
- #       (price_df["ma200"] > price_df["ma200_prev"]) &
- #       (price_df["high10"] == price_df["52wH"]) #&
-        (price_df["close"] - price_df["ma10"] < price_df["atr_20"])
-    ]
-
-    # 只取符合條件的 ticker 名單
-    selected_tickers_10 = tech_filtered_10["ticker"].unique()
-    
-    # 從完整 price_df 抓「真正最後一天」
-    latest_df_10 = (
-        price_df[price_df["ticker"].isin(selected_tickers_10)]
-        .sort_values(["ticker", "date"])
-        .groupby("ticker", group_keys=False)
-        .tail(1)
+    latest_df = (
+        price_df.sort_values(["ticker", "date"])
+                .groupby("ticker", group_keys=False)
+                .tail(1)
     )
-    
+    # ---------- 3. 技術分析篩選 ----------
+    tech_filtered_10 = latest_df[
+ #       (latest_df["avg_value_10"] > 10_000_000) &
+ #       (latest_df["atr_20_pct"] > 1) &
+ #       (latest_df["close"] > latest_df["ma20"]) &
+ #       (latest_df["ma20"] > latest_df["ma50"]) &
+ #       (latest_df["ma50"] > latest_df["ma200"]) &
+ #       (latest_df["ma20"] > latest_df["ma20_prev"]) &
+ #       (latest_df["ma50"] > latest_df["ma50_prev"]) &
+ #       (latest_df["ma200"] > latest_df["ma200_prev"]) &
+ #       (latest_df["high10"] == latest_df["52wH"]) &
+        (latest_df["close"] - latest_df["ma10"] < latest_df["atr_20"])
+    ]
+  
     # merge RS 並排序
     final_tickers_10 = (
-        latest_df_10.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
+         tech_filtered_10.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma10", "ma20", "ma50", "ma200",
