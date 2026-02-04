@@ -4,12 +4,12 @@ import numpy as np
 
 PRICE_CSV = "stock_data.csv"
 RS_CSV = "stock_data_rs.csv"
-OUTPUT_CSV_10 = "watchlist_bounce_10ma.csv"
-OUTPUT_TXT_10 = "watchlist_bounce_10ma.txt"
-OUTPUT_CSV_20 = "watchlist_bounce_20ma.csv"
-OUTPUT_TXT_20 = "watchlist_bounce_20ma.txt"
-OUTPUT_CSV_50 = "watchlist_bounce_50ma.csv"
-OUTPUT_TXT_50 = "watchlist_bounce_50ma.txt"
+OUTPUT_CSV_10 = "csv/watchlist_bounce_10ma.csv"
+OUTPUT_TXT_10 = "txt/watchlist_bounce_10ma.txt"
+OUTPUT_CSV_20 = "csv/watchlist_bounce_20ma.csv"
+OUTPUT_TXT_20 = "txt/watchlist_bounce_20ma.txt"
+OUTPUT_CSV_50 = "csv/watchlist_bounce_50ma.csv"
+OUTPUT_TXT_50 = "txt/watchlist_bounce_50ma.txt"
 # ---------------- 技術指標計算 ---------------- #
 def compute_indicators_vectorized(df):
     # 確保按ticker與日期排序
