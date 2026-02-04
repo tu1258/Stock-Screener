@@ -61,7 +61,7 @@ def main():
  #       (price_df["ma50"] > price_df["ma50_prev"]) &
  #       (price_df["ma200"] > price_df["ma200_prev"]) &
  #       (price_df["high10"] == price_df["52wH"]) #&
- #       (price_df["close"] - price_df["ma10"] < price_df["atr_20"])
+        (price_df["close"] - price_df["ma10"] < price_df["atr_20"])
     ]
 
     # 只取符合條件的 ticker 名單
