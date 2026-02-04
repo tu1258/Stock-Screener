@@ -8,7 +8,7 @@ import time
 
 OUTPUT_FILE = "stock_data.csv"
 MAX_TICKERS = 250        # 先測，之後拿掉
-DAYS = 365              # 1 年
+DAYS = 400              # 1 年
 
 def get_nasdaq_tickers(limit=None):
     ftp = FTP("ftp.nasdaqtrader.com")
