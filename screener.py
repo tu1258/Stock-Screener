@@ -73,7 +73,7 @@ def main():
         .groupby("ticker", group_keys=False)
         .tail(1)
     )
-"""    
+"""
     # merge RS 並排序
     final_tickers = (
         tech_filtered.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
