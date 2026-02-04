@@ -12,7 +12,7 @@ def compute_indicators_vectorized(df):
     df = df.sort_values(["ticker", "date"]).copy()
 
     # 10日平均成交值
-    df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"]
+    df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1000_000
 
     # ATR 20日百分比 (用pandas-ta)
     df["atr_20"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=20)).reset_index(level=0, drop=True)
@@ -27,8 +27,8 @@ def compute_indicators_vectorized(df):
     # 5日高低距離
     df["high5"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(5).max())
     df["low5"] = df.groupby("ticker")["low"].transform(lambda x: x.rolling(5).min())
-    df["dist_high5_pct"] = (df["high5"] - df["close"]) / df["high5"] * 100
-    df["dist_low5_pct"] = (df["close"] - df["low5"]) / df["low5"] * 100
+    df["dist_high5_pct"] = (df["high5"] - df["close"]) / df["close"] * 100
+    df["dist_low5_pct"] = (df["close"] - df["low5"]) / df["close"] * 100
 
     return df
 
@@ -53,7 +53,7 @@ def main():
     )
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
-        (latest_df["avg_value_10"] > 100_000) &
+        (latest_df["avg_value_10"] > 1) &
   #      (latest_df["atr_20_pct"] > 1) &
   #      (latest_df["close"] > latest_df["ma20"]) &
   #      (latest_df["close"] > latest_df["ma50"]) &
