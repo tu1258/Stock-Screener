@@ -4,8 +4,8 @@ import numpy as np
 
 PRICE_CSV = "stock_data.csv"
 RS_CSV = "stock_data_rs.csv"
-OUTPUT_CSV = "watchlist.csv"
-OUTPUT_TXT = "watchlist.txt"
+OUTPUT_CSV = "csv/watchlist.csv"
+OUTPUT_TXT = "txt/watchlist.txt"
 # ---------------- 技術指標計算 ---------------- #
 def compute_indicators_vectorized(df):
     # 確保按ticker與日期排序
