@@ -62,18 +62,18 @@ def main():
         (latest_df["dist_high5_pct"] <= 10) &
         (latest_df["dist_low5_pct"] <= 10)
     ]
-"""
+
     # 只取符合條件的 ticker 名單
-    selected_tickers = tech_filtered["ticker"].unique()
+#    selected_tickers = tech_filtered["ticker"].unique()
     
     # 從完整 price_df 抓「真正最後一天」
-    latest_df = (
-        price_df[price_df["ticker"].isin(selected_tickers)]
-        .sort_values(["ticker", "date"])
-        .groupby("ticker", group_keys=False)
-        .tail(1)
-    )
-"""
+#    latest_df = (
+#        price_df[price_df["ticker"].isin(selected_tickers)]
+#        .sort_values(["ticker", "date"])
+#        .groupby("ticker", group_keys=False)
+#        .tail(1)
+#    )
+
     # merge RS 並排序
     final_tickers = (
         tech_filtered.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
