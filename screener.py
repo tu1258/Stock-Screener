@@ -19,8 +19,8 @@ def compute_indicators_vectorized(df):
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
 
     # ATR 20日百分比 (用pandas-ta)
-    df["atr_20"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=20)).reset_index(level=0, drop=True)
-    df["atr_20_pct"] = df["atr_20"] / df["close"] * 100
+    df["atr_14"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=14)).reset_index(level=0, drop=True)
+    df["atr_14_pct"] = df["atr_14"] / df["close"] * 100
 
     # 均線
     df["ma20"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20).mean())
@@ -58,7 +58,7 @@ def main():
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
         (latest_df["avg_value_10"] > 100) &
-        (latest_df["atr_20_pct"] > 1) &
+        (latest_df["atr_14_pct"] > 1) &
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
@@ -72,7 +72,7 @@ def main():
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma20", "ma50", "ma200",
-            "atr_20_pct", "dist_high5_pct", "dist_low5_pct", "avg_value_10"
+            "atr_14_pct", "dist_high5_pct", "dist_low5_pct", "avg_value_10"
         ]]
     )
 
