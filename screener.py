@@ -42,12 +42,8 @@ def compute_indicators_vectorized(df):
     df["chg"] = df.groupby("ticker")["close"].diff()
     df["up_vol"] = df["volume"].where(df["chg"] > 0)
     df["down_vol"] = df["volume"].where(df["chg"] < 0)
-    up_sum = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(10).sum())
-    up_cnt = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(10).count())
-    down_sum = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(10).sum())
-    down_cnt = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(10).count())
-    df["avg_up_vol_10"] = up_sum / up_cnt
-    df["avg_down_vol_10"] = down_sum / down_cnt
+    df["up_vol_10"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(10).sum())
+    df["down_vol_10"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(10).sum())
     
     return df
 
@@ -77,7 +73,7 @@ def main():
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["avg_up_vol_10"] > latest_df["avg_down_vol_10"]) &
+        #(latest_df["up_vol_10"] > latest_df["down_vol_10"]) &
         (latest_df["range_5"] < latest_df["atr_5"] * 2.5)
         #(latest_df["range_10"] < latest_df["atr_10"] * 2.5)
     ]
@@ -88,7 +84,7 @@ def main():
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma20", "ma50", "ma200",
-            "atr_5", "range_5", "atr_10", "range_10", "avg_up_vol_10", "avg_down_vol_10"
+            "atr_5", "range_5", "atr_10", "range_10", "up_vol_10", "down_vol_10"
         ]]
     )
 
