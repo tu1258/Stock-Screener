@@ -42,8 +42,8 @@ def compute_indicators_vectorized(df):
     df["chg"] = df.groupby("ticker")["close"].diff()
     df["up_vol"] = np.where(df["chg"] > 0, df["volume"], np.nan)
     df["down_vol"] = np.where(df["chg"] < 0, df["volume"], np.nan)    
-    df["up_vol_avg_5"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(5).mean())    
-    df["down_vol_avg_5"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(5).mean())
+    df["up_vol_avg_10"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(10).mean())    
+    df["down_vol_avg_10"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(10).mean())
     
     return df
 
@@ -73,7 +73,7 @@ def main():
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["up_vol_avg_5"] > latest_df["down_vol_avg_5"]) &
+        (latest_df["up_vol_avg_10"] > latest_df["down_vol_avg_10"]) &
         (latest_df["range_5"] < latest_df["atr_5"] * 2.5)
         #(latest_df["range_10"] < latest_df["atr_10"] * 2.5)
     ]
