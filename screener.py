@@ -39,11 +39,11 @@ def compute_indicators_vectorized(df):
     df["range_10"] = df["high10"] - df["low10"]
 
     # 5日價量
-    price_df["chg"] = price_df.groupby("ticker")["close"].diff()
-    price_df["up_vol"] = np.where(price_df["chg"] > 0, price_df["volume"], np.nan)
-    price_df["down_vol"] = np.where(price_df["chg"] < 0, price_df["volume"], np.nan)    
-    price_df["up_vol_avg_5"] = price_df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(5).mean())    
-    price_df["down_vol_avg_5"] = price_df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(5).mean())
+    df["chg"] = df.groupby("ticker")["close"].diff()
+    df["up_vol"] = np.where(df["chg"] > 0, df["volume"], np.nan)
+    df["down_vol"] = np.where(df["chg"] < 0, df["volume"], np.nan)    
+    df["up_vol_avg_5"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(5).mean())    
+    df["down_vol_avg_5"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(5).mean())
     
     return df
 
