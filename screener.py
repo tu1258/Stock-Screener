@@ -40,11 +40,11 @@ def compute_indicators_vectorized(df):
 
     # 10日價量
     df["chg"] = df.groupby("ticker")["close"].diff()
-    df["up_vol"] = df["volume"].where(df["chg"] > 0)
-    df["down_vol"] = df["volume"].where(df["chg"] < 0)
+    df["up_vol"] = np.where(df["chg"] > 0, df["volume"], 0)
+    df["down_vol"] = np.where(df["chg"] < 0, df["volume"], 0)
     df["up_vol_10"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(10).sum())
     df["down_vol_10"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(10).sum())
-    
+
     return df
 
 # ---------------- 主程式 ---------------- #
