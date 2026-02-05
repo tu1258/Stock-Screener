@@ -40,10 +40,20 @@ def compute_indicators_vectorized(df):
 
     # 5日價量
     df["chg"] = df.groupby("ticker")["close"].diff()
-    df["up_vol"] = np.where(df["chg"] > 0, df["volume"], np.nan)
-    df["down_vol"] = np.where(df["chg"] < 0, df["volume"], np.nan)    
-    df["up_vol_avg_10"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(10).mean())    
-    df["down_vol_avg_10"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(10).mean())
+    
+    # 上漲 / 下跌成交量
+    df["up_vol"] = df["volume"].where(df["chg"] > 0)
+    df["down_vol"] = df["volume"].where(df["chg"] < 0)
+    
+    # 最近5日 上漲/下跌「平均」成交量
+    up_sum = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(5).sum())
+    up_cnt = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(5).count())
+    
+    down_sum = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(5).sum())
+    down_cnt = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(5).count())
+    
+    df["avg_up_vol_5"] = up_sum / up_cnt
+    df["avg_down_vol_5"] = down_sum / down_cnt
     
     return df
 
@@ -73,7 +83,7 @@ def main():
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["up_vol_avg_10"] > latest_df["down_vol_avg_10"]) &
+        #(latest_df["up_vol_avg_10"] > latest_df["down_vol_avg_10"]) &
         (latest_df["range_5"] < latest_df["atr_5"] * 2.5)
         #(latest_df["range_10"] < latest_df["atr_10"] * 2.5)
     ]
