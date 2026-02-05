@@ -33,9 +33,11 @@ def compute_indicators_vectorized(df):
     # 5日高低距離
     df["high5"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(5).max())
     df["low5"] = df.groupby("ticker")["low"].transform(lambda x: x.rolling(5).min())
-    df["dist_high5_pct"] = (df["high5"] - df["close"]) / df["close"] * 100
-    df["dist_low5_pct"] = (df["close"] - df["low5"]) / df["close"] * 100
-
+    df{"range_5"} = df["high5"] - df{"low5"}
+    df["high10"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(10).max())
+    df["low10"] = df.groupby("ticker")["low"].transform(lambda x: x.rolling(10).min())
+    df{"range_10"} = df["high10"] - df{"low10"}
+    
     return df
 
 # ---------------- 主程式 ---------------- #
@@ -64,8 +66,8 @@ def main():
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        #(latest_df["atr_10"] > latest_df["atr_5"])
-        (latest_df["dist_high5_pct"] <= latest_df["atr_14_pct"] * 3) & (latest_df["dist_low5_pct"] <= latest_df["atr_14_pct"] * 3)
+        (latest_df["range_5"] < latest_df["atr_5"] * 2.5)
+        #(latest_df["range_10"] < latest_df["atr_10"] * 2.5)
     ]
 
     # merge RS 並排序
@@ -74,7 +76,7 @@ def main():
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma20", "ma50", "ma200",
-            "atr_14_pct", "dist_high5_pct", "dist_low5_pct", "avg_value_10"
+            "atr_5", "range_5", "atr_10", "range_10"
         ]]
     )
 
