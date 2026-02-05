@@ -18,8 +18,10 @@ def compute_indicators_vectorized(df):
     # 10日平均成交值
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
 
-    # ATR 20日百分比 (用pandas-ta)
+    # ATR (用pandas-ta)
     df["atr_14"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=14)).reset_index(level=0, drop=True)
+    df["atr_10"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=10)).reset_index(level=0, drop=True)
+    df["atr_5"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=5)).reset_index(level=0, drop=True)
     df["atr_14_pct"] = df["atr_14"] / df["close"] * 100
 
     # 均線
@@ -62,8 +64,8 @@ def main():
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["dist_high5_pct"] <= latest_df["atr_14_pct"] * 3) &
-        (latest_df["dist_low5_pct"] <= latest_df["atr_14_pct"] * 3)
+        (latest_df["atr_10"] > latest_df["atr_5"])
+        #(latest_df["dist_high5_pct"] <= latest_df["atr_14_pct"] * 3) & (latest_df["dist_low5_pct"] <= latest_df["atr_14_pct"] * 3)
     ]
 
     # merge RS 並排序
