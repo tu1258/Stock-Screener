@@ -33,10 +33,10 @@ def compute_indicators_vectorized(df):
     # 5日高低距離
     df["high5"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(5).max())
     df["low5"] = df.groupby("ticker")["low"].transform(lambda x: x.rolling(5).min())
-    df{"range_5"} = df["high5"] - df{"low5"}
+    df["range_5"] = df["high5"] - df["low5"]
     df["high10"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(10).max())
     df["low10"] = df.groupby("ticker")["low"].transform(lambda x: x.rolling(10).min())
-    df{"range_10"} = df["high10"] - df{"low10"}
+    df["range_10"] = df["high10"] - df{"low10"}
 
     # 5日價量
     price_df["chg"] = price_df.groupby("ticker")["close"].diff()
