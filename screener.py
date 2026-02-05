@@ -64,8 +64,8 @@ def main():
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["atr_10"] > latest_df["atr_5"])
-        #(latest_df["dist_high5_pct"] <= latest_df["atr_14_pct"] * 3) & (latest_df["dist_low5_pct"] <= latest_df["atr_14_pct"] * 3)
+        #(latest_df["atr_10"] > latest_df["atr_5"])
+        (latest_df["dist_high5_pct"] <= latest_df["atr_14_pct"] * 3) & (latest_df["dist_low5_pct"] <= latest_df["atr_14_pct"] * 3)
     ]
 
     # merge RS 並排序
