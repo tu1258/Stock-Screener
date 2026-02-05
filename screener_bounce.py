@@ -8,8 +8,8 @@ os.makedirs("txt", exist_ok=True)
 
 PRICE_CSV = "stock_data.csv"
 RS_CSV = "stock_data_rs.csv"
-OUTPUT_CSV_10 = "csv/watchlist_bounce_10ma.csv"
-OUTPUT_TXT_10 = "txt/watchlist_bounce_10ma.txt"
+#OUTPUT_CSV_10 = "csv/watchlist_bounce_10ma.csv"
+#OUTPUT_TXT_10 = "txt/watchlist_bounce_10ma.txt"
 OUTPUT_CSV_20 = "csv/watchlist_bounce_20ma.csv"
 OUTPUT_TXT_20 = "txt/watchlist_bounce_20ma.txt"
 OUTPUT_CSV_50 = "csv/watchlist_bounce_50ma.csv"
@@ -23,8 +23,8 @@ def compute_indicators_vectorized(df):
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
 
     # ATR 20日百分比 (用pandas-ta)
-    df["atr_20"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=20)).reset_index(level=0, drop=True)
-    df["atr_20_pct"] = df["atr_20"] / df["close"] * 100
+    df["atr_14"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=14)).reset_index(level=0, drop=True)
+    df["atr_14_pct"] = df["atr_14"] / df["close"] * 100
 
     # 均線
     df["ma10"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(10).mean())
@@ -63,66 +63,69 @@ def main():
                 .tail(1)
     )
     # ---------- 3. 技術分析篩選 ----------
+    """
     tech_filtered_10 = latest_df[
         (latest_df["avg_value_10"] > 100) &
-        (latest_df["atr_20_pct"] > 1) &
+        (latest_df["atr_14_pct"] > 1) &
         (latest_df["close"] > latest_df["ma20"]) &
         (latest_df["ma20"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["ma20"] > latest_df["ma20_prev"]) &
         (latest_df["ma50"] > latest_df["ma50_prev"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["close"] - latest_df["ma10"] < latest_df["atr_20"]) & 
+        (latest_df["close"] - latest_df["ma10"] < latest_df["atr_14"]*2) & 
         (latest_df["close"] > latest_df["ma10"]) & 
         (latest_df["high10"] == latest_df["52wH"])
     ]
-
+    """
     tech_filtered_20 = latest_df[
         (latest_df["avg_value_10"] > 100) &
-        (latest_df["atr_20_pct"] > 1) &
+        (latest_df["atr_14_pct"] > 1) &
         (latest_df["close"] > latest_df["ma20"]) &
         (latest_df["ma20"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["ma20"] > latest_df["ma20_prev"]) &
         (latest_df["ma50"] > latest_df["ma50_prev"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["close"] - latest_df["ma20"] < latest_df["atr_20"]) & 
+        (latest_df["close"] - latest_df["ma20"] < latest_df["atr_14"]*2) & 
         (latest_df["close"] > latest_df["ma20"]) & 
         (latest_df["high20"] == latest_df["52wH"])
     ]    
 
     tech_filtered_50 = latest_df[
         (latest_df["avg_value_10"] > 100) &
-        (latest_df["atr_20_pct"] > 1) &
+        (latest_df["atr_14_pct"] > 1) &
         (latest_df["close"] > latest_df["ma20"]) &
         (latest_df["ma20"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["ma20"] > latest_df["ma20_prev"]) &
         (latest_df["ma50"] > latest_df["ma50_prev"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["close"] - latest_df["ma50"] < latest_df["atr_20"]) & 
+        (latest_df["close"] - latest_df["ma50"] < latest_df["atr_14"]*2) & 
         (latest_df["close"] > latest_df["ma50"]) & 
         (latest_df["high50"] == latest_df["52wH"])
     ]
     # merge RS 並排序
+    """
     final_tickers_10 = (
          tech_filtered_10.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma10", "ma20", "ma50", "ma200",
             "high10", "high20", "high50", "52wH",
-            "atr_20", "atr_20_pct", "avg_value_10"
+            "atr_14", "atr_14_pct", "avg_value_10"
         ]]
     )
     final_tickers_10 = final_tickers_10.round(3)
-
+    """
+    
     final_tickers_20 = (
          tech_filtered_20.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma10", "ma20", "ma50", "ma200",
             "high10", "high20", "high50", "52wH",
-            "atr_20", "atr_20_pct", "avg_value_10"
+            "atr_14", "atr_14_pct", "avg_value_10"
         ]]
     )
     final_tickers_20 = final_tickers_20.round(3)
@@ -133,15 +136,15 @@ def main():
             "ticker", "RS", "close", "volume",
             "ma10", "ma20", "ma50", "ma200",
             "high10", "high20", "high50", "52wH",
-            "atr_20", "atr_20_pct", "avg_value_10"
+            "atr_14", "atr_14_pct", "avg_value_10"
         ]]
     )
     final_tickers_50 = final_tickers_50.round(3)
 
     
     # 輸出
-    final_tickers_10.to_csv(OUTPUT_CSV_10, index=False, header=True)
-    final_tickers_10["ticker"].to_csv(OUTPUT_TXT_10, index=False, header=False)
+    #final_tickers_10.to_csv(OUTPUT_CSV_10, index=False, header=True)
+    #final_tickers_10["ticker"].to_csv(OUTPUT_TXT_10, index=False, header=False)
     final_tickers_20.to_csv(OUTPUT_CSV_20, index=False, header=True)
     final_tickers_20["ticker"].to_csv(OUTPUT_TXT_20, index=False, header=False)
     final_tickers_50.to_csv(OUTPUT_CSV_50, index=False, header=True)
