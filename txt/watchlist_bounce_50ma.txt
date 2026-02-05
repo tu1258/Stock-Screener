@@ -1,4 +1,2 @@
-AEIS
 AAOI
-AGX
-APA
+AEIS

@@ -1,5 +1,3 @@
-AG
-AEIS
 AAOI
-AGX
+AEIS
 ADI
