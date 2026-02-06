@@ -30,7 +30,6 @@ def compute_indicators_vectorized(df):
     df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200).mean())
 
     # 新高
-    df["high20"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(20).max())
     df["high50"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(50).max())
     df["52wH"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(252).max())
 
@@ -56,29 +55,16 @@ def main():
                 .tail(1)
     )
     # ---------- 3. 技術分析篩選 ----------
-    
-    tech_filtered_20 = latest_df[
-        (latest_df["avg_value_10"] > 100) &
-        (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
-        (latest_df["ma20"] > latest_df["ma50"]) &
-        (latest_df["ma50"] > latest_df["ma200"]) &
-        (abs(latest_df["close"] - latest_df["ma20"]) < latest_df["atr_14"]) & 
-        #(latest_df["close"] > latest_df["ma20"]) & 
-        (latest_df["high20"] == latest_df["52wH"])
-    ]    
-
     tech_filtered_50 = latest_df[
         (latest_df["avg_value_10"] > 100) &
         (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
         (latest_df["ma20"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (abs(latest_df["close"] - latest_df["ma50"]) < latest_df["atr_14"]) & 
-        #(latest_df["close"] > latest_df["ma50"]) & 
         (latest_df["high50"] == latest_df["52wH"])
     ]
+    
     # merge RS 並排序
-    final_tickers_20 = final_tickers_20.round(3)
-
     final_tickers_50 = (
          tech_filtered_50.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
         .sort_values("RS", ascending=False)[[
@@ -90,16 +76,9 @@ def main():
     )
     final_tickers_50 = final_tickers_50.round(3)
 
-    
     # 輸出
-    #final_tickers_10.to_csv(OUTPUT_CSV_10, index=False, header=True)
-    #final_tickers_10["ticker"].to_csv(OUTPUT_TXT_10, index=False, header=False)
-    final_tickers_20.to_csv(OUTPUT_CSV_20, index=False, header=True)
-    final_tickers_20["ticker"].to_csv(OUTPUT_TXT_20, index=False, header=False)
     final_tickers_50.to_csv(OUTPUT_CSV_50, index=False, header=True)
     final_tickers_50["ticker"].to_csv(OUTPUT_TXT_50, index=False, header=False)
-
-
 
 if __name__ == "__main__":
     main()
