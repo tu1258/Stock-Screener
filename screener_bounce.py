@@ -31,9 +31,6 @@ def compute_indicators_vectorized(df):
     df["ma20"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20).mean())
     df["ma50"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50).mean())
     df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200).mean())
-    df["ma20_prev"] = df.groupby("ticker")["ma20"].shift(1)
-    df["ma50_prev"] = df.groupby("ticker")["ma50"].shift(1)
-    df["ma200_prev"] = df.groupby("ticker")["ma200"].shift(1)
 
     # 新高
     df["high10"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(10).max())
@@ -66,13 +63,10 @@ def main():
     """
     tech_filtered_10 = latest_df[
         (latest_df["avg_value_10"] > 100) &
-        (latest_df["atr_14_pct"] > 1) &
+        (latest_df["atr_14_pct"] > 1) &（latest_df["atr_14_pct"] < 10) &
         (latest_df["close"] > latest_df["ma20"]) &
         (latest_df["ma20"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
-        (latest_df["ma20"] > latest_df["ma20_prev"]) &
-        (latest_df["ma50"] > latest_df["ma50_prev"]) &
-        (latest_df["ma200"] > latest_df["ma200_prev"]) &
         (abs(latest_df["close"] - latest_df["ma10"]) < latest_df["atr_14"]) & 
         #(latest_df["close"] > latest_df["ma10"]) & 
         (latest_df["high10"] == latest_df["52wH"])
@@ -80,13 +74,10 @@ def main():
     """
     tech_filtered_20 = latest_df[
         (latest_df["avg_value_10"] > 100) &
-        (latest_df["atr_14_pct"] > 1) &
+        (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
         (latest_df["close"] > latest_df["ma20"]) &
         (latest_df["ma20"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
-        (latest_df["ma20"] > latest_df["ma20_prev"]) &
-        (latest_df["ma50"] > latest_df["ma50_prev"]) &
-        (latest_df["ma200"] > latest_df["ma200_prev"]) &
         (abs(latest_df["close"] - latest_df["ma20"]) < latest_df["atr_14"]) & 
         #(latest_df["close"] > latest_df["ma20"]) & 
         (latest_df["high20"] == latest_df["52wH"])
@@ -94,13 +85,10 @@ def main():
 
     tech_filtered_50 = latest_df[
         (latest_df["avg_value_10"] > 100) &
-        (latest_df["atr_14_pct"] > 1) &
+        (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
         (latest_df["close"] > latest_df["ma20"]) &
         (latest_df["ma20"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
-        (latest_df["ma20"] > latest_df["ma20_prev"]) &
-        (latest_df["ma50"] > latest_df["ma50_prev"]) &
-        (latest_df["ma200"] > latest_df["ma200_prev"]) &
         (abs(latest_df["close"] - latest_df["ma50"]) < latest_df["atr_14"]) & 
         #(latest_df["close"] > latest_df["ma50"]) & 
         (latest_df["high50"] == latest_df["52wH"])
