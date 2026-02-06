@@ -73,8 +73,8 @@ def main():
         (latest_df["ma20"] > latest_df["ma20_prev"]) &
         (latest_df["ma50"] > latest_df["ma50_prev"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["close"] - latest_df["ma10"] < latest_df["atr_14"]*2) & 
-        (latest_df["close"] > latest_df["ma10"]) & 
+        (abs(latest_df["close"] - latest_df["ma10"]) < latest_df["atr_14"]) & 
+        #(latest_df["close"] > latest_df["ma10"]) & 
         (latest_df["high10"] == latest_df["52wH"])
     ]
     """
@@ -87,8 +87,8 @@ def main():
         (latest_df["ma20"] > latest_df["ma20_prev"]) &
         (latest_df["ma50"] > latest_df["ma50_prev"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["close"] - latest_df["ma20"] < latest_df["atr_14"]*2) & 
-        (latest_df["close"] > latest_df["ma20"]) & 
+        (abs(latest_df["close"] - latest_df["ma20"]) < latest_df["atr_14"]) & 
+        #(latest_df["close"] > latest_df["ma20"]) & 
         (latest_df["high20"] == latest_df["52wH"])
     ]    
 
@@ -101,8 +101,8 @@ def main():
         (latest_df["ma20"] > latest_df["ma20_prev"]) &
         (latest_df["ma50"] > latest_df["ma50_prev"]) &
         (latest_df["ma200"] > latest_df["ma200_prev"]) &
-        (latest_df["close"] - latest_df["ma50"] < latest_df["atr_14"]*2) & 
-        (latest_df["close"] > latest_df["ma50"]) & 
+        (abs(latest_df["close"] - latest_df["ma50"]) < latest_df["atr_14"]) & 
+        #(latest_df["close"] > latest_df["ma50"]) & 
         (latest_df["high50"] == latest_df["52wH"])
     ]
     # merge RS 並排序
