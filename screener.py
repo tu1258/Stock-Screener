@@ -84,7 +84,8 @@ def main():
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma20", "ma50", "ma200",
-            "atr_5", "range_5", "atr_10", "range_10", "up_vol_10", "down_vol_10"
+            "atr_5", "range_5", "atr_10", "range_10",
+            "up_vol_10", "down_vol_10", "avg_value_10"
         ]]
     )
 
