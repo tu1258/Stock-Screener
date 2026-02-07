@@ -19,14 +19,18 @@ def compute_indicators_vectorized(df):
 
     # ATR (用pandas-ta)
     def compute_atr(df, length=14):
-        def atr_single(g):
+        def atr_group(g):
+            prev_close = g['close'].shift(1)
             tr = pd.concat([
                 g['high'] - g['low'],
-                (g['high'] - g['close'].shift(1)).abs(),
-                (g['low'] - g['close'].shift(1)).abs()
+                (g['high'] - prev_close).abs(),
+                (g['low'] - prev_close).abs()
             ], axis=1).max(axis=1)
             return tr.rolling(length).mean()
-        return df.groupby('ticker', group_keys=False).apply(atr_single)
+    
+        # use transform instead of apply to guarantee Series return
+        return df.groupby('ticker').transform(atr_group)['close']
+
     #df['atr_14'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 14)).reset_index(level=0, drop=True)
     df['atr_14'] = compute_atr(df, length=14)
     df['atr_10'] = compute_atr(df, length=10)
