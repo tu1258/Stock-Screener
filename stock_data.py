@@ -45,7 +45,7 @@ def main():
     print(f"Downloading {len(tickers)} tickers")
 
     rows = []
-
+"""
     for i, ticker in enumerate(tickers, 1):
         try:
             df = yf.download(
@@ -78,10 +78,8 @@ def main():
     result = pd.concat(rows, ignore_index=True)
     result = result[["ticker", "date", "open", "high", "low", "close", "volume"]]
     result.to_csv(OUTPUT_FILE, index=False)
-    result["ticker"].to_csv(TICKER_FILE, index=False)
-
-    print(f"Saved {OUTPUT_FILE}, rows={len(result)}")
-
+"""
+    tickers.to_csv(TICKER_FILE, index=False)
 
 if __name__ == "__main__":
     main()
