@@ -18,7 +18,7 @@ def format_number(x):
 
     if x_abs >= 1_000_000_000:
         return f"{sign}{x_abs/1_000_000_000:.2f}B"
-    else:  # All numbers >= 10k and < 1B use M
+    else:  # All numbers >=10k and <1B use M
         return f"{sign}{x_abs/1_000_000:.2f}M"
 
 def format_percent(x):
@@ -28,8 +28,8 @@ def format_percent(x):
     return f"{x*100:.2f}%"
 
 def get_latest_5q_revenue(ticker: str, today: pd.Timestamp):
-    """Fetch the latest 5 reported quarters of revenue for the given ticker.
-       Returns formatted revenue for each quarter, QoQ, and YoY."""
+    """Fetch the latest 5 reported quarters of revenue.
+       Skip empty/zero quarters when determining latest, and calculate QoQ/YoY."""
     try:
         stock = yf.Ticker(ticker)
         q = stock.quarterly_financials
@@ -37,9 +37,9 @@ def get_latest_5q_revenue(ticker: str, today: pd.Timestamp):
         if q is None or q.empty:
             return ["0"]*5 + ["", ""]
 
-        q = q.T.sort_index()           # Sort oldest → newest
-        q = q[q.index <= today]        # Keep only reports before today
-        last5 = q.tail(5)              # Get the latest 5 quarters
+        q = q.T.sort_index()  # oldest → newest
+        q = q[q.index <= today]  # keep only reports before today
+        last5 = q.tail(5)  # latest 5 quarters
 
         revenues = last5.get("Total Revenue")
         if revenues is None:
@@ -49,21 +49,40 @@ def get_latest_5q_revenue(ticker: str, today: pd.Timestamp):
         if len(revenues) < 5:
             revenues = [0]*(5-len(revenues)) + revenues
 
-        # Map revenues: rev_q0 → oldest, rev_q4 → latest
-        rev_q0, rev_q1, rev_q2, rev_q3, rev_q4 = revenues
+        # Replace empty or zero quarters with previous valid value for latest determination
+        rev_list = revenues.copy()
+        latest_idx = None
+        for i in range(4, -1, -1):  # iterate from newest to oldest
+            if rev_list[i] != 0:
+                latest_idx = i
+                break
+        if latest_idx is None:
+            # all quarters zero
+            latest_idx = 4  # fallback
+        rev_q4 = rev_list[latest_idx]
+
+        # find previous valid quarter for QoQ
+        prev_idx = None
+        for i in range(latest_idx-1, -1, -1):
+            if rev_list[i] != 0:
+                prev_idx = i
+                break
+        rev_prev = rev_list[prev_idx] if prev_idx is not None else np.nan
+
+        # find same quarter last year for YoY (assuming 4 quarters ago)
+        yoy_idx = latest_idx - 4
+        rev_yoy_base = rev_list[yoy_idx] if 0 <= yoy_idx < 5 else np.nan
 
         # Format all 5 quarters
-        rev_fmt = [format_number(r) for r in [rev_q0, rev_q1, rev_q2, rev_q3, rev_q4]]
+        rev_fmt = [format_number(r) for r in rev_list]
 
-        # Quarter-over-Quarter: latest vs previous quarter
-        rev_qoq = format_percent((rev_q4 - rev_q3)/rev_q3 if rev_q3 != 0 else np.nan)
-        # Year-over-Year: latest vs same quarter last year (rev_q0)
-        rev_yoy = format_percent((rev_q4 - rev_q0)/rev_q0 if rev_q0 != 0 else np.nan)
+        # QoQ and YoY calculations
+        rev_qoq = format_percent((rev_q4 - rev_prev)/rev_prev if prev_idx is not None and rev_prev != 0 else np.nan)
+        rev_yoy = format_percent((rev_q4 - rev_yoy_base)/rev_yoy_base if not pd.isna(rev_yoy_base) and rev_yoy_base != 0 else np.nan)
 
         return rev_fmt + [rev_qoq, rev_yoy]
 
     except Exception:
-        # Return zeros and empty strings on error
         return ["0"]*5 + ["", ""]
 
 def build_revenue_csv(tickers: list[str]):
@@ -79,13 +98,13 @@ def build_revenue_csv(tickers: list[str]):
             "rev_q1": rev_q1,
             "rev_q2": rev_q2,
             "rev_q3": rev_q3,
-            "rev_q4": rev_q4,   # Latest quarter
+            "rev_q4": rev_q4,   # Latest quarter (skip empty)
             "rev_qoq": rev_qoq,
             "rev_yoy": rev_yoy,
         })
 
         print(f"[{i}/{len(tickers)}] {ticker}")
-        time.sleep(0.1)  # Avoid Yahoo being rate-limited
+        time.sleep(0.1)  # avoid Yahoo rate limit
 
     df = pd.DataFrame(rows)
     df.to_csv(OUTPUT_FILE, index=False)
