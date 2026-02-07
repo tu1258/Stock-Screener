@@ -12,8 +12,7 @@ DAYS = 400
 
 
 def get_nasdaq_tickers(limit=None):
-    """Download NASDAQ tickers and remove ETFs, test symbols,
-    duplicated 5-letter suffix tickers, and shell companies."""
+    """Download NASDAQ tickers and remove ETFs, test symbols, warrants"""
 
     ftp = FTP("ftp.nasdaqtrader.com")
     ftp.login()
@@ -56,27 +55,7 @@ def get_nasdaq_tickers(limit=None):
                 continue
             filtered.append(t)
 
-    # --- remove shell companies using Yahoo Finance ---
-    final_tickers = []
-    for i, ticker in enumerate(filtered, 1):
-        try:
-            info = yf.Ticker(ticker).info
-            industry = info.get("industry", "")
-
-            if industry == "Shell Companies":
-                continue
-
-            final_tickers.append(ticker)
-
-            print(f"[Industry check {i}/{len(filtered)}] {ticker}")
-
-            time.sleep(0.05)  # avoid Yahoo rate limit
-
-        except Exception:
-            # if Yahoo fails, keep ticker to avoid losing real stocks
-            final_tickers.append(ticker)
-
-    return final_tickers[:limit] if limit else final_tickers
+    return filtered[:limit] if limit else filtered
 
 
 def main():
