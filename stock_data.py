@@ -2,18 +2,15 @@ import pandas as pd
 import yfinance as yf
 from ftplib import FTP
 from io import StringIO
+import re
 from datetime import date, timedelta
 import time
 
 OUTPUT_FILE = "stock_data.csv"
-TICKER_FILE = "stock_ticker.csv"
-MAX_TICKERS = 250
-DAYS = 400
-
+MAX_TICKERS = 250        # 先測，之後拿掉
+DAYS = 400              # 1 年
 
 def get_nasdaq_tickers(limit=None):
-    """Download NASDAQ tickers and remove ETFs, test symbols, warrants"""
-
     ftp = FTP("ftp.nasdaqtrader.com")
     ftp.login()
     ftp.cwd("SymbolDirectory")
@@ -23,14 +20,12 @@ def get_nasdaq_tickers(limit=None):
     ftp.quit()
 
     data.seek(0)
-    raw_tickers = []
+    tickers = []
 
-    # --- basic NASDAQ filtering ---
     for line in data.readlines():
-        cols = line.strip().split("|")
+        cols = line.split("|")
         if len(cols) < 8:
             continue
-
         ticker = cols[1]
         is_etf = cols[5]
         is_test = cols[7]
@@ -62,7 +57,8 @@ def main():
     end = date.today()
     start = end - timedelta(days=DAYS)
 
-    tickers = get_nasdaq_tickers(limit=MAX_TICKERS)
+    tickers = get_nasdaq_tickers() # MAX_TICKERS
+    print(f"Downloading {len(tickers)} tickers")
 
     rows = []
 
@@ -87,7 +83,7 @@ def main():
             rows.append(df)
             print(f"[{i}/{len(tickers)}] {ticker}")
 
-            time.sleep(0.1)
+            time.sleep(0.1)  # 避免被 Yahoo ban
 
         except Exception as e:
             print(f"Failed {ticker}: {e}")
@@ -98,9 +94,8 @@ def main():
     result = pd.concat(rows, ignore_index=True)
     result = result[["ticker", "date", "open", "high", "low", "close", "volume"]]
     result.to_csv(OUTPUT_FILE, index=False)
-
-    # save filtered tickers
     pd.DataFrame(tickers, columns=["ticker"]).to_csv(TICKER_FILE, index=False)
+    print(f"Saved {OUTPUT_FILE}, rows={len(result)}")
 
 
 if __name__ == "__main__":
