@@ -34,7 +34,6 @@ def compute_indicators_vectorized(df):
     df["ma20"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20).mean())
     df["ma50"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50).mean())
     df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200).mean())
-    df["ma200_prev"] = df.groupby("ticker")["ma200"].shift(1)
 
     # 5日高低距離
     df["high5"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(5).max())
@@ -78,7 +77,6 @@ def main():
         (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
-        #(latest_df["ma200"] > latest_df["ma200_prev"]) &
         (latest_df["up_vol_10"] > latest_df["down_vol_10"]) &
         (latest_df["range_5"] < latest_df["atr_5"] * 2.5)
         #(latest_df["range_10"] < latest_df["atr_10"] * 2.5)
