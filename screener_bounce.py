@@ -1,5 +1,4 @@
 import pandas as pd
-import pandas_ta as ta  # 如果不用ta-lib也可以改成純pandas
 import numpy as np
 import os
 
@@ -20,7 +19,14 @@ def compute_indicators_vectorized(df):
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
 
     # ATR 14日百分比
-    df["atr_14"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=14)).reset_index(level=0, drop=True)
+    def atr(high, low, close, length=14):
+        high_low = high - low
+        high_close = (high - close.shift()).abs()
+        low_close = (low - close.shift()).abs()
+        tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+        atr = tr.rolling(length).mean()
+        return atr    
+    df['atr_14'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 14)).reset_index(level=0, drop=True)
     df["atr_14_pct"] = df["atr_14"] / df["close"] * 100
 
     # 均線
