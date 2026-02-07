@@ -7,6 +7,7 @@ from datetime import date, timedelta
 import time
 
 OUTPUT_FILE = "stock_data.csv"
+TICKER_FILE = "stock_ticker.csv"
 MAX_TICKERS = 250        # 先測，之後拿掉
 DAYS = 400              # 1 年
 
