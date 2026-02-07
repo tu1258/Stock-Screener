@@ -16,9 +16,10 @@ def compute_indicators_vectorized(df):
 
     # 10日平均成交值
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
-
+    
+    # ATR
     df['prev_close'] = df.groupby('ticker')['close'].shift(1)
-    tr = pd.concat([
+    df['tr'] = pd.concat([
         df['high'] - df['low'],
         (df['high'] - df['prev_close']).abs(),
         (df['low'] - df['prev_close']).abs()
