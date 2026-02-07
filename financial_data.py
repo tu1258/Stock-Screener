@@ -106,6 +106,6 @@ def build_revenue_csv(tickers: list[str]):
     print(f"Saved → {OUTPUT_FILE}")
 
 if __name__ == "__main__":
-    tickers = get_nasdaq_tickers()  # 取得 NASDAQ 全部股票
+    tickers = get_nasdaq_tickers(100)  # 取得 NASDAQ 全部股票
     print(f"Total tickers: {len(tickers)}")
     build_revenue_csv(tickers)
