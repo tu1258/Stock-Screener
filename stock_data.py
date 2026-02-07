@@ -79,7 +79,7 @@ def main():
     result = result[["ticker", "date", "open", "high", "low", "close", "volume"]]
     result.to_csv(OUTPUT_FILE, index=False)
 """
-    tickers.to_csv(TICKER_FILE, index=False)
+    pd.DataFrame(tickers, columns=["ticker"]).to_csv(TICKER_FILE, index=False)
 
 if __name__ == "__main__":
     main()
