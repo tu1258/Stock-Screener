@@ -3,7 +3,7 @@ import yfinance as yf
 from datetime import date
 import numpy as np
 
-OUTPUT_FILE = "revenue_data.csv"
+OUTPUT_FILE = "financial_data.csv"
 
 
 def get_latest_4q_revenue(ticker: str, today: pd.Timestamp):
