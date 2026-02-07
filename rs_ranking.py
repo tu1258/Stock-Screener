@@ -7,7 +7,7 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 PRICE_DATA_CSV = os.path.join(DIR, "stock_data.csv")      # 原始 OHLCV
 OUTPUT_CSV = os.path.join(DIR, "stock_data_rs.csv")    # 最終輸出
 REFERENCE_TICKER = "SPX"  # 基準股票
-MIN_DATA_POINTS = 21     # 至少1個月以上
+MIN_DATA_POINTS = 20     # 至少1個月以上
 
 # ----------------- Relative Strength ----------------- #
 def relative_strength(closes, closes_ref):
