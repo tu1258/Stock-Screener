@@ -1,103 +1,110 @@
 import os
 import pandas as pd
 import numpy as np
+import yfinance as yf
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
-PRICE_DATA_CSV = os.path.join(DIR, "stock_data.csv")      # 原始 OHLCV
-OUTPUT_CSV = os.path.join(DIR, "stock_data_rs.csv")    # 最終輸出
-REFERENCE_TICKER = "SPX"  # 基準股票
-MIN_DATA_POINTS = 20     # 至少1個月以上
+PRICE_DATA_CSV = os.path.join(DIR, "stock_data.csv")
+OUTPUT_CSV = os.path.join(DIR, "stock_data_rs.csv")
 
-# ----------------- Relative Strength ----------------- #
+REFERENCE_TICKER = "^GSPC"   # S&P500 index ticker in Yahoo Finance
+MIN_DATA_POINTS = 20
+
+
+# ----------------- Relative Strength Core ----------------- #
 def relative_strength(closes, closes_ref):
-    """計算 RS = (1+strength_stock)/(1+strength_ref) * 100"""
+    """Compute RS = (1 + stock_strength) / (1 + ref_strength) * 100"""
     rs_stock = strength(closes)
     rs_ref = strength(closes_ref)
     rs = (1 + rs_stock) / (1 + rs_ref) * 100
     return round(rs, 2)
 
+
 def strength(closes):
-    """計算過去一年股價表現，最近一季權重雙倍"""
+    """Weighted yearly performance (recent quarter double weight)."""
     try:
         q1 = quarters_perf(closes, 1)
         q2 = quarters_perf(closes, 2)
         q3 = quarters_perf(closes, 3)
         q4 = quarters_perf(closes, 4)
         return 0.4*q1 + 0.2*q2 + 0.2*q3 + 0.2*q4
-    except:
-        return 0
+    except Exception:
+        return np.nan
+
 
 def quarters_perf(closes, n):
-    length = min(len(closes), n*int(252/4))  # 每季約 63 天
+    """Return cumulative performance of last n quarters."""
+    length = min(len(closes), n * int(252 / 4))
     prices = closes.tail(length)
+
+    if len(prices) < 2:
+        return np.nan
+
     pct_chg = prices.pct_change().dropna()
     perf_cum = (pct_chg + 1).cumprod() - 1
     return perf_cum.tail(1).item()
 
+
 # ----------------- Main ----------------- #
 def main():
     df_all = pd.read_csv(PRICE_DATA_CSV, parse_dates=["date"])
-    tickers = df_all['ticker'].unique()
+    tickers = df_all["ticker"].unique()
 
-    # 基準股票收盤價
-    df_ref = df_all[df_all['ticker'] == REFERENCE_TICKER].sort_values("date")
-    closes_ref = df_ref['close'].reset_index(drop=True)
+    # --- download SPX directly from Yahoo ---
+    df_ref = yf.download(REFERENCE_TICKER, period="2y", progress=False)
 
-    # 記錄每個 ticker 的 RS
+    if df_ref.empty:
+        raise RuntimeError("Failed to download SPX from Yahoo Finance")
+
+    closes_ref = df_ref["Close"].reset_index(drop=True)
+
+    # --- compute RS ---
     relative_strengths = []
-    ranks = []
 
     for ticker in tickers:
-        if ticker == REFERENCE_TICKER:
-            rs_score = 100.0
+
+        df = df_all[df_all["ticker"] == ticker].sort_values("date")
+        closes = df["close"].reset_index(drop=True)
+
+        if len(closes) < MIN_DATA_POINTS:
+            rs_score = np.nan
         else:
-            df = df_all[df_all['ticker'] == ticker].sort_values("date")
-            closes = df['close'].reset_index(drop=True)
-    
-            if len(closes) < MIN_DATA_POINTS:
+            rs_score = relative_strength(closes, closes_ref)
+
+            # filter abnormal values
+            if rs_score > 1000 or rs_score < 0:
                 rs_score = np.nan
-                continue  # 或者 rs = np.nan，然後 append
-            else:
-                rs_score = relative_strength(closes, closes_ref)
-                if rs_score > 1000:
-                    continue
-    
-        # append 到 list
+
         relative_strengths.append({
             "ticker": ticker,
             "score": rs_score,
-            "RS": 100.
+            "RS": np.nan
         })
-        rs_score = relative_strength(closes, closes_ref)
-        
 
-    # 把 RS append 到原本的 dataframe
-    df = pd.DataFrame(
-        relative_strengths,
-        columns=[
-            "ticker",
-            "score",
-            "RS",
-        ]
-    )
-    
-    # === Fred 核心：用整個市場做 percentile ===
-    df["RS"] = pd.qcut(df["score"], 100, labels=False, duplicates="drop")
- 
-    # RS 大的在前
+    # --- create dataframe ---
+    df = pd.DataFrame(relative_strengths)
+
+    # --- percentile ranking ---
+    valid_scores = df["score"].dropna()
+
+    if len(valid_scores) > 0:
+        df.loc[valid_scores.index, "RS"] = pd.qcut(
+            valid_scores,
+            100,
+            labels=False,
+            duplicates="drop"
+        )
+
+    # --- sort ---
     df = df.sort_values("score", ascending=False)
-       
-    # ===== TradingView RS RATING（完全照抄 Fred）=====
-    percentile_values = [98, 89, 69, 49, 29, 9, 1]
-    first_rs_values = {}
-    
-    for percentile in percentile_values:
-        first_row = df[df["RS"] == percentile].iloc[0]
-        first_rs_values[percentile] = first_row["score"]
-    
-    # ===== 最終輸出 =====
+
+    # --- save ---
     df.to_csv(OUTPUT_CSV, index=False)
+
+    print(f"RS calculation finished → {OUTPUT_CSV}")
+    print(f"Total tickers processed: {len(df)}")
+
 
 if __name__ == "__main__":
     main()
