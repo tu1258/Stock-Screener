@@ -10,6 +10,7 @@ PRICE_CSV = "stock_data.csv"
 RS_CSV = "stock_data_rs.csv"
 OUTPUT_CSV_50 = "csv/watchlist_bounce_50ma.csv"
 OUTPUT_TXT_50 = "txt/watchlist_bounce_50ma.txt"
+
 # ---------------- 技術指標計算 ---------------- #
 def compute_indicators_vectorized(df):
     # 確保按ticker與日期排序
@@ -18,7 +19,7 @@ def compute_indicators_vectorized(df):
     # 10日平均成交值
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
 
-    # ATR 20日百分比 (用pandas-ta)
+    # ATR 14日百分比
     df["atr_14"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=14)).reset_index(level=0, drop=True)
     df["atr_14_pct"] = df["atr_14"] / df["close"] * 100
 
@@ -26,8 +27,23 @@ def compute_indicators_vectorized(df):
     df["ma20"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20).mean())
     df["ma50"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50).mean())
     df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200).mean())
+
+    # 多頭排列
     df["bullish"] = (df["ma20"] > df["ma50"]) & (df["ma50"] > df["ma200"])
-    df["bullish_count"] = df.groupby("ticker")["bullish"].transform(lambda x: x[::-1].cumsum()[::-1] * x)  # 反向累加 True 的天數
+
+    # 計算連續多頭排列天數
+    def bullish_streak(x):
+        streak = []
+        count = 0
+        for val in x:
+            if val:
+                count += 1
+            else:
+                count = 0
+            streak.append(count)
+        return pd.Series(streak, index=x.index)
+
+    df["bullish_count"] = df.groupby("ticker")["bullish"].transform(bullish_streak)
 
     # 新高
     df["high50"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(50).max())
@@ -49,17 +65,17 @@ def main():
     # ---------- 2. 計算技術指標 ----------
     price_df = price_df[price_df["ticker"].isin(rs_tickers)]
     price_df = compute_indicators_vectorized(price_df)
+
     latest_df = (
         price_df.sort_values(["ticker", "date"])
                 .groupby("ticker", group_keys=False)
                 .tail(1)
     )
+
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered_50 = latest_df[
         (latest_df["avg_value_10"] > 10) &
         (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
-        (latest_df["ma20"] > latest_df["ma50"]) &
-        (latest_df["ma50"] > latest_df["ma200"]) &
         #(latest_df["bullish_count"] > 20) &
         (abs(latest_df["close"] - latest_df["ma50"]) < latest_df["atr_14"]) & 
         (latest_df["high50"] == latest_df["52wH"])
@@ -81,4 +97,4 @@ def main():
     final_tickers_50["ticker"].to_csv(OUTPUT_TXT_50, index=False, header=False)
 
 if __name__ == "__main__":
-    main()
+    main(BULLISH_DAYS=20)
