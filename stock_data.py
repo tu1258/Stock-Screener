@@ -31,27 +31,10 @@ def get_nasdaq_tickers(limit=None):
         is_etf = cols[5]
         is_test = cols[7]
 
-        if is_etf == "N" and is_test == "N":
+        if is_etf == "N" and is_test == "N" and len(ticker) <= 4:
             raw_tickers.append(ticker)
 
-    # --- remove duplicated 5-letter suffix symbols ---
-    filtered = []
-    shorter_set = set()
-
-    for t in raw_tickers:
-        if len(t) < 5:
-            filtered.append(t)
-            shorter_set.add(t)
-
-    for t in raw_tickers:
-        if len(t) == 5:
-            prefix4 = t[:4]
-            prefix3 = t[:3]
-            if prefix4 in shorter_set or prefix3 in shorter_set:
-                continue
-            filtered.append(t)
-
-    return filtered[:limit] if limit else filtered
+    return raw_tickers[:limit] if limit else raw_tickers
 
 
 def main():
