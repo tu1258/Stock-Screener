@@ -1,49 +1,24 @@
 import pandas as pd
 import yfinance as yf
-from ftplib import FTP
-from io import StringIO
-import re
 from datetime import date
 import numpy as np
 import time
 
 OUTPUT_FILE = "financial_data.csv"
-
-def get_nasdaq_tickers(limit=None):
-    ftp = FTP("ftp.nasdaqtrader.com")
-    ftp.login()
-    ftp.cwd("SymbolDirectory")
-
-    data = StringIO()
-    ftp.retrlines("RETR nasdaqtraded.txt", lambda x: data.write(x + "\n"))
-    ftp.quit()
-
-    data.seek(0)
-    tickers = []
-
-    for line in data.readlines():
-        cols = line.strip().split("|")
-        if len(cols) < 8:
-            continue
-        ticker = cols[1]
-        is_etf = cols[5]
-        is_test = cols[7]
-
-        if re.fullmatch(r"[A-Z]+", ticker) and is_etf == "N" and is_test == "N":
-            tickers.append(ticker)
-
-    return tickers[:limit] if limit else tickers
+TICKER_FILE = "stock_ticker.csv"  # 直接读取这个 CSV
 
 def format_number(x):
-    """Convert a number to M/B string representation without decimals."""
-    if pd.isna(x) or x == 0:
+    """Convert number to M/B string with 2 decimals, handle negatives, treat abs(x)<10k as 0."""
+    if pd.isna(x) or abs(x) < 10_000:
         return "0"
-    if x >= 1_000_000_000:
-        return f"{int(round(x/1_000_000_000))}B"
-    elif x >= 1_000_000:
-        return f"{int(round(x/1_000_000))}M"
-    else:
-        return str(int(round(x)))
+
+    sign = "-" if x < 0 else ""
+    x_abs = abs(x)
+
+    if x_abs >= 1_000_000_000:
+        return f"{sign}{x_abs/1_000_000_000:.2f}B"
+    else:  # 所有 >=10_000 且 < 1B 的都用 M 表示
+        return f"{sign}{x_abs/1_000_000:.2f}M"
 
 def get_latest_4q_revenue(ticker: str, today: pd.Timestamp):
     """Fetch latest 4 reported quarters of revenue relative to today."""
@@ -55,7 +30,7 @@ def get_latest_4q_revenue(ticker: str, today: pd.Timestamp):
             return ["0", "0", "0", "0", np.nan, np.nan]
 
         q = q.T.sort_index()           # oldest → newest
-        q = q[q.index <= today]        # 只保留今天之前的報表
+        q = q[q.index <= today]        # 只保留今天之前的报表
         last4 = q.tail(4)
 
         revenues = last4.get("Total Revenue")
@@ -106,6 +81,8 @@ def build_revenue_csv(tickers: list[str]):
     print(f"Saved → {OUTPUT_FILE}")
 
 if __name__ == "__main__":
-    tickers = get_nasdaq_tickers(100)  # 取得 NASDAQ 全部股票
+    # 直接從 stock_ticker.csv 讀取 ticker
+    df_tickers = pd.read_csv(TICKER_FILE)
+    tickers = df_tickers["ticker"].tolist()
     print(f"Total tickers: {len(tickers)}")
     build_revenue_csv(tickers)
