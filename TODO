@@ -1,4 +1,3 @@
 RS有漏
-ticker只留primary
-financial data負數, revenue取小數點2位 qoq yoy取小數點2位, 負數revenue之qoq, yoy計算
+financial data qoq yoy取小數點2位, 負數revenue之qoq, yoy計算
 screener看financial data
