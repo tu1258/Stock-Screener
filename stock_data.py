@@ -7,10 +7,13 @@ import time
 
 OUTPUT_FILE = "stock_data.csv"
 TICKER_FILE = "stock_ticker.csv"
-MAX_TICKERS = 250        
-DAYS = 400               
+MAX_TICKERS = 250
+DAYS = 400
+
 
 def get_nasdaq_tickers(limit=None):
+    """Download NASDAQ tickers and remove ETFs, test symbols,
+    duplicated 5-letter suffix tickers, and shell companies."""
 
     ftp = FTP("ftp.nasdaqtrader.com")
     ftp.login()
@@ -23,10 +26,12 @@ def get_nasdaq_tickers(limit=None):
     data.seek(0)
     raw_tickers = []
 
+    # --- basic NASDAQ filtering ---
     for line in data.readlines():
         cols = line.strip().split("|")
         if len(cols) < 8:
             continue
+
         ticker = cols[1]
         is_etf = cols[5]
         is_test = cols[7]
@@ -34,6 +39,7 @@ def get_nasdaq_tickers(limit=None):
         if is_etf == "N" and is_test == "N":
             raw_tickers.append(ticker)
 
+    # --- remove duplicated 5-letter suffix symbols ---
     filtered = []
     shorter_set = set()
 
@@ -50,7 +56,27 @@ def get_nasdaq_tickers(limit=None):
                 continue
             filtered.append(t)
 
-    return filtered[:limit] if limit else filtered
+    # --- remove shell companies using Yahoo Finance ---
+    final_tickers = []
+    for i, ticker in enumerate(filtered, 1):
+        try:
+            info = yf.Ticker(ticker).info
+            industry = info.get("industry", "")
+
+            if industry == "Shell Companies":
+                continue
+
+            final_tickers.append(ticker)
+
+            print(f"[Industry check {i}/{len(filtered)}] {ticker}")
+
+            time.sleep(0.05)  # avoid Yahoo rate limit
+
+        except Exception:
+            # if Yahoo fails, keep ticker to avoid losing real stocks
+            final_tickers.append(ticker)
+
+    return final_tickers[:limit] if limit else final_tickers
 
 
 def main():
@@ -82,7 +108,7 @@ def main():
             rows.append(df)
             print(f"[{i}/{len(tickers)}] {ticker}")
 
-            time.sleep(0.1)  # 避免被 Yahoo ban
+            time.sleep(0.1)
 
         except Exception as e:
             print(f"Failed {ticker}: {e}")
@@ -94,6 +120,7 @@ def main():
     result = result[["ticker", "date", "open", "high", "low", "close", "volume"]]
     result.to_csv(OUTPUT_FILE, index=False)
 
+    # save filtered tickers
     pd.DataFrame(tickers, columns=["ticker"]).to_csv(TICKER_FILE, index=False)
 
 
