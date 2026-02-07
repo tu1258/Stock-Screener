@@ -30,17 +30,13 @@ def strength(closes):
         q4 = quarters_perf(closes, 4)
         return 0.4*q1 + 0.2*q2 + 0.2*q3 + 0.2*q4
     except Exception:
-        return np.nan
+        return 0
 
 
 def quarters_perf(closes, n):
     """Return cumulative performance of last n quarters."""
     length = min(len(closes), n * int(252 / 4))
     prices = closes.tail(length)
-
-    if len(prices) < 2:
-        return np.nan
-
     pct_chg = prices.pct_change().dropna()
     perf_cum = (pct_chg + 1).cumprod() - 1
     return perf_cum.tail(1).item()
@@ -61,50 +57,58 @@ def main():
 
     # --- compute RS ---
     relative_strengths = []
+    ranks = []
 
     for ticker in tickers:
-
-        df = df_all[df_all["ticker"] == ticker].sort_values("date")
-        closes = df["close"].reset_index(drop=True)
-
-        if len(closes) < MIN_DATA_POINTS:
-            rs_score = np.nan
+        if ticker == REFERENCE_TICKER:
+            rs_score = 100.0
         else:
-            rs_score = relative_strength(closes, closes_ref)
-
-            # filter abnormal values
-            if rs_score > 1000 or rs_score < 0:
+            df = df_all[df_all['ticker'] == ticker].sort_values("date")
+            closes = df['close'].reset_index(drop=True)
+    
+            if len(closes) < MIN_DATA_POINTS:
                 rs_score = np.nan
-
+                continue  # 或者 rs = np.nan，然後 append
+            else:
+                rs_score = relative_strength(closes, closes_ref)
+                if rs_score > 1000:
+                    continue
+    
+        # append 到 list
         relative_strengths.append({
             "ticker": ticker,
             "score": rs_score,
-            "RS": np.nan
+            "RS": 100.
         })
+        rs_score = relative_strength(closes, closes_ref)
+        
 
-    # --- create dataframe ---
-    df = pd.DataFrame(relative_strengths)
-
-    # --- percentile ranking ---
-    valid_scores = df["score"].dropna()
-
-    if len(valid_scores) > 0:
-        df.loc[valid_scores.index, "RS"] = pd.qcut(
-            valid_scores,
-            100,
-            labels=False,
-            duplicates="drop"
-        )
-
-    # --- sort ---
+    # 把 RS append 到原本的 dataframe
+    df = pd.DataFrame(
+        relative_strengths,
+        columns=[
+            "ticker",
+            "score",
+            "RS",
+        ]
+    )
+    
+    # === 用整個市場做 percentile ===
+    df["RS"] = pd.qcut(df["score"], 100, labels=False, duplicates="drop")
+ 
+    # RS 大的在前
     df = df.sort_values("score", ascending=False)
-
-    # --- save ---
+       
+    # ===== TradingView RS RATING =====
+    percentile_values = [98, 89, 69, 49, 29, 9, 1]
+    first_rs_values = {}
+    
+    for percentile in percentile_values:
+        first_row = df[df["RS"] == percentile].iloc[0]
+        first_rs_values[percentile] = first_row["score"]
+    
+    # ===== 最終輸出 =====
     df.to_csv(OUTPUT_CSV, index=False)
-
-    print(f"RS calculation finished → {OUTPUT_CSV}")
-    print(f"Total tickers processed: {len(df)}")
-
 
 if __name__ == "__main__":
     main()
