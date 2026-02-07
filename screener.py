@@ -19,9 +19,9 @@ def compute_indicators_vectorized(df):
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
 
     # ATR (用pandas-ta)
-    df["atr_14"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=14)["ATR_14"]).reset_index(level=0, drop=True)
-    df["atr_10"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=10)["ATR_10"]).reset_index(level=0, drop=True)
-    df["atr_5"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=5)["ATR_5"]).reset_index(level=0, drop=True)
+    df["atr_14"] = ta.atr(df["high"], df["low"], df["close"], length=14)["ATR_14"]
+    df["atr_10"] = ta.atr(df["high"], df["low"], df["close"], length=10)["ATR_10"]
+    df["atr_5"]  = ta.atr(df["high"], df["low"], df["close"], length=5)["ATR_5"]
     #df["atr_14"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=14)).reset_index(level=0, drop=True)
     #df["atr_10"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=10)).reset_index(level=0, drop=True)
     #df["atr_5"] = df.groupby("ticker").apply(lambda g: ta.atr(g["high"], g["low"], g["close"], length=5)).reset_index(level=0, drop=True)
