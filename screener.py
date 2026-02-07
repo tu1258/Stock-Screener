@@ -17,24 +17,19 @@ def compute_indicators_vectorized(df):
     # 10日平均成交值
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
 
-    # ATR (用pandas-ta)
-    def compute_atr(df, length=14):
-        def atr_group(g):
-            prev_close = g['close'].shift(1)
-            tr = pd.concat([
-                g['high'] - g['low'],
-                (g['high'] - prev_close).abs(),
-                (g['low'] - prev_close).abs()
-            ], axis=1).max(axis=1)
-            return tr.rolling(length).mean()
-    
-        # use transform instead of apply to guarantee Series return
-        return df.groupby('ticker').transform(atr_group)['close']
-
+    df['prev_close'] = df.groupby('ticker')['close'].shift(1)
+    tr = pd.concat([
+        df['high'] - df['low'],
+        (df['high'] - df['prev_close']).abs(),
+        (df['low'] - df['prev_close']).abs()
+    ], axis=1).max(axis=1)
+    df['atr_14'] = tr.groupby(df['ticker']).rolling(14).mean().reset_index(level=0, drop=True)
+    df['atr_10'] = tr.groupby(df['ticker']).rolling(10).mean().reset_index(level=0, drop=True)
+    df['atr_5'] = tr.groupby(df['ticker']).rolling(5).mean().reset_index(level=0, drop=True)
     #df['atr_14'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 14)).reset_index(level=0, drop=True)
-    df['atr_14'] = compute_atr(df, length=14)
-    df['atr_10'] = compute_atr(df, length=10)
-    df['atr_5']  = compute_atr(df, length=5)
+    #df['atr_14'] = compute_atr(df, length=14)
+    #df['atr_10'] = compute_atr(df, length=10)
+    #df['atr_5']  = compute_atr(df, length=5)
     #df['atr_10'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 10)).reset_index(level=0, drop=True)
     #df['atr_5'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 5)).reset_index(level=0, drop=True)
     df["atr_14_pct"] = df["atr_14"] / df["close"] * 100
