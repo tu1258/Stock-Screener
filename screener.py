@@ -25,9 +25,12 @@ def compute_indicators_vectorized(df):
         tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
         atr = tr.rolling(length).mean()
         return atr    
-    df['atr_14'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 14)).reset_index(level=0, drop=True)
-    df['atr_10'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 10)).reset_index(level=0, drop=True)
-    df['atr_5'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 5)).reset_index(level=0, drop=True)
+    #df['atr_14'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 14)).reset_index(level=0, drop=True)
+    df['atr_14'] = df.groupby('ticker', group_keys=False).apply(lambda g: atr(g['high'], g['low'], g['close'], 14))
+    df['atr_10'] = df.groupby('ticker', group_keys=False).apply(lambda g: atr(g['high'], g['low'], g['close'], 10))
+    df['atr_5'] = df.groupby('ticker', group_keys=False).apply(lambda g: atr(g['high'], g['low'], g['close'], 5))
+    #df['atr_10'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 10)).reset_index(level=0, drop=True)
+    #df['atr_5'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 5)).reset_index(level=0, drop=True)
     df["atr_14_pct"] = df["atr_14"] / df["close"] * 100
 
     # 均線
