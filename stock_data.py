@@ -7,6 +7,7 @@ from datetime import date, timedelta
 import time
 
 OUTPUT_FILE = "stock_data.csv"
+TICKER_FILE = "stock_ticker.csv"
 MAX_TICKERS = 250        # 先測，之後拿掉
 DAYS = 400              # 1 年
 
@@ -77,6 +78,7 @@ def main():
     result = pd.concat(rows, ignore_index=True)
     result = result[["ticker", "date", "open", "high", "low", "close", "volume"]]
     result.to_csv(OUTPUT_FILE, index=False)
+    result["ticker"].to_csv(TICKER_FILE, index=False)
 
     print(f"Saved {OUTPUT_FILE}, rows={len(result)}")
 
