@@ -23,9 +23,10 @@ def compute_indicators_vectorized(df):
         (df['high'] - df['prev_close']).abs(),
         (df['low'] - df['prev_close']).abs()
     ], axis=1).max(axis=1)
-    df['atr_14'] = tr.groupby(df['ticker']).rolling(14).mean().reset_index(level=0, drop=True)
-    df['atr_10'] = tr.groupby(df['ticker']).rolling(10).mean().reset_index(level=0, drop=True)
-    df['atr_5'] = tr.groupby(df['ticker']).rolling(5).mean().reset_index(level=0, drop=True)
+    
+    df['atr_14'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(14).mean())
+    df['atr_10'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(10).mean())
+    df['atr_5']  = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(5).mean())
     #df['atr_14'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 14)).reset_index(level=0, drop=True)
     #df['atr_14'] = compute_atr(df, length=14)
     #df['atr_10'] = compute_atr(df, length=10)
