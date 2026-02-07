@@ -45,40 +45,7 @@ def main():
     print(f"Downloading {len(tickers)} tickers")
 
     rows = []
-"""
-    for i, ticker in enumerate(tickers, 1):
-        try:
-            df = yf.download(
-                ticker,
-                start=start,
-                end=end,
-                progress=False,
-                auto_adjust=False,
-            )
 
-            if df.empty:
-                continue
-
-            df = df.reset_index()[["Date", "Open", "High", "Low", "Close", "Volume"]]
-            df.columns = ["date", "open", "high", "low", "close", "volume"]
-            df["ticker"] = ticker
-            df["date"] = df["date"].dt.strftime("%Y-%m-%d")
-
-            rows.append(df)
-            print(f"[{i}/{len(tickers)}] {ticker}")
-
-            time.sleep(0.1)  # 避免被 Yahoo ban
-
-        except Exception as e:
-            print(f"Failed {ticker}: {e}")
-
-    if not rows:
-        raise RuntimeError("No data downloaded")
-
-    result = pd.concat(rows, ignore_index=True)
-    result = result[["ticker", "date", "open", "high", "low", "close", "volume"]]
-    result.to_csv(OUTPUT_FILE, index=False)
-"""
     pd.DataFrame(tickers, columns=["ticker"]).to_csv(TICKER_FILE, index=False)
 
 if __name__ == "__main__":
