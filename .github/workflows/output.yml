@@ -30,7 +30,7 @@ jobs:
       - name: Run RS data script
         run: |
 #          python stock_data.py
-          python revenue_data.py
+          python financial_data.py
 #          python rs_ranking.py
 #          python screener.py
 #          python screener_bounce.py
@@ -39,7 +39,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add revenue_data.csv
+          git add financial_data.csv
 #          git add stock_data_rs.csv csv/watchlist.csv txt/watchlist.txt csv/watchlist_bounce_50ma.csv txt/watchlist_bounce_50ma.txt
           git commit -m "Daily Update" || echo "No changes to commit"
           git push
