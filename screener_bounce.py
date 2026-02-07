@@ -97,4 +97,4 @@ def main():
     final_tickers_50["ticker"].to_csv(OUTPUT_TXT_50, index=False, header=False)
 
 if __name__ == "__main__":
-    main(BULLISH_DAYS=20)
+    main()
