@@ -20,7 +20,7 @@ def get_nasdaq_tickers(limit=None):
     ftp.quit()
 
     data.seek(0)
-    tickers = []
+    raw_tickers = []
 
     for line in data.readlines():
         cols = line.split("|")
