@@ -28,12 +28,6 @@ def compute_indicators_vectorized(df):
     df['atr_14'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(14).mean())
     df['atr_10'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(10).mean())
     df['atr_5']  = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(5).mean())
-    #df['atr_14'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 14)).reset_index(level=0, drop=True)
-    #df['atr_14'] = compute_atr(df, length=14)
-    #df['atr_10'] = compute_atr(df, length=10)
-    #df['atr_5']  = compute_atr(df, length=5)
-    #df['atr_10'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 10)).reset_index(level=0, drop=True)
-    #df['atr_5'] = df.groupby('ticker').apply(lambda g: atr(g['high'], g['low'], g['close'], 5)).reset_index(level=0, drop=True)
     df["atr_14_pct"] = df["atr_14"] / df["close"] * 100
 
     # 均線
