@@ -110,5 +110,16 @@ def main():
     # ===== 最終輸出 =====
     df.to_csv(OUTPUT_CSV, index=False)
 
+    # ===== 找出 stock_ticker.csv 裡面漏掉的 ticker =====
+    df_tickers = pd.read_csv("stock_ticker.csv")  # 你原本的 ticker 列表
+    missing_tickers = set(df_tickers["ticker"]) - set(df["ticker"])
+    
+    if missing_tickers:
+        print("\n⚠️ 以下 ticker 在 stock_data.csv 沒有資料 / RS 無法計算:")
+        for t in sorted(missing_tickers):
+            print(t)
+    else:
+        print("\n✅ 所有 ticker 都有資料")
+
 if __name__ == "__main__":
     main()
