@@ -116,7 +116,7 @@ def main():
     
     if missing_tickers:
         print("\n⚠️ 以下 ticker 在 stock_data.csv 沒有資料 / RS 無法計算:")
-        for t in sorted(missing_tickers):
+        for t in missing_tickers:
             print(t)
     else:
         print("\n✅ 所有 ticker 都有資料")
