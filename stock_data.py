@@ -32,6 +32,8 @@ def get_nasdaq_tickers(limit=None):
         is_test = cols[7]
 
         if is_etf == "N" and is_test == "N" and len(ticker) <= 4:
+            if "$" in ticker or "." in ticker:
+                continue
             raw_tickers.append(ticker)
 
     return raw_tickers[:limit] if limit else raw_tickers
