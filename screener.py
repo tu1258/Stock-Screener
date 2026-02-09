@@ -25,10 +25,10 @@ def compute_indicators_vectorized(df):
         (df['low'] - df['prev_close']).abs()
     ], axis=1).max(axis=1)
     
-    df['atr_14'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(14).mean())
     df['atr_10'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(10).mean())
     df['atr_5']  = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(5).mean())
-    df["atr_14_pct"] = df["atr_14"] / df["close"] * 100
+    df["atr_10_pct"] = df["atr_10"] / df["close"] * 100
+    df["atr_5_pct"] = df["atr_5"] / df["close"] * 100
 
     # 均線
     df["ma20"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20).mean())
@@ -43,10 +43,12 @@ def compute_indicators_vectorized(df):
     df["low10"] = df.groupby("ticker")["low"].transform(lambda x: x.rolling(10).min())
     df["range_10"] = df["high10"] - df["low10"]
 
-    # 10日價量
+    # 價量
     df["chg"] = df.groupby("ticker")["close"].diff()
     df["up_vol"] = np.where(df["chg"] > 0, df["volume"] * df["chg"], 0)
     df["down_vol"] = np.where(df["chg"] < 0, df["volume"] * -df["chg"], 0)
+    df["up_vol_5"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(5).sum()) / 1_000
+    df["down_vol_5"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(5).sum()) / 1_000
     df["up_vol_10"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
     df["down_vol_10"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
 
@@ -74,10 +76,11 @@ def main():
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
         (latest_df["avg_value_10"] > 10) &
-        (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
+        (latest_df["atr_5_pct"] > 1) & (latest_df["atr_5_pct"] < 10) &
+        (latest_df["atr_10_pct"] > 1) & (latest_df["atr_10_pct"] < 10) &
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
-        (latest_df["up_vol_10"] > latest_df["down_vol_10"]) &
+        (latest_df["up_vol_10"] > latest_df["down_vol_10"]) & (latest_df["up_vol_5"] > latest_df["down_vol_5"]) &
         (latest_df["range_5"] < latest_df["atr_5"] * 2.5)
         #(latest_df["range_10"] < latest_df["atr_10"] * 2.5)
     ]
@@ -88,8 +91,8 @@ def main():
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "ma20", "ma50", "ma200",
-            "atr_5", "range_5", "atr_10", "range_10",
-            "up_vol_10", "down_vol_10", "avg_value_10"
+            "atr_5_pct", "atr_10_pct", "range_5", "range_10",
+            "up_vol_5", "down_vol_5", "up_vol_10", "down_vol_10", "avg_value_10"
         ]]
     )
 
