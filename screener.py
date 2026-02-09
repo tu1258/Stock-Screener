@@ -27,6 +27,8 @@ def compute_indicators_vectorized(df):
     
     df['atr_10'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(10).mean())
     df['atr_5']  = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(5).mean())
+    df['atr_square_10'] = df.groupby('ticker')['tr'].transform(lambda x: (x**2).rolling(10).mean())
+    df['atr_square_5']  = df.groupby('ticker')['tr'].transform(lambda x: (x**2).rolling(5).mean())
     df["atr_10_pct"] = df["atr_10"] / df["close"] * 100
     df["atr_5_pct"] = df["atr_5"] / df["close"] * 100
 
