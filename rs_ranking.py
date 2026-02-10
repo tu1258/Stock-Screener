@@ -9,7 +9,7 @@ PRICE_DATA_CSV = os.path.join(DIR, "stock_data.csv")
 OUTPUT_CSV = os.path.join(DIR, "stock_data_rs.csv")
 
 REFERENCE_TICKER = "^GSPC"   # S&P500 index ticker in Yahoo Finance
-MIN_DATA_POINTS = 20
+MIN_DATA_POINTS = 63
 
 
 # ----------------- Relative Strength Core ----------------- #
