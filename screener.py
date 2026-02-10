@@ -28,7 +28,7 @@ def compute_indicators_vectorized(df):
     
     df['atr_5'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(5).mean())
     df['atr_10'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(10).mean())
-    df['atr_50'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(50).mean())
+    df['atr_50_pct'] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(50).mean())
     df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(14).mean())
 
     # 均線
@@ -81,7 +81,8 @@ def main():
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["up_vol_10"] > latest_df["down_vol_10"]) & 
-        (latest_df["up_vol_5"] > latest_df["down_vol_5"]) 
+        (latest_df["up_vol_5"] > latest_df["down_vol_5"]) & 
+        (latest_df["range_10"] > latest_df["atr_50_pct"] * latest_df["close"] * 5)
         #(latest_df["range_5"] < latest_df["atr_5"] * 2.5)
         #(latest_df["range_10"] < latest_df["atr_10"] * 2.5)
     ]
