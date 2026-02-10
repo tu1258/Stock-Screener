@@ -25,9 +25,9 @@ def compute_indicators_vectorized(df):
         (df['high'] - df['prev_close']).abs(),
         (df['low'] - df['prev_close']).abs()
     ], axis=1).max(axis=1)
+    df["tr_pct"] = df["tr"] / df["close"] * 100
     
-    df['atr_14'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(14).mean())
-    df["atr_14_pct"] = df["atr_14"] / df["close"] * 100
+    df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(14).mean())
 
     # 均線
     df["ma20"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20).mean())
@@ -93,7 +93,7 @@ def main():
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "bullish_count", "ma20", "ma50", "ma200", "52wH",
-            "atr_14", "atr_14_pct", "avg_value_10"
+            "atr_14_pct", "avg_value_10"
         ]]
     )
     final_tickers_50 = final_tickers_50.round(3)
