@@ -82,8 +82,8 @@ def main():
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["up_vol_10"] > latest_df["down_vol_10"]) & 
-        (latest_df["up_vol_5"] > latest_df["down_vol_5"]) &
-        (latest_df["range_10"] / latest_df["ma10"] * 100 > latest_df["atr_50_pct"] * 5)
+        (latest_df["up_vol_5"] > latest_df["down_vol_5"]) #&
+        #(latest_df["range_10"] / latest_df["ma10"] * 100 > latest_df["atr_50_pct"] * 5)
         #(latest_df["range_5"] < latest_df["atr_5"] * 2.5)
         #(latest_df["range_10"] < latest_df["atr_10"] * 2.5)
     ]
