@@ -25,7 +25,7 @@ def compute_indicators_vectorized(df):
         (df['high'] - df['prev_close']).abs(),
         (df['low'] - df['prev_close']).abs()
     ], axis=1).max(axis=1)
-    df["tr_pct"] = df["tr"] / df["close"] * 100
+    df["tr_pct"] = df["tr"] / df["close"].shift(1) * 100
     
     df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(14).mean())
 
