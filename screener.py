@@ -24,13 +24,11 @@ def compute_indicators_vectorized(df):
         (df['high'] - df['prev_close']).abs(),
         (df['low'] - df['prev_close']).abs()
     ], axis=1).max(axis=1)
-    
+
+    df['atr_5'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(5).mean())
     df['atr_10'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(10).mean())
-    df['atr_5']  = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(5).mean())
-    df['atr_square_10'] = df.groupby('ticker')['tr'].transform(lambda x: (x**2).rolling(10).mean())
-    df['atr_square_5']  = df.groupby('ticker')['tr'].transform(lambda x: (x**2).rolling(5).mean())
+    df['atr_20'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(20).mean())
     df["atr_10_pct"] = df["atr_10"] / df["close"] * 100
-    df["atr_5_pct"] = df["atr_5"] / df["close"] * 100
 
     # 均線
     df["ma20"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20).mean())
@@ -77,13 +75,12 @@ def main():
     )
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
-        (latest_df["avg_value_10"] > 10) &
-        (latest_df["atr_5_pct"] > 1) & (latest_df["atr_5_pct"] < 10) &
+        (latest_df["avg_value_10"] > 100) &
         (latest_df["atr_10_pct"] > 1) & (latest_df["atr_10_pct"] < 10) &
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["up_vol_10"] > latest_df["down_vol_10"]) & 
-        (latest_df["up_vol_5"] > latest_df["down_vol_5"]) #&
+        (latest_df["up_vol_5"] > latest_df["down_vol_5"]) 
         #(latest_df['atr_square_10'] > latest_df['atr_square_5'])
         #(latest_df["range_5"] < latest_df["atr_5"] * 2.5)
         #(latest_df["range_10"] < latest_df["atr_10"] * 2.5)
