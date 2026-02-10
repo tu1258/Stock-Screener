@@ -43,7 +43,7 @@ def main():
     end = date.today()
     start = end - timedelta(days=DAYS)
 
-    tickers = get_nasdaq_tickers() # MAX_TICKERS
+    tickers = get_nasdaq_tickers(200) # MAX_TICKERS
     print(f"Downloading {len(tickers)} tickers")
 
     rows = []
