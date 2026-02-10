@@ -93,7 +93,7 @@ def main():
             "ticker", "RS", "close", "volume",
             "ma20", "ma50", "ma200",
             "atr_5", "atr_10", "atr_50", "range_5", "range_10",
-            "up_vol_5", "down_vol_5", "up_vol_10", "down_vol_10", "avg_value_10"
+            "avg_value_10"
         ]]
     )
 
