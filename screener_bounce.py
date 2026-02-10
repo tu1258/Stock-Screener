@@ -27,6 +27,7 @@ def compute_indicators_vectorized(df):
     ], axis=1).max(axis=1)
     df["tr_pct"] = df["tr"] / df['prev_close'] * 100
     
+    df["atr_14"] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(14).mean())
     df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(14).mean())
 
     # 均線
