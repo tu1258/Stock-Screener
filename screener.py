@@ -54,6 +54,13 @@ def compute_indicators_vectorized(df):
     df["up_vol_10"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
     df["down_vol_10"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
 
+    df["trade_chg"] = df.groupby("ticker")["close"] - df.groupby("ticker")["open"]
+    df["green_vol"] = np.where(df["trade_chg"] > 0, df["volume"] * df["trade_chg"], 0)
+    df["red_vol"] = np.where(df["trade_chg"] < 0, df["volume"] * -df["trade_chg"], 0)
+    df["green_vol_5"] = df.groupby("ticker")["green_vol"].transform(lambda x: x.rolling(5).sum()) / 1_000
+    df["red_vol_5"] = df.groupby("ticker")["red_vol"].transform(lambda x: x.rolling(5).sum()) / 1_000
+    df["green_vol_10"] = df.groupby("ticker")["green_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
+    df["red_vol_10"] = df.groupby("ticker")["red_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
     return df
 
 # ---------------- 主程式 ---------------- #
@@ -82,7 +89,9 @@ def main():
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["up_vol_10"] > latest_df["down_vol_10"]) & 
-        (latest_df["up_vol_5"] > latest_df["down_vol_5"]) #&
+        (latest_df["up_vol_5"] > latest_df["down_vol_5"]) &
+        (latest_df["green_vol_10"] > latest_df["red_vol_10"]) &
+        (latest_df["green_vol_5"] > latest_df["red_vol_5"]) &
         #(latest_df["range_10"] / latest_df["ma10"] * 100 > latest_df["atr_50_pct"] * 5)
         #(latest_df["range_5"] < latest_df["atr_5"] * 2.5)
         #(latest_df["range_10"] < latest_df["atr_10"] * 2.5)
