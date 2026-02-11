@@ -34,7 +34,7 @@ def compute_indicators_vectorized(df):
     
     df['atr_10'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(10).mean())
     df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(14).mean())
-    df['distance'] = abs((df['close'] + df['high'] + df['low']) / 3 - df["ma10"]);
+    df['distance'] = abs((df['close'] + df['high'] + df['low']) / 3 - df["ma10"]); # Keltner Channel
 
     # 高低距離
     df["high5"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(5).max())
