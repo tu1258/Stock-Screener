@@ -17,7 +17,13 @@ def compute_indicators_vectorized(df):
     # 10日平均成交值
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
     
-    # ATR
+    # 均線
+    df["ma10"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(10).mean())
+    df["ma20"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20).mean())
+    df["ma50"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50).mean())
+    df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200).mean())    
+    
+    # VCP
     df['prev_close'] = df.groupby('ticker')['close'].shift(1)
     df['tr'] = pd.concat([
         df['high'] - df['low'],
@@ -26,16 +32,9 @@ def compute_indicators_vectorized(df):
     ], axis=1).max(axis=1)
     df["tr_pct"] = df["tr"] / df['prev_close'] * 100
     
-    df['atr_5'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(5).mean())
     df['atr_10'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(10).mean())
-    df['atr_50_pct'] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(50).mean())
     df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(14).mean())
-
-    # 均線
-    df["ma10"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(10).mean())
-    df["ma20"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20).mean())
-    df["ma50"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50).mean())
-    df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200).mean())
+    df['distance'] = abs((df['close'] + df['high'] + df['low']) / 3 - df["ma10"]);
 
     # 高低距離
     df["high5"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(5).max())
@@ -61,6 +60,7 @@ def compute_indicators_vectorized(df):
     df["red_vol_5"] = df.groupby("ticker")["red_vol"].transform(lambda x: x.rolling(5).sum()) / 1_000
     df["green_vol_10"] = df.groupby("ticker")["green_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
     df["red_vol_10"] = df.groupby("ticker")["red_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
+
     return df
 
 # ---------------- 主程式 ---------------- #
@@ -92,9 +92,7 @@ def main():
         (latest_df["up_vol_5"] > latest_df["down_vol_5"]) &
         (latest_df["green_vol_10"] > latest_df["red_vol_10"]) &
         (latest_df["green_vol_5"] > latest_df["red_vol_5"]) &
-        #(latest_df["range_10"] / latest_df["ma10"] * 100 > latest_df["atr_50_pct"] * 5)
-        #(latest_df["range_5"] < latest_df["atr_5"] * 2.5)
-        #(latest_df["range_10"] < latest_df["atr_10"] * 2.5)
+        (latest_df["distance"] > latest_df["atr_10"])
     ]
 
     # merge RS 並排序
@@ -102,8 +100,8 @@ def main():
         tech_filtered.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
-            "atr_5", "atr_10", "atr_50_pct", "range_5", "range_10",
-            "avg_value_10"
+            "atr_5", "atr_10", "range_5", "range_10",
+            "distance", "avg_value_10"
         ]]
     )
 
