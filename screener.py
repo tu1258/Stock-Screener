@@ -46,7 +46,7 @@ def compute_indicators_vectorized(df):
 
     # 價量
     df["chg"] = df.groupby("ticker")["close"].diff()
-    df["money_flow"] = np.where(df["chg"] > 0, df["volume"] * df["chg"], df["volume"] * -df["chg"])
+    df["money_flow"] = df["volume"] * df["chg"]
     df["money_flow_avg"] = df.groupby('ticker')['money_flow'].transform(lambda x: x.rolling(10).mean()) 
        
     return df
