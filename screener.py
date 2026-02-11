@@ -96,7 +96,7 @@ def main():
         #(latest_df["up_vol_5"] > latest_df["down_vol_5"]) &
         #(latest_df["green_vol_10"] > latest_df["red_vol_10"]) &
         #(latest_df["green_vol_5"] > latest_df["red_vol_5"]) &
-        (latest_df["distance"] > latest_df["atr_10"])
+        (latest_df["distance"] < latest_df["atr_10"])
     ]
 
     # merge RS 並排序
