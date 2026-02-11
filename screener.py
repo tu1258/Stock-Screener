@@ -104,7 +104,7 @@ def main():
         tech_filtered.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
-            "atr_5", "atr_10", "range_5", "range_10",
+            "atr_10", "range_5", "range_10",
             "vol_diff_5", "vol_diff_10", "vol_color_diff_5", "vol_color_diff_10",
             "distance", "avg_value_10"
         ]]
