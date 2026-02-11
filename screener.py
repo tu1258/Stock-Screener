@@ -37,7 +37,7 @@ def compute_indicators_vectorized(df):
     df["ma50"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50).mean())
     df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200).mean())
 
-    # 5日高低距離
+    # 高低距離
     df["high5"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(5).max())
     df["low5"] = df.groupby("ticker")["low"].transform(lambda x: x.rolling(5).min())
     df["range_5"] = df["high5"] - df["low5"]
@@ -77,7 +77,7 @@ def main():
     )
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
-        (latest_df["avg_value_10"] > 100) &
+        (latest_df["avg_value_10"] > 10) &
         (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
