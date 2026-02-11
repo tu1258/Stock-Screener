@@ -53,7 +53,7 @@ def compute_indicators_vectorized(df):
     df["up_vol_10"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
     df["down_vol_10"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
 
-    df["trade_chg"] = df.groupby("ticker")["close"] - df.groupby("ticker")["open"]
+    df["trade_chg"] = df['close'] - df["open"]
     df["green_vol"] = np.where(df["trade_chg"] > 0, df["volume"] * df["trade_chg"], 0)
     df["red_vol"] = np.where(df["trade_chg"] < 0, df["volume"] * -df["trade_chg"], 0)
     df["green_vol_5"] = df.groupby("ticker")["green_vol"].transform(lambda x: x.rolling(5).sum()) / 1_000
