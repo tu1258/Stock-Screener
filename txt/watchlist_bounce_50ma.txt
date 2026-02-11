@@ -1,7 +1,0 @@
-HL
-PL
-SATS
-SBSW
-RVMD
-UEC
-AMG
