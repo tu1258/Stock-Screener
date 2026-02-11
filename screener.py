@@ -46,25 +46,9 @@ def compute_indicators_vectorized(df):
 
     # 價量
     df["chg"] = df.groupby("ticker")["close"].diff()
-    df["up_vol"] = np.where(df["chg"] > 0, df["volume"] * df["chg"], 0)
-    df["down_vol"] = np.where(df["chg"] < 0, df["volume"] * -df["chg"], 0)
-    df["up_vol_5"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(5).sum()) / 1_000
-    df["down_vol_5"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(5).sum()) / 1_000
-    df["up_vol_10"] = df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
-    df["down_vol_10"] = df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
-    df["vol_diff_5"] = (df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(5).sum()) - df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(5).sum()) ) / 1_000
-    df["vol_diff_10"] = (df.groupby("ticker")["up_vol"].transform(lambda x: x.rolling(10).sum()) - df.groupby("ticker")["down_vol"].transform(lambda x: x.rolling(10).sum()) ) / 1_000    
-    
-    df["trade_chg"] = df['close'] - df["open"]
-    df["green_vol"] = np.where(df["trade_chg"] > 0, df["volume"] * df["trade_chg"], 0)
-    df["red_vol"] = np.where(df["trade_chg"] < 0, df["volume"] * -df["trade_chg"], 0)
-    df["green_vol_5"] = df.groupby("ticker")["green_vol"].transform(lambda x: x.rolling(5).sum()) / 1_000
-    df["red_vol_5"] = df.groupby("ticker")["red_vol"].transform(lambda x: x.rolling(5).sum()) / 1_000
-    df["green_vol_10"] = df.groupby("ticker")["green_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
-    df["red_vol_10"] = df.groupby("ticker")["red_vol"].transform(lambda x: x.rolling(10).sum()) / 1_000
-    df["vol_color_diff_5"] = (df.groupby("ticker")["green_vol"].transform(lambda x: x.rolling(5).sum()) - df.groupby("ticker")["red_vol"].transform(lambda x: x.rolling(5).sum()) ) / 1_000
-    df["vol_color_diff_10"] = (df.groupby("ticker")["green_vol"].transform(lambda x: x.rolling(10).sum()) - df.groupby("ticker")["red_vol"].transform(lambda x: x.rolling(10).sum()) ) / 1_000   
-    
+    df["money_flow"] = np.where(df["chg"] > 0, df["volume"] * df["chg"], df["volume"] * -df["chg"])
+    df["money_flow_avg"] = df.groupby('ticker')['money_flow'].transform(lambda x: x.rolling(10).mean()) 
+       
     return df
 
 # ---------------- 主程式 ---------------- #
@@ -92,10 +76,7 @@ def main():
         (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
-        #(latest_df["up_vol_10"] > latest_df["down_vol_10"]) & 
-        #(latest_df["up_vol_5"] > latest_df["down_vol_5"]) &
-        #(latest_df["green_vol_10"] > latest_df["red_vol_10"]) &
-        #(latest_df["green_vol_5"] > latest_df["red_vol_5"]) &
+        (latest_df["money_flow_avg"] > 0) & 
         (latest_df["distance"] < latest_df["atr_10"])
     ]
 
@@ -105,7 +86,7 @@ def main():
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "atr_10", "range_5", "range_10",
-            "vol_diff_5", "vol_diff_10", "vol_color_diff_5", "vol_color_diff_10",
+            "vol_diff_5", "vol_diff_10",
             "distance", "avg_value_10"
         ]]
     )
