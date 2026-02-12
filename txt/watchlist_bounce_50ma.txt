@@ -1,0 +1,8 @@
+PL
+HL
+SATS
+TSEM
+UEC
+AMG
+SAN
+BCS
