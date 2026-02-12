@@ -65,7 +65,7 @@ def main():
     rs_df = pd.read_csv(RS_CSV)
 
     # ---------- 1. RS 篩選 ----------
-    rs_filtered = rs_df[rs_df["RS"] > 80].copy()
+    rs_filtered = rs_df[rs_df["RS"] > 90].copy()
     rs_filtered = rs_filtered.sort_values("RS", ascending=False)
     rs_tickers = rs_filtered["ticker"].tolist()
 
@@ -81,7 +81,7 @@ def main():
 
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered_50 = latest_df[
-        (latest_df["avg_value_10"] > 100) &
+        (latest_df["avg_value_10"] > 10) &
         (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
         (latest_df["bullish_count"] > 20) &
         (abs(latest_df["close"] - latest_df["ma50"]) < latest_df["atr_14"]) & 
