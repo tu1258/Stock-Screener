@@ -48,7 +48,10 @@ def compute_indicators_vectorized(df):
     df["chg"] = df.groupby("ticker")["close"].diff()
     df["money_flow"] = df["volume"] * df["chg"]
     df["money_flow_avg"] = df.groupby('ticker')['money_flow'].transform(lambda x: x.rolling(10).mean()) 
-       
+    df["trade_chg"] = df["close"] - df["open"]
+    df["trade_money_flow"] = df["volume"] * df["trade_chg"]
+    df["trade_money_flow_avg"] = df.groupby('ticker')['trade_money_flow'].transform(lambda x: x.rolling(10).mean()) 
+    
     return df
 
 # ---------------- 主程式 ---------------- #
@@ -77,6 +80,7 @@ def main():
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["money_flow_avg"] > 0) & 
+        (latest_df["trade_money_flow_avg"] > 0) & 
         (latest_df["distance"] < latest_df["atr_10"])
     ]
 
