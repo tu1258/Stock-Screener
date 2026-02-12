@@ -36,14 +36,6 @@ def compute_indicators_vectorized(df):
     df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(14).mean())
     df['distance'] = abs((df['close'] + df['high'] + df['low']) / 3 - df["ma10"]); # Keltner Channel
 
-    # 高低距離
-    df["high5"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(5).max())
-    df["low5"] = df.groupby("ticker")["low"].transform(lambda x: x.rolling(5).min())
-    df["range_5"] = df["high5"] - df["low5"]
-    df["high10"] = df.groupby("ticker")["high"].transform(lambda x: x.rolling(10).max())
-    df["low10"] = df.groupby("ticker")["low"].transform(lambda x: x.rolling(10).min())
-    df["range_10"] = df["high10"] - df["low10"]
-
     # 價量
     df["chg"] = df.groupby("ticker")["close"].diff()
     df["money_flow"] = df["volume"] * df["chg"]
@@ -62,7 +54,7 @@ def main():
 
     # ---------- 1. RS 篩選 ----------
     rs_filtered = rs_df[rs_df["RS"] > 80].copy()
-    rs_filtered = rs_filtered.sort_values("RS", ascending=False)
+    rs_filtered = rs_filtered.sort_values("score", ascending=False)
     rs_tickers = rs_filtered["ticker"].tolist()
 
     # ---------- 2. 計算技術指標 ----------
@@ -86,12 +78,12 @@ def main():
 
     # merge RS 並排序
     final_tickers = (
-        tech_filtered.merge(rs_filtered[["ticker", "RS"]], on="ticker", how="left")
-        .sort_values("RS", ascending=False)[[
+        tech_filtered.merge(rs_filtered[["ticker", "score", "RS"]], on="ticker", how="left")
+        .sort_values("score", ascending=False)[[
             "ticker", "RS", "close", "volume",
-            "atr_10", "range_5", "range_10",
-            "money_flow_avg",
-            "distance", "avg_value_10"
+            "atr_10", "distance",
+            "money_flow_avg", "trade_money_flow_avg",
+            "avg_value_10"
         ]]
     )
 
