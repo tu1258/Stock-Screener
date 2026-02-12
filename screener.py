@@ -19,7 +19,6 @@ def compute_indicators_vectorized(df):
     
     # 均線
     df["ma10"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(10).mean())
-    df["ma20"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20).mean())
     df["ma50"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50).mean())
     df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200).mean())    
     
