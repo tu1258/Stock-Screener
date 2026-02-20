@@ -27,8 +27,10 @@ def compute_indicators_vectorized(df):
     ], axis=1).max(axis=1)
     df["tr_pct"] = df["tr"] / df['prev_close'] * 100
     
-    df["atr_14"] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(14).mean())
-    df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(14).mean())
+    #df["atr_14"] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(14).mean())
+    #df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(14).mean())
+    df['atr_14'] = df.groupby('ticker')['tr'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
+    df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
 
     # 均線
     df["ma20"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20).mean())
@@ -94,7 +96,7 @@ def main():
         .sort_values("RS", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "bullish_count", "ma20", "ma50", "ma200", "52wH",
-            "atr_14_pct", "avg_value_10"
+            "atr_14", "atr_14_pct", "avg_value_10"
         ]]
     )
     final_tickers_50 = final_tickers_50.round(3)
