@@ -32,7 +32,7 @@ def compute_indicators_vectorized(df):
     df["tr_pct"] = df["tr"] / df['prev_close'] * 100
     
     df['atr_10'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(10).mean())
-    df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(14).mean())
+    df["atr_10_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(10).mean())
     df['distance'] = abs((df['close'] + df['high'] + df['low']) / 3 - df["ma10"]); # Keltner Channel
 
     # 價量
@@ -67,7 +67,7 @@ def main():
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
         (latest_df["avg_value_10"] > 10) &
-        (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 20) &
+        (latest_df["atr_10_pct"] > 1) & (latest_df["atr_10_pct"] < 10) &
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         (latest_df["money_flow_avg"] > 0) & 
