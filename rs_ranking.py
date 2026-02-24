@@ -71,7 +71,7 @@ def main():
                 continue  # 或者 rs = np.nan，然後 append
             else:
                 rs_score = relative_strength(closes, closes_ref)
-                if rs_score > 1000:
+                if rs_score > 10000:
                     continue
     
         # append 到 list
