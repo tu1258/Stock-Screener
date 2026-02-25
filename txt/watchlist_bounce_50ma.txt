@@ -1,4 +1,3 @@
 PL
-UUUU
 UEC
-AA
+PRIM
