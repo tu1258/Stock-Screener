@@ -95,8 +95,6 @@ def main():
     
     # === 用整個市場做 percentile ===
     df["RS"] = pd.qcut(df["score"], 100, labels=False, duplicates="drop")
-
-    df.to_csv("stock_data_ticker_rs.csv", index=False)
  
     # RS 大的在前
     df = df.sort_values("score", ascending=False)
