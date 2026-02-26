@@ -38,7 +38,7 @@ def compute_indicators_vectorized(df):
     df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200).mean())
 
     # 多頭排列
-    df["bullish"] = (df["close"] > df["ma50"]) & (df["ma20"] > df["ma50"]) & (df["ma50"] > df["ma200"])
+    df["bullish"] = (df["ma20"] > df["ma50"]) & (df["ma50"] > df["ma200"])
 
     # 計算連續多頭排列天數
     def bullish_streak(x):
@@ -83,7 +83,7 @@ def main():
 
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered_50 = latest_df[
-        (latest_df["avg_value_10"] > 100) &
+        (latest_df["avg_value_10"] > 10) &
         (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
         (latest_df["bullish_count"] > 20) &
         (abs(latest_df["close"] - latest_df["ma50"]) < latest_df["atr_14"]) & 
