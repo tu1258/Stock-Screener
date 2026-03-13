@@ -70,11 +70,11 @@ def main():
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
         (latest_df["avg_value_10"] > 100) &
-        (latest_df["atr_14_pct"] > 1) & (latest_df["atr_14_pct"] < 10) &
+        (latest_df["atr_14_pct"] > 2.5) &
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
-        (latest_df["money_flow_avg"] > 0) & 
-        (latest_df["trade_money_flow_avg"] > 0) & 
+        #(latest_df["money_flow_avg"] > 0) & 
+        #(latest_df["trade_money_flow_avg"] > 0) & 
         (latest_df["distance"] < latest_df["atr_10"])
     ]
 
