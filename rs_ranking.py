@@ -27,7 +27,8 @@ def strength(closes):
         m1 = historical_perf(closes, 1)
         m3 = historical_perf(closes, 3)
         m6 = historical_perf(closes, 6)
-        return m1/3 + m3/3 + m6/3
+        m12 = historical_perf(closes, 21)
+        return m1/4 + m3/4 + m6/4 + m12/4
     except Exception:
         return 0
 
