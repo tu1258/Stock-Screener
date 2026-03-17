@@ -22,20 +22,20 @@ def relative_strength(closes, closes_ref):
 
 
 def strength(closes):
-    """Weighted yearly performance (recent quarter double weight)."""
+    """Weighted performance."""
     try:
-        q1 = quarters_perf(closes, 1)
-        q2 = quarters_perf(closes, 2)
-        q3 = quarters_perf(closes, 3)
-        q4 = quarters_perf(closes, 4)
-        return 0.4*q1 + 0.2*q2 + 0.2*q3 + 0.2*q4
+        m1 = historical_perf(closes, 1)
+        m2 = historical_perf(closes, 2)
+        m3 = historical_perf(closes, 3)
+        m6 = historical_perf(closes, 6)
+        return 0.25*m1 + 0.25*m2 + 0.25*m3 + 0.25*m6
     except Exception:
         return 0
 
 
-def quarters_perf(closes, n):
-    """Return cumulative performance of last n quarters."""
-    length = min(len(closes), n * int(252 / 4))
+def historical_perf(closes, n):
+    """Return cumulative performance of last n months."""
+    length = min(len(closes), n * 21)
     prices = closes.tail(length)
     pct_chg = prices.pct_change().dropna()
     perf_cum = (pct_chg + 1).cumprod() - 1
@@ -48,7 +48,7 @@ def main():
     tickers = df_all["ticker"].unique()
 
     # --- download SPX directly from Yahoo ---
-    df_ref = yf.download(REFERENCE_TICKER, period="2y", progress=False)
+    df_ref = yf.download(REFERENCE_TICKER, period="1y", progress=False)
 
     if df_ref.empty:
         raise RuntimeError("Failed to download SPX from Yahoo Finance")
