@@ -25,10 +25,9 @@ def strength(closes):
     """Weighted performance."""
     try:
         m1 = historical_perf(closes, 1)
-        m2 = historical_perf(closes, 2)
         m3 = historical_perf(closes, 3)
         m6 = historical_perf(closes, 6)
-        return 0.25*m1 + 0.25*m2 + 0.25*m3 + 0.25*m6
+        return m1/3 + m3/3 + m6/3
     except Exception:
         return 0
 
