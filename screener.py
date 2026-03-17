@@ -72,7 +72,7 @@ def main():
     tech_filtered = latest_df[
         (latest_df["avg_value_10"] > 100) &
         (latest_df["atr_14_pct"] > 2.5) &
-        (latest_df["close"] > latest_df["ma20"]) &
+        #(latest_df["close"] > latest_df["ma20"]) &
         (latest_df["close"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
         #(latest_df["money_flow_avg"] > 0) & 
