@@ -14,7 +14,7 @@ import json
 import time
 import csv
 from collections import Counter
-import google.generativeai as genai
+import google.genai as genai
 
 # ── 路徑設定 ─────────────────────────────────────────────────────────────────
 INPUT_TXT  = "txt/watchlist.txt"
