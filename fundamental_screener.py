@@ -28,7 +28,7 @@ SUMMARY_TXT  = "txt/watchlist_summary.txt"
 OUTPUT_CSV   = "csv/fundamental_watchlist.csv"
 
 # ── AI 設定 ──────────────────────────────────────────────────────────────────
-MODEL = "gemini-2.5-flash-lite"
+MODEL = "gemini-2.0-flash"
 SLEEP_BETWEEN = 10   # 15 RPM → 每4秒1次，留buffer
 # ─────────────────────────────────────────────────────────────────────────────
 
