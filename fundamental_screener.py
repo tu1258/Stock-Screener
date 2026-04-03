@@ -1,31 +1,35 @@
 """
 fundamental_screener.py
-- 讀 txt/watchlist.txt (由 screener.py 生成)
-- 讀 csv/watchlist.csv 取 close 價格 (由 screener.py 生成)
-- 每檔股票呼叫 Gemini AI 3次，多數決定最終評分
-- 輸出 csv/fundamental_watchlist.csv 和 txt/fundamental_watchlist.txt
 
-免費額度: Gemini 2.0 Flash → 10 RPM / 250 req/day (不需信用卡)
-80檔 × 3次 = 240 req，在免費額度內
+流程：
+1. 讀 txt/watchlist.txt → 每檔跑一次 Gemini，做基本面+題材面分析
+2. 所有分析結果累積寫入 txt/watchlist_summary.txt
+3. 全部跑完後，把整個 summary 丟給 Gemini 做最終評分
+4. 輸出 csv/fundamental_watchlist.csv
+   欄位: ticker, RS, rating, theme, 個股特色
+
+使用 google-genai (新版 SDK): from google import genai
+免費額度: Gemini 2.0 Flash → 15 RPM / 1000 req/day
 """
 
 import os
-import json
-import time
 import csv
+import time
+import json
 from collections import Counter
-import google.genai as genai
+from google import genai
+from google.genai import types
 
 # ── 路徑設定 ─────────────────────────────────────────────────────────────────
-INPUT_TXT  = "txt/watchlist.txt"
-INPUT_CSV  = "csv/watchlist.csv"
-OUTPUT_CSV = "csv/fundamental_watchlist.csv"
-OUTPUT_TXT = "txt/fundamental_watchlist.txt"
+INPUT_TXT    = "txt/watchlist.txt"
+INPUT_CSV    = "csv/watchlist.csv"
+RS_CSV       = "stock_data_rs.csv"
+SUMMARY_TXT  = "txt/watchlist_summary.txt"
+OUTPUT_CSV   = "csv/fundamental_watchlist.csv"
 
 # ── AI 設定 ──────────────────────────────────────────────────────────────────
-REPEAT_TIMES  = 3      # 免費版每天250 req，80檔×3=240，剛好夠
-SLEEP_BETWEEN = 6.5    # 免費版 10 RPM → 每6秒1次，留buffer
 MODEL         = "gemini-2.0-flash"
+SLEEP_BETWEEN = 4.5   # 15 RPM → 每4秒1次，留buffer
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -37,11 +41,9 @@ def load_tickers() -> list[str]:
 def load_prices() -> dict[str, float]:
     prices = {}
     if not os.path.exists(INPUT_CSV):
-        print(f"[WARN] {INPUT_CSV} not found, prices will show as 0.0")
         return prices
     with open(INPUT_CSV, "r", newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
+        for row in csv.DictReader(f):
             ticker = row.get("ticker", "").strip().upper()
             try:
                 prices[ticker] = round(float(row.get("close", 0)), 3)
@@ -50,128 +52,170 @@ def load_prices() -> dict[str, float]:
     return prices
 
 
-def build_prompt(ticker: str) -> str:
-    return f"""You are a professional US stock analyst. Analyze **{ticker}** and reply ONLY with a valid JSON object — no markdown, no extra text, no explanation.
+def load_rs() -> dict[str, int]:
+    rs_map = {}
+    if not os.path.exists(RS_CSV):
+        print(f"[WARN] {RS_CSV} not found")
+        return rs_map
+    with open(RS_CSV, "r", newline="") as f:
+        for row in csv.DictReader(f):
+            ticker = row.get("ticker", "").strip().upper()
+            try:
+                rs_map[ticker] = int(float(row.get("RS", 0)))
+            except (ValueError, TypeError):
+                rs_map[ticker] = 0
+    return rs_map
 
-Required fields:
-- "fundamentals": 1-2 sentences covering revenue growth, profitability, and valuation (P/E, P/S, etc.)
-- "theme": 1-2 sentences on the key narrative or speculative catalyst (e.g. AI infrastructure, GLP-1, defense, reshoring, etc.)
-- "rating": integer 1 to 5
-  5=Exceptional  4=Strong  3=Neutral  2=Weak  1=Avoid
 
-Example:
-{{"fundamentals": "Revenue grew 35% YoY with expanding margins and reasonable P/S of 8x.", "theme": "Key AI infrastructure play benefiting from datacenter buildout cycle.", "rating": 4}}"""
+# ── Step 1: 每檔分析 prompt ───────────────────────────────────────────────────
+
+def analysis_prompt(ticker: str, price: float) -> str:
+    return f"""You are a professional US stock analyst. Analyze the stock **{ticker}** (current price: ${price}).
+
+Write a concise analysis in this exact format (plain text, no JSON, no markdown):
+
+FUNDAMENTALS: [1-2 sentences on revenue growth, profitability, valuation metrics like P/E or P/S]
+THEME: [1-2 sentences on the key narrative or catalyst driving this stock, e.g. AI infrastructure, GLP-1, defense spending, reshoring, optical networking, etc.]"""
 
 
-def call_gemini(model, ticker: str) -> dict | None:
+def analyze_one(client, ticker: str, price: float) -> str | None:
     try:
-        response = model.generate_content(build_prompt(ticker))
+        response = client.models.generate_content(
+            model=MODEL,
+            contents=analysis_prompt(ticker, price),
+        )
+        return response.text.strip()
+    except Exception as e:
+        print(f"  [WARN] {ticker}: {e}")
+        return None
+
+
+# ── Step 2: 批次評分 prompt ───────────────────────────────────────────────────
+
+def rating_prompt(summary_content: str) -> str:
+    return f"""You are a professional US stock analyst. Below is a fundamental and thematic analysis summary for multiple stocks.
+
+For EVERY stock listed, output a JSON array. Each object must have exactly these fields:
+- "ticker": stock symbol (string)
+- "rating": integer 1 to 5 (5=Exceptional, 4=Strong, 3=Neutral, 2=Weak, 1=Avoid)
+- "theme": short comma-separated theme tags in mixed English/Chinese, e.g. "AI,光通訊" or "Defense,Reshoring"
+- "feature": one concise English sentence describing this stock's specific role or edge
+
+Reply ONLY with the raw JSON array. No markdown fences, no explanation, no extra text.
+
+--- STOCK SUMMARIES ---
+{summary_content}"""
+
+
+def batch_rate(client, summary_content: str) -> list[dict] | None:
+    try:
+        response = client.models.generate_content(
+            model=MODEL,
+            contents=rating_prompt(summary_content),
+            config=types.GenerateContentConfig(
+                max_output_tokens=8192,
+            ),
+        )
         raw = response.text.strip()
-        # Strip markdown fences if model accidentally adds them
+        # Strip markdown fences if present
         if raw.startswith("```"):
             raw = raw.split("```")[1]
             if raw.lower().startswith("json"):
                 raw = raw[4:]
-        result = json.loads(raw.strip())
-        # Validate
-        assert isinstance(result.get("rating"), int) and 1 <= result["rating"] <= 5
-        assert isinstance(result.get("fundamentals"), str) and result["fundamentals"]
-        assert isinstance(result.get("theme"), str) and result["theme"]
-        return result
+        results = json.loads(raw.strip())
+        assert isinstance(results, list)
+        return results
     except Exception as e:
-        print(f"      [WARN] {e}")
+        print(f"[ERROR] Batch rating failed: {e}")
         return None
 
 
-def majority_vote(values: list[int]) -> int:
-    count = Counter(values)
-    return max(count, key=lambda x: (count[x], x))
-
-
-def analyze_ticker(model, ticker: str, price: float) -> dict | None:
-    print(f"\n  [{ticker}]  close={price}")
-    valid = []
-
-    for i in range(REPEAT_TIMES):
-        result = call_gemini(model, ticker)
-        if result:
-            valid.append(result)
-            print(f"    round {i+1}: {'⭐' * result['rating']} ({result['rating']})")
-        else:
-            print(f"    round {i+1}: invalid, skipped")
-        time.sleep(SLEEP_BETWEEN)
-
-    if not valid:
-        print(f"  [SKIP] {ticker} — 0 valid responses")
-        return None
-
-    all_ratings  = [r["rating"] for r in valid]
-    final_rating = majority_vote(all_ratings)
-    rep          = next((r for r in valid if r["rating"] == final_rating), valid[0])
-
-    print(f"  → Final: {'⭐' * final_rating}  votes={all_ratings}")
-    return {
-        "rating":       final_rating,
-        "ticker":       ticker,
-        "close":        price,
-        "fundamentals": rep["fundamentals"],
-        "theme":        rep["theme"],
-        "all_ratings":  ",".join(map(str, all_ratings)),
-    }
-
-
-def write_outputs(records: list[dict]) -> None:
-    os.makedirs("csv", exist_ok=True)
-    os.makedirs("txt", exist_ok=True)
-
-    records.sort(key=lambda x: (-x["rating"], x["ticker"]))
-
-    with open(OUTPUT_CSV, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(
-            f,
-            fieldnames=["rating", "ticker", "close", "fundamentals", "theme", "all_ratings"],
-        )
-        writer.writeheader()
-        writer.writerows(records)
-    print(f"\n✅ CSV → {OUTPUT_CSV}")
-
-    with open(OUTPUT_TXT, "w", encoding="utf-8") as f:
-        for r in records:
-            f.write(r["ticker"] + "\n")
-    print(f"✅ TXT → {OUTPUT_TXT}")
-
+# ── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise EnvironmentError("GEMINI_API_KEY not set")
 
-    genai.configure(api_key=api_key)
-    model   = genai.GenerativeModel(MODEL)
+    client  = genai.Client(api_key=api_key)
     tickers = load_tickers()
     prices  = load_prices()
+    rs_map  = load_rs()
 
-    print(f"Loaded {len(tickers)} tickers from {INPUT_TXT}")
-    print(f"Estimated time: ~{len(tickers) * REPEAT_TIMES * SLEEP_BETWEEN / 60:.1f} minutes\n")
+    os.makedirs("txt", exist_ok=True)
+    os.makedirs("csv", exist_ok=True)
 
-    records = []
-    for ticker in tickers:
-        price  = prices.get(ticker, 0.0)
-        result = analyze_ticker(model, ticker, price)
-        if result:
-            records.append(result)
+    print(f"Loaded {len(tickers)} tickers")
+    print(f"Estimated time: ~{len(tickers) * SLEEP_BETWEEN / 60:.1f} min\n")
 
-    if not records:
-        print("No records generated.")
+    # ── Step 1: 逐檔分析，邊跑邊寫入 summary ──────────────────────────────────
+    summary_lines = []
+
+    with open(SUMMARY_TXT, "w", encoding="utf-8") as f_out:
+        for i, ticker in enumerate(tickers, 1):
+            price = prices.get(ticker, 0.0)
+            print(f"[{i}/{len(tickers)}] {ticker} (close={price})", end="  ")
+
+            analysis = analyze_one(client, ticker, price)
+
+            if analysis:
+                block = f"=== {ticker} ===\n{analysis}"
+                print("✓")
+            else:
+                block = f"=== {ticker} ===\nFUNDAMENTALS: Data unavailable.\nTHEME: Data unavailable."
+                print("✗ fallback")
+
+            summary_lines.append(block)
+            f_out.write(block + "\n\n")
+            f_out.flush()
+
+            time.sleep(SLEEP_BETWEEN)
+
+    print(f"\n✅ Summary → {SUMMARY_TXT}  ({len(summary_lines)} stocks)\n")
+
+    # ── Step 2: 一次批次評分 ───────────────────────────────────────────────────
+    print("Running batch rating (1 API call)...")
+    summary_content = "\n\n".join(summary_lines)
+    ratings = batch_rate(client, summary_content)
+
+    if not ratings:
+        print("[ERROR] Batch rating failed. CSV not generated.")
         return
 
-    write_outputs(records)
+    # ── Step 3: 輸出 CSV ───────────────────────────────────────────────────────
+    rating_map = {r["ticker"].upper(): r for r in ratings}
 
-    print(f"\n📊 {len(records)} stocks analyzed")
-    dist = Counter(r["rating"] for r in records)
+    rows = []
+    for ticker in tickers:
+        r = rating_map.get(ticker, {})
+        rows.append({
+            "ticker":  ticker,
+            "RS":      rs_map.get(ticker, ""),
+            "rating":  r.get("rating", ""),
+            "theme":   r.get("theme", ""),
+            "個股特色":  r.get("feature", ""),
+        })
+        if not r:
+            print(f"  [WARN] {ticker} missing from batch rating output")
+
+    # 依 rating 高→低，RS 高→低
+    rows.sort(key=lambda x: (
+        -int(x["rating"]) if str(x["rating"]).isdigit() else 0,
+        -int(x["RS"])     if str(x["RS"]).isdigit()     else 0,
+    ))
+
+    with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "個股特色"])
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print(f"✅ CSV → {OUTPUT_CSV}\n")
+
+    dist = Counter(str(r["rating"]) for r in rows if str(r["rating"]).isdigit())
+    print(f"📊 {len(rows)} stocks rated")
     for star in range(5, 0, -1):
-        bar = "█" * dist.get(star, 0)
-        print(f"  {'⭐' * star}  {dist.get(star, 0):>3}  {bar}")
+        count = dist.get(str(star), 0)
+        print(f"  {'⭐' * star}  {count:>3}  {'█' * count}")
 
 
 if __name__ == "__main__":
