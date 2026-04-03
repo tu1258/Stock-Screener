@@ -2,8 +2,11 @@
 fundamental_screener.py
 - 讀 txt/watchlist.txt (由 screener.py 生成)
 - 讀 csv/watchlist.csv 取 close 價格 (由 screener.py 生成)
-- 每檔股票呼叫 Claude AI 5次，多數決定最終評分
+- 每檔股票呼叫 Gemini AI 3次，多數決定最終評分
 - 輸出 csv/fundamental_watchlist.csv 和 txt/fundamental_watchlist.txt
+
+免費額度: Gemini 2.0 Flash → 10 RPM / 250 req/day (不需信用卡)
+80檔 × 3次 = 240 req，在免費額度內
 """
 
 import os
@@ -11,18 +14,18 @@ import json
 import time
 import csv
 from collections import Counter
-import anthropic
+import google.generativeai as genai
 
-# ── 路徑設定 (對齊你現有的 screener.py 輸出) ─────────────────────────────────
-INPUT_TXT   = "txt/watchlist.txt"
-INPUT_CSV   = "csv/watchlist.csv"
-OUTPUT_CSV  = "csv/fundamental_watchlist.csv"
-OUTPUT_TXT  = "txt/fundamental_watchlist.txt"
+# ── 路徑設定 ─────────────────────────────────────────────────────────────────
+INPUT_TXT  = "txt/watchlist.txt"
+INPUT_CSV  = "csv/watchlist.csv"
+OUTPUT_CSV = "csv/fundamental_watchlist.csv"
+OUTPUT_TXT = "txt/fundamental_watchlist.txt"
 
 # ── AI 設定 ──────────────────────────────────────────────────────────────────
-REPEAT_TIMES   = 5
-SLEEP_BETWEEN  = 1.0   # 避免 rate limit
-MODEL          = "claude-opus-4-5"
+REPEAT_TIMES  = 3      # 免費版每天250 req，80檔×3=240，剛好夠
+SLEEP_BETWEEN = 6.5    # 免費版 10 RPM → 每6秒1次，留buffer
+MODEL         = "gemini-2.0-flash"
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -32,7 +35,6 @@ def load_tickers() -> list[str]:
 
 
 def load_prices() -> dict[str, float]:
-    """從 watchlist.csv 讀取 ticker -> close 對應表"""
     prices = {}
     if not os.path.exists(INPUT_CSV):
         print(f"[WARN] {INPUT_CSV} not found, prices will show as 0.0")
@@ -61,14 +63,10 @@ Example:
 {{"fundamentals": "Revenue grew 35% YoY with expanding margins and reasonable P/S of 8x.", "theme": "Key AI infrastructure play benefiting from datacenter buildout cycle.", "rating": 4}}"""
 
 
-def call_claude(client: anthropic.Anthropic, ticker: str) -> dict | None:
+def call_gemini(model, ticker: str) -> dict | None:
     try:
-        msg = client.messages.create(
-            model=MODEL,
-            max_tokens=400,
-            messages=[{"role": "user", "content": build_prompt(ticker)}],
-        )
-        raw = msg.content[0].text.strip()
+        response = model.generate_content(build_prompt(ticker))
+        raw = response.text.strip()
         # Strip markdown fences if model accidentally adds them
         if raw.startswith("```"):
             raw = raw.split("```")[1]
@@ -86,21 +84,19 @@ def call_claude(client: anthropic.Anthropic, ticker: str) -> dict | None:
 
 
 def majority_vote(values: list[int]) -> int:
-    """最多票的評分；同票取高分"""
     count = Counter(values)
     return max(count, key=lambda x: (count[x], x))
 
 
-def analyze_ticker(client: anthropic.Anthropic, ticker: str, price: float) -> dict | None:
+def analyze_ticker(model, ticker: str, price: float) -> dict | None:
     print(f"\n  [{ticker}]  close={price}")
     valid = []
 
     for i in range(REPEAT_TIMES):
-        result = call_claude(client, ticker)
+        result = call_gemini(model, ticker)
         if result:
             valid.append(result)
-            stars = "⭐" * result["rating"]
-            print(f"    round {i+1}: {stars} ({result['rating']})")
+            print(f"    round {i+1}: {'⭐' * result['rating']} ({result['rating']})")
         else:
             print(f"    round {i+1}: invalid, skipped")
         time.sleep(SLEEP_BETWEEN)
@@ -128,10 +124,8 @@ def write_outputs(records: list[dict]) -> None:
     os.makedirs("csv", exist_ok=True)
     os.makedirs("txt", exist_ok=True)
 
-    # 依 rating 高→低，同 rating 依 ticker A→Z
     records.sort(key=lambda x: (-x["rating"], x["ticker"]))
 
-    # CSV
     with open(OUTPUT_CSV, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
             f,
@@ -141,7 +135,6 @@ def write_outputs(records: list[dict]) -> None:
         writer.writerows(records)
     print(f"\n✅ CSV → {OUTPUT_CSV}")
 
-    # TXT (ticker only，依 rating 排序)
     with open(OUTPUT_TXT, "w", encoding="utf-8") as f:
         for r in records:
             f.write(r["ticker"] + "\n")
@@ -149,20 +142,22 @@ def write_outputs(records: list[dict]) -> None:
 
 
 def main():
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        raise EnvironmentError("ANTHROPIC_API_KEY not set")
+        raise EnvironmentError("GEMINI_API_KEY not set")
 
-    client  = anthropic.Anthropic(api_key=api_key)
+    genai.configure(api_key=api_key)
+    model   = genai.GenerativeModel(MODEL)
     tickers = load_tickers()
     prices  = load_prices()
 
     print(f"Loaded {len(tickers)} tickers from {INPUT_TXT}")
+    print(f"Estimated time: ~{len(tickers) * REPEAT_TIMES * SLEEP_BETWEEN / 60:.1f} minutes\n")
 
     records = []
     for ticker in tickers:
         price  = prices.get(ticker, 0.0)
-        result = analyze_ticker(client, ticker, price)
+        result = analyze_ticker(model, ticker, price)
         if result:
             records.append(result)
 
@@ -172,7 +167,6 @@ def main():
 
     write_outputs(records)
 
-    # 統計摘要
     print(f"\n📊 {len(records)} stocks analyzed")
     dist = Counter(r["rating"] for r in records)
     for star in range(5, 0, -1):
