@@ -5,11 +5,11 @@ from google import genai
 from google.genai import types
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
-INPUT_TXT     = "txt/technical_watchlist.txt"
-RS_CSV        = "stock_data_rs.csv"
-OUTPUT_CSV    = "csv/fundamental_watchlist.csv"
+INPUT_TXT      = "txt/technical_watchlist.txt"
+RS_CSV         = "stock_data_rs.csv"
+OUTPUT_CSV     = "csv/fundamental_watchlist.csv"
 OUTPUT_TXT     = "txt/fundamental_watchlist.txt"
-MODEL         = "gemini-3-flash-preview"
+MODEL          = "gemini-3-flash-preview"
 
 def main():
     api_key = os.environ.get("GEMINI_API_KEY")
@@ -28,12 +28,12 @@ def main():
 
     print(f"正在執行全量分析 (共 {len(tickers)} 檔)... 請稍候")
 
-    # 核心 Prompt：要求 AI 一次性完成所有邏輯
+    # 核心 Prompt
     prompt = f"""你是一位資深美股分析師。請針對以下 {len(tickers)} 檔股票進行「全局對比分析」：
 清單：{', '.join(tickers)}
 
 任務說明：
-1. **深度檢索**：針對每檔股票檢索其最新的基本面指標（如營收成長、利潤率、估值）與當前核心市場題材。
+1. **深度檢索**：針對每檔股票檢索其最新的基本面指標（如營收成長、利潤率、估值）與當前市場題材。
 2. **全局對比評分**：進行橫向對比，給予 1-5 分的評分 (5分為最推薦)。
 3. **詳盡分析**：針對每一檔股票提供必要的描述，字數應於50字以內。
 4. 輸出繁體中文 JSON 陣列，每個物件必須嚴格包含以下欄位：
@@ -51,8 +51,8 @@ def main():
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type='application/json',
-                max_output_tokens=65536,  # 支撐 100 檔的輸出空間
-                temperature=0.25          # 降低隨機性，確保長輸出的格式穩定
+                max_output_tokens=65536,
+                temperature=0.25
             )
         )
         
@@ -80,8 +80,12 @@ def main():
             writer.writeheader()
             writer.writerows(final_rows)
 
+        # 輸出 TXT (僅輸出 Ticker)
         with open(OUTPUT_TXT, "w", encoding="utf-8") as f_txt:
-            f_txt.write(txt_content)
+            for row in final_rows:
+                f_txt.write(f"{row['ticker']}\n")
+            
+        print(f"✅ 完成！已產出報表與 Ticker 清單。")
             
     except Exception as e:
         print(f"❌ 執行失敗: {e}")
