@@ -30,7 +30,6 @@ jobs:
           python stock_data.py
           python rs_ranking.py
           python screener.py
-          python screener_ma.py
 
       - name: Run fundamental screener
         env:
