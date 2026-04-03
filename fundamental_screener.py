@@ -5,7 +5,7 @@ from google import genai
 from google.genai import types
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
-INPUT_TXT     = "txt/watchlist.txt"
+INPUT_TXT     = "txt/technical_watchlist.txt"
 RS_CSV        = "stock_data_rs.csv"
 OUTPUT_CSV    = "csv/fundamental_watchlist.csv"
 MODEL         = "gemini-2.5-flash"
