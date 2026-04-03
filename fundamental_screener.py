@@ -9,7 +9,7 @@ from google.genai import types
 INPUT_TXT      = "txt/technical_watchlist.txt"
 RS_CSV         = "stock_data_rs.csv"
 OUTPUT_CSV     = "csv/fundamental_watchlist.csv"
-OUTPUT_TXT      = "txt/fundamental_watchlist.txt"
+OUTPUT_TXT     = "txt/fundamental_watchlist.txt"
 MODEL          = "gemini-3-flash-preview"
 
 def main():
@@ -41,8 +41,8 @@ def main():
    - "ticker": 代號 (大寫)
    - "rating": 1-10 整數
    - "theme": 題材關鍵字
-   - "fundamental": 基本面描述
-   - "feature": 詳細的核心競爭優勢說明
+   - "fundamental": 基本面描述重點
+   - "feature": 核心競爭優勢或題材相關性
 
 **禁令**：僅回傳原始 JSON 陣列，禁止包含任何 Markdown 標籤（如 ```json）、解釋文字或補充說明。"""
 
