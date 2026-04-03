@@ -8,7 +8,7 @@ from google.genai import types
 INPUT_TXT     = "txt/watchlist.txt"
 RS_CSV        = "stock_data_rs.csv"
 OUTPUT_CSV    = "csv/fundamental_watchlist.csv"
-MODEL         = "gemini-3-flash"
+MODEL         = "gemini-2.5-flash"
 
 def main():
     api_key = os.environ.get("GEMINI_API_KEY")
