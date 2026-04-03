@@ -28,7 +28,7 @@ def main():
     print(f"正在執行全量分析 (共 {len(tickers)} 檔)... 請稍候")
 
     # 核心 Prompt：要求 AI 一次性完成所有邏輯
-prompt = f"""你是一位資深美股分析師。請針對以下 {len(tickers)} 檔股票進行「全局對比分析」：
+    prompt = f"""你是一位資深美股分析師。請針對以下 {len(tickers)} 檔股票進行「全局對比分析」：
 清單：{', '.join(tickers)}
 
 任務說明：
