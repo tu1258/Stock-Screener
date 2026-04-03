@@ -31,12 +31,6 @@ jobs:
           python rs_ranking.py
           python screener.py
 
-      - name: Run fundamental screener
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          python fundamental_screener.py
-
       - name: Commit output files
         run: |
           git config user.name "github-actions"
@@ -46,7 +40,5 @@ jobs:
             stock_data_rs.csv \
             csv/watchlist.csv \
             txt/watchlist.txt \
-            csv/fundamental_watchlist.csv \
-            txt/fundamental_watchlist.txt
           git commit -m "Daily Update" || echo "No changes to commit"
           git push
