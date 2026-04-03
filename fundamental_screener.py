@@ -9,7 +9,7 @@ INPUT_TXT      = "txt/technical_watchlist.txt"
 RS_CSV         = "stock_data_rs.csv"
 OUTPUT_CSV     = "csv/fundamental_watchlist.csv"
 OUTPUT_TXT     = "txt/fundamental_watchlist.txt"
-MODEL          = "gemini-3-flash-preview"
+MODEL          = "gemini-2.5-flash"
 
 def main():
     api_key = os.environ.get("GEMINI_API_KEY")
