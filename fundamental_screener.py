@@ -29,7 +29,7 @@ OUTPUT_CSV   = "csv/fundamental_watchlist.csv"
 
 # ── AI 設定 ──────────────────────────────────────────────────────────────────
 MODEL = "gemini-3.1-flash-lite-preview"
-SLEEP_BETWEEN = 10   # 15 RPM → 每4秒1次，留buffer
+SLEEP_BETWEEN = 5   # 12 RPM → 每5秒1次，留buffer
 # ─────────────────────────────────────────────────────────────────────────────
 
 
