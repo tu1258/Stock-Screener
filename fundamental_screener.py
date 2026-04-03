@@ -8,6 +8,7 @@ from google.genai import types
 INPUT_TXT     = "txt/technical_watchlist.txt"
 RS_CSV        = "stock_data_rs.csv"
 OUTPUT_CSV    = "csv/fundamental_watchlist.csv"
+OUTPUT_TXT     = "txt/fundamental_watchlist.txt"
 MODEL         = "gemini-2.5-flash"
 
 def main():
@@ -32,15 +33,15 @@ def main():
 清單：{', '.join(tickers)}
 
 任務說明：
-1. 針對每檔股票檢索其基本面指標與當前市場題材。
-2. 進行橫向對比，給予 1-5 分的評分 (5分為最推薦)。請基於這整個清單的強弱分配評分，確保評分具有區別性。
-3. **分配公平性要求**：請確保每一檔股票的分析深度一致，不要因為清單較長而簡略或跳過後方的股票內容。
+1. **深度檢索**：針對每檔股票檢索其最新的基本面指標（如營收成長、利潤率、估值）與當前核心市場題材。
+2. **全局對比評分**：進行橫向對比，給予 1-5 分的評分 (5分為最推薦)。
+3. **詳盡分析**：針對每一檔股票提供必要的描述，字數應於50字以內。
 4. 輸出繁體中文 JSON 陣列，每個物件必須嚴格包含以下欄位：
    - "ticker": 代號 (大寫)
    - "rating": 1-5 整數
-   - "theme": 題材關鍵字 (例如：AI 伺服器, 能源)
-   - "fundamental": 一句話基本面簡述 (包含營收或獲利亮點)
-   - "feature": 一句話核心特色 (該股在產業中的獨特優勢)
+   - "theme": 題材關鍵字
+   - "fundamental": 基本面描述
+   - "feature": 詳細的核心競爭優勢說明
 
 **禁令**：僅回傳原始 JSON 陣列，禁止包含任何 Markdown 標籤（如 ```json）、解釋文字或補充說明。"""
 
@@ -50,8 +51,8 @@ def main():
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type='application/json',
-                max_output_tokens=12288,  # 支撐 100 檔的輸出空間
-                temperature=0.2          # 降低隨機性，確保長輸出的格式穩定
+                max_output_tokens=65536,  # 支撐 100 檔的輸出空間
+                temperature=0.25          # 降低隨機性，確保長輸出的格式穩定
             )
         )
         
@@ -79,8 +80,9 @@ def main():
             writer.writeheader()
             writer.writerows(final_rows)
 
-        print(f"✅ 完成！已產出評分報表：{OUTPUT_CSV}")
-
+        with open(OUTPUT_TXT, "w", encoding="utf-8") as f_txt:
+            f_txt.write(txt_content)
+            
     except Exception as e:
         print(f"❌ 執行失敗: {e}")
 
