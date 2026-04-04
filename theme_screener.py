@@ -14,7 +14,7 @@ MODEL          = "gemini-3-flash-preview"
 
 def main():
     api_key = os.environ.get("GEMINI_API_KEY")
-    client = genai.Client(api_key=api_key, http_options={'timeout': 600})
+    client = genai.Client(api_key=api_key)
     
     # 讀取 Tickers
     with open(INPUT_TXT, "r") as f:
@@ -64,7 +64,8 @@ def main():
                     tools=[types.Tool(google_search=types.GoogleSearch())], 
                     response_mime_type='application/json',
                     max_output_tokens=65536,
-                    temperature=0.25
+                    temperature=0.25, 
+                    http_options={'timeout': 600}
                 )
             )
             results = json.loads(response.text)
