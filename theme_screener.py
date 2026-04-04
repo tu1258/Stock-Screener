@@ -61,7 +61,7 @@ def main():
                 model=MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    tools=[types.Tool(google_search=types.GoogleSearch())], 
+                    #tools=[types.Tool(google_search=types.GoogleSearch())], 
                     response_mime_type='application/json',
                     max_output_tokens=65536,
                     temperature=0.25
