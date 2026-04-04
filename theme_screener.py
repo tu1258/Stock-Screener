@@ -10,7 +10,7 @@ INPUT_TXT      = "txt/technical_watchlist.txt"
 RS_CSV         = "stock_data_rs.csv"
 OUTPUT_CSV     = "csv/theme_watchlist.csv"
 OUTPUT_TXT     = "txt/theme_watchlist.txt"
-MODEL          = "gemini-3-flash-preview"
+MODEL          = "gemini-2.5-flash"
 
 def main():
     api_key = os.environ.get("GEMINI_API_KEY")
@@ -61,13 +61,12 @@ def main():
                 model=MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    #tools=[types.Tool(google_search=types.GoogleSearch())], 
-                    response_mime_type='application/json',
+                    tools=[types.Tool(google_search=types.GoogleSearch())], 
                     max_output_tokens=65536,
+                    thinking_config=types.ThinkingConfig(thinking_budget=16384),
                     temperature=0
                 )
             )
-            
             results = json.loads(response.text)
             break # 成功拿到資料就跳出重試
         except Exception as e:
