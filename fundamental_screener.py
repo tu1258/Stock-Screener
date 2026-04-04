@@ -78,7 +78,8 @@ def main():
             "RS": rs_map.get(t, 0),
             "rating": item.get("rating", 0),
             "theme": item.get("theme", ""),
-            "feature": item.get("feature", "")
+            "feature": item.get("feature", ""),
+            "reason": item.get("reason", "")
         })
 
     # 排序：Rating 高 -> RS 高
@@ -86,7 +87,7 @@ def main():
 
     # 輸出 CSV
     with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
-        writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "feature"])
+        writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "feature", "reason"])
         writer.writeheader()
         writer.writerows(final_rows)
 
