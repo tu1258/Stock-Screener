@@ -14,7 +14,10 @@ MODEL          = "gemini-3-flash-preview"
 
 def main():
     api_key = os.environ.get("GEMINI_API_KEY")
-    client = genai.Client(api_key=api_key, http_options={'timeout': 600.0})
+    client = genai.Client(
+        api_key=api_key,
+        http_options=types.HttpOptions(timeout=600.0)
+    )
     
     # 讀取 Tickers
     with open(INPUT_TXT, "r") as f:
