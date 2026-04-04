@@ -8,8 +8,8 @@ from google.genai import types
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT      = "txt/technical_watchlist.txt"
 RS_CSV         = "stock_data_rs.csv"
-OUTPUT_CSV     = "csv/fundamental_watchlist.csv"
-OUTPUT_TXT     = "txt/fundamental_watchlist.txt"
+OUTPUT_CSV     = "csv/theme_watchlist.csv"
+OUTPUT_TXT     = "txt/theme_watchlist.txt"
 MODEL          = "gemini-3-flash-preview"
 
 def main():
