@@ -34,14 +34,13 @@ def main():
 清單：{', '.join(tickers)}
 
 任務說明：
-1. **深度檢索**：針對每檔股票檢索其最新的基本面指標（如營收成長、利潤率、估值）與當前市場題材。
+1. **深度檢索**：針對每檔股票檢索其當前市場題材。
 2. **全局對比評分**：進行橫向對比，給予 1-10 分的評分 (10分為最推薦)。
-3. **詳盡分析**：針對每一檔股票提供必要的描述，字數應於20字以內。
+3. **詳盡分析**：針對每一檔股票提供重點的描述，字數應於20字以內。
 4. 輸出繁體中文 JSON 陣列，每個物件必須嚴格包含以下欄位：
    - "ticker": 代號 (大寫)
    - "rating": 1-10 整數
-   - "theme": 題材關鍵字
-   - "fundamental": 基本面描述重點
+   - "theme": 相關題材
    - "feature": 核心競爭優勢或題材相關性
 
 **禁令**：僅回傳原始 JSON 陣列，禁止包含任何 Markdown 標籤（如 ```json）、解釋文字或補充說明。"""
@@ -78,7 +77,6 @@ def main():
             "RS": rs_map.get(t, 0),
             "rating": item.get("rating", 0),
             "theme": item.get("theme", ""),
-            "fundamental": item.get("fundamental", ""),
             "feature": item.get("feature", "")
         })
 
@@ -87,7 +85,7 @@ def main():
 
     # 輸出 CSV
     with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
-        writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "fundamental", "feature"])
+        writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "feature"])
         writer.writeheader()
         writer.writerows(final_rows)
 
