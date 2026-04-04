@@ -14,7 +14,7 @@ MODEL          = "gemini-3-flash-preview"
 
 def main():
     api_key = os.environ.get("GEMINI_API_KEY")
-    client = genai.Client(api_key=api_key)
+    client = genai.Client(api_key=api_key, http_options={'timeout': 600})
     
     # 讀取 Tickers
     with open(INPUT_TXT, "r") as f:
@@ -30,17 +30,25 @@ def main():
     print(f"正在執行全量分析 (共 {len(tickers)} 檔)... 請稍候")
 
     # 核心 Prompt
+
+    
     prompt = f"""你是一位資深美股分析師。請針對以下 {len(tickers)} 檔股票進行「全局對比分析」：
 清單：{', '.join(tickers)}
 
 任務說明：
-1. **深度檢索**：針對每檔股票檢索其當前市場題材。
-2. **全局對比評分**：進行橫向對比，給予 1-5 分的評分 (5分為最推薦)，以題材面的熱門程度為主，基本面除非極佳或極差基本上不用考慮。
-3. **詳盡分析**：針對每一檔股票提供詳細的描述。
+任務流程：
+1. **趨勢偵測**：利用 Google Search 檢索「當前（2026年4月）」全球美股市場的資金流向與熱門板塊趨勢。
+2. **個股定位**：針對清單中的每檔個股，查明其所屬細分產業，並與當前市場趨勢進行比對。
+3. **題材權重評分 (1-5)**：
+   - 5分：該股處於當前市場「最強大浪潮」的核心路徑上，具備極強的資金吸引力。
+   - 4分：該股屬於強勢板塊，或是具備顯著的利多催化劑。
+   - 3分：表現中規中矩，題材面尚可但非目前市場焦點。
+   - 2分：題材老化或處於資金流出板塊。
+   - 1分：基本面惡化或完全被市場邊緣化的標的。
 4. 輸出繁體中文 JSON 陣列，每個物件必須嚴格包含以下欄位：
    - "ticker": 代號 (大寫)
    - "rating": 1-5 整數
-   - "theme": 相關題材(以熱門題材為主，不要分類過細)
+   - "theme": 列出所有與該股票相關的題材
    - "feature": 與當前熱門題材相關性，或是獨特競爭優勢(20字左右)
    - "reason": 評分的理由(20字左右)
    
@@ -54,6 +62,7 @@ def main():
                 model=MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(
+                    tools=[types.Tool(google_search=types.GoogleSearch())], 
                     response_mime_type='application/json',
                     max_output_tokens=65536,
                     temperature=0.25
