@@ -62,12 +62,18 @@ def main():
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())], 
-                    response_mime_type='application/json',
+                    #response_mime_type='application/json',
                     max_output_tokens=65536,
                     temperature=0.25
                 )
             )
-            results = json.loads(response.text)
+            raw = response.text.strip()
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+                if raw.lower().startswith("json"):
+                    raw = raw[4:]
+            results = json.loads(raw.strip())
+            #results = json.loads(response.text)
             break # 成功拿到資料就跳出重試
         except Exception as e:
             print(f"⚠️ API 第 {attempt + 1} 次調用失敗: {e}")
