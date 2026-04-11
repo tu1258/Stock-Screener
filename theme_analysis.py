@@ -209,7 +209,7 @@ def score_ticker(client: genai.Client, ticker: str, news_text: str, hot_themes: 
 {news_text}
 
 ## 任務
-判斷 {ticker} 與今日熱門題材的契合度，給予 1-10 評分。
+判斷 {ticker} 與今日熱門題材的契合度，給予 1-10 評分，個股本身RS不列入考慮。
 
 評分標準：
 - 10：當前最強主題核心標的，題材爆發性強，資金高度集中
