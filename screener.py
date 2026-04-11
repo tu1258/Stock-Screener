@@ -69,7 +69,7 @@ def main():
     )
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
-        (latest_df["avg_value_10"] > 100) &
+        (latest_df["avg_value_10"] > 10) &
         (latest_df["atr_14_pct"] > 2.5) & (latest_df["atr_14_pct"] < 25) &
         (latest_df["avg_bar"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
@@ -84,7 +84,6 @@ def main():
         .sort_values("score", ascending=False)[[
             "ticker", "RS", "close", "volume",
             "atr_10", "distance",
-            "money_flow_avg", "trade_money_flow_avg",
             "atr_14", "atr_14_pct", "avg_value_10"
         ]]
     )
