@@ -3,7 +3,8 @@ import csv
 import json
 import time
 import datetime
-import requests
+import pandas as pd
+import yfinance as yf
 from google import genai
 from google.genai import types
 
@@ -12,81 +13,128 @@ INPUT_TXT        = "txt/technical_watchlist.txt"
 RS_CSV           = "stock_data_rs.csv"
 OUTPUT_CSV       = "csv/watchlist_summary.csv"
 OUTPUT_WATCHLIST = "txt/watchlist.txt"
-OUTPUT_THEMES    = "txt/hot_themes.txt"   # Phase 1 題材清單，方便人工檢查
+OUTPUT_THEMES    = "txt/hot_themes.txt"
 RATING_THRESHOLD = 6
 
 GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
 GEMINI_MODEL_PHASE3 = "gemini-3.1-flash-lite-preview"
 
-SERPER_NEWS_MAX        = 10      # 每檔個股抓幾則新聞
-SERPER_TIME_RANGE      = "qdr:w" # 過去一周；改 qdr:d 為過去 24 小時
-TODAY      = datetime.date.today().strftime("%Y-%m-%d")
-THIS_MONTH = datetime.date.today().strftime("%B %Y")
+STOCK_DATA_CSV = "stock_data.csv"   # 含 OHLCV 的原始價量資料
+MIN_AVG_VALUE_10M = 100             # 10日平均成交值門檻（百萬美元）
 
-SERPER_THEMES_KEYWORDS = [       # Phase 1 大盤題材搜尋關鍵字，每個上限10則
-    f"US stock market hot sectors themes momentum {THIS_MONTH}",
-    f"top performing stock sectors this week {THIS_MONTH}",
-    f"best performing industry groups stocks {THIS_MONTH}",
-    f"stock market sector rotation leaders {THIS_MONTH}",
-    f"high relative strength stocks sector catalyst {THIS_MONTH}",
-]
+TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
 
-# ── Serper 通用搜尋（回傳 snippet 文字）────────────────────────────────────
-def serper_search(query: str, serper_key: str, num: int = 10, news: bool = True) -> str:
-    endpoint = "https://google.serper.dev/news" if news else "https://google.serper.dev/search"
+# ── 計算 RS95+ 且成交值 >= 100M 的清單 ──────────────────────────────────
+def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list[tuple]:
+    """回傳 (ticker, rs_int) list，僅保留 RS>=95 且 10日均成交值 >= 100M"""
+    # 讀 RS
+    rs_map = {}
+    with open(rs_csv, newline="") as f:
+        for row in csv.DictReader(f):
+            try:
+                rs_int = int(float(row.get("RS", 0)))
+                if rs_int >= 95:
+                    rs_map[row["ticker"].upper()] = rs_int
+            except (ValueError, KeyError):
+                pass
+
+    if not os.path.exists(stock_data_csv) or not rs_map:
+        return sorted(rs_map.items(), key=lambda x: -x[1])
+
+    # 讀價量，只處理 RS95+ 的 ticker
+    price_df = pd.read_csv(stock_data_csv, parse_dates=["date"],
+                           usecols=["ticker", "date", "close", "volume"])
+    price_df = price_df[price_df["ticker"].str.upper().isin(rs_map)]
+    price_df = price_df.sort_values(["ticker", "date"])
+
+    # 計算 10 日平均成交值（單位：百萬美元）
+    price_df["daily_value"] = price_df["close"] * price_df["volume"] / 1_000_000
+    avg_val = (
+        price_df.groupby("ticker")["daily_value"]
+        .apply(lambda x: x.tail(10).mean())
+        .reset_index()
+        .rename(columns={"daily_value": "avg_value_10"})
+    )
+    avg_val["ticker"] = avg_val["ticker"].str.upper()
+
+    # 過濾成交值門檻
+    liquid = avg_val[avg_val["avg_value_10"] >= MIN_AVG_VALUE_10M]["ticker"].tolist()
+    liquid_set = set(liquid)
+
+    result = [(t, rs) for t, rs in rs_map.items() if t in liquid_set]
+    return sorted(result, key=lambda x: -x[1])
+
+
+# ── Yahoo Finance 新聞抓取 ────────────────────────────────────────────────
+def fetch_yahoo_news(ticker: str) -> list[str]:
+    lines = []
     try:
-        resp = requests.post(
-            endpoint,
-            headers={"X-API-KEY": serper_key, "Content-Type": "application/json"},
-            json={"q": query, "num": num, "tbs": SERPER_TIME_RANGE, "hl": "en", "gl": "us"},
-            timeout=10,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        items = data.get("news", data.get("organic", []))
-        if not items:
-            return ""
-        return "\n".join(
-            f"[{i.get('date', i.get('position', ''))}] {i.get('title', '')} — {i.get('snippet', '')}"
-            for i in items
-        )
+        items = yf.Ticker(ticker).news or []
+        for item in items:
+            pub_dt = datetime.datetime.fromtimestamp(
+                item.get("providerPublishTime", 0), tz=datetime.timezone.utc
+            )
+            date_str = pub_dt.strftime("%Y-%m-%d")
+            title   = item.get("title", "")
+            summary = item.get("summary", item.get("publisher", ""))
+            if title:
+                lines.append(f"[{date_str}] {title} — {summary}")
     except Exception:
-        return ""
+        pass
+    return lines
 
 
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
-def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple], serper_key: str) -> str:
-    # 1-A：Serper 多角度搜尋大盤題材新聞（每個關鍵字最多10則，共最多50則）
-    market_news_parts = []
-    for kw in SERPER_THEMES_KEYWORDS:
-        text = serper_search(kw, serper_key, num=10)
-        if text:
-            market_news_parts.append(text)
-    market_news = "\n\n".join(market_news_parts) or "（無搜尋結果）"
+def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple]) -> str:
+    print(f"  抓取 {len(rs95_tickers)} 檔 RS95+ 個股的 Yahoo Finance 新聞...")
 
-    # 1-B：RS>=95 ticker 列表，附帶 RS 分數，依 RS 降序排列
+    # 每檔都抓 Yahoo 新聞，彙總成一份大文本
+    all_news_parts = []
+    for i, (ticker, rs) in enumerate(rs95_tickers, 1):
+        news_lines = fetch_yahoo_news(ticker)
+        if news_lines:
+            block = f"[{ticker} RS{rs}]\n" + "\n".join(news_lines)
+            all_news_parts.append(block)
+        # 避免對 Yahoo Finance 請求過快
+        if i % 50 == 0:
+            time.sleep(1)
+
+    all_news = "\n\n".join(all_news_parts) or "（無新聞）"
+
+    # RS 清單（供 AI 做板塊分類加權）
     ticker_lines = "\n".join(f"  RS{rs:>2}  {t}" for t, rs in rs95_tickers)
 
     prompt = f"""今天是 {TODAY}。你是一位資深美股分析師，任務是建立今日市場熱門題材清單。
 
-【資料來源 A：RS>=95 強勢股清單（共 {len(rs95_tickers)} 檔，依 RS 分數降序）】
+【資料來源 A：RS>=95 且成交值>=100M 強勢股清單（共 {len(rs95_tickers)} 檔，依 RS 分數降序）】
 {ticker_lines}
 
 分析說明：
 - RS 為相對強度分數，RS99 代表全市場前 1% 最強勢，RS95 代表前 5%
-- 請依 RS 分數加權判斷題材熱度：RS99 的權重遠高於 RS95，RS98/97 次之
+- 請依 RS 分數加權判斷題材熱度：RS越高權重越高
 - 多檔 RS99 股票集中同一板塊，代表該題材資金極度集中，應列為頂級熱門
-- 請對清單進行題材分類，計算各板塊的加權強度（高 RS 貢獻更多權重）
+- 一檔個股可歸屬多個題材
 
-【資料來源 B：即時市場新聞（來自 Serper/Google News，多角度搜尋）】
-{market_news}
+【資料來源 B：RS95+ 個股 Yahoo Finance 新聞】
+{all_news}
 
-【輸出要求】
-綜合 A（RS 加權題材分析）和 B（即時新聞）各佔約 80%/20% 權重，整理出今日最熱門的 10 個投資題材。
-格式：繁體中文，純文字條列，每行一個題材，附帶 1-2 句說明（含代表性個股的 RS 分數與板塊強度）。
-題材排序應反映加權後的熱度，最強題材排最前。
-禁止輸出 Markdown 標題或多餘格式。"""
+【輸出格式：嚴格回傳以下 JSON，禁止任何 Markdown 或額外說明】
+{{
+  "ticker_themes": {{
+    "TICKER": ["題材A", "題材B"],
+    ...
+  }},
+  "hot_themes": [
+    "題材名稱 — 說明（含代表性個股RS分數）",
+    ...
+  ]
+}}
+
+要求：
+- ticker_themes：對清單中每一檔股票標注所有相關題材（可多個）
+- hot_themes：依加權熱度排序的前 10 大題材，每條附 1-2 句說明
+- 題材用繁體中文，力求精準"""
 
     for attempt in range(5):
         try:
@@ -95,10 +143,43 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple], serper_key
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     temperature=0,
-                    max_output_tokens=2048,
+                    max_output_tokens=8192,
                 ),
             )
-            return response.text.strip()
+            raw = response.text.strip()
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+                if raw.lower().startswith("json"):
+                    raw = raw[4:]
+            data = json.loads(raw.strip())
+
+            ticker_themes: dict = data.get("ticker_themes", {})
+            hot_themes_list: list = data.get("hot_themes", [])
+
+            # 統計每個題材有幾檔（一檔可重複計入多個題材）
+            theme_count: dict[str, list[str]] = {}
+            rs_lookup = {t: rs for t, rs in rs95_tickers}
+            for ticker_upper, themes in ticker_themes.items():
+                t = ticker_upper.upper()
+                for theme in themes:
+                    theme_count.setdefault(theme, []).append(
+                        f"{t}(RS{rs_lookup.get(t, '?')})"
+                    )
+
+            # 組合輸出文字
+            lines = [f"## 題材統計（RS95+ 且成交值>=100M，共 {len(rs95_tickers)} 檔）\n"]
+            for theme, members in sorted(theme_count.items(), key=lambda x: -len(x[1])):
+                members_str = ", ".join(members[:20])
+                suffix = f"... 等共 {len(members)} 檔" if len(members) > 20 else f"共 {len(members)} 檔"
+                lines.append(f"{theme}：{members_str}　{suffix}")
+
+            lines.append("\n## 今日熱門題材（Gemini 分析）\n")
+            lines.extend(hot_themes_list)
+
+            return "\n".join(lines)
+
+        except (json.JSONDecodeError, KeyError):
+            time.sleep(2)
         except Exception as e:
             err = str(e)
             if "429" in err or "quota" in err.lower():
@@ -110,14 +191,10 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple], serper_key
     return ""
 
 
-# ── Phase 2：Serper 搜尋個股新聞 ─────────────────────────────────────────
-def fetch_stock_news(ticker: str, serper_key: str) -> str:
-    return serper_search(
-        f"{ticker} stock catalyst theme {THIS_MONTH}",
-        serper_key,
-        num=SERPER_NEWS_MAX,
-        news=True,
-    ) or "（無最新新聞）"
+# ── Phase 2：Yahoo Finance 個股新聞 ──────────────────────────────────────
+def fetch_stock_news(ticker: str) -> str:
+    lines = fetch_yahoo_news(ticker)
+    return "\n".join(lines) or "（無最新新聞）"
 
 
 # ── Phase 3：Gemini Flash-Lite 評分 ──────────────────────────────────────
@@ -128,7 +205,7 @@ def score_ticker(client: genai.Client, ticker: str, news_text: str, hot_themes: 
 {hot_themes}
 
 ## 個股：{ticker}
-以下是過去一週的最新新聞摘要（來源：Google News via Serper）：
+以下是過去 7 天的最新新聞摘要（來源：Yahoo Finance）：
 {news_text}
 
 ## 任務
@@ -188,39 +265,30 @@ def score_ticker(client: genai.Client, ticker: str, news_text: str, hot_themes: 
 # ── 主流程 ────────────────────────────────────────────────────────────────
 def main():
     gemini_key = os.environ.get("GEMINI_API_KEY")
-    serper_key = os.environ.get("SERPER_API_KEY")
-
     if not gemini_key:
         raise EnvironmentError("GEMINI_API_KEY 未設定")
-    if not serper_key:
-        raise EnvironmentError("SERPER_API_KEY 未設定")
 
     client = genai.Client(api_key=gemini_key)
 
     with open(INPUT_TXT, "r") as f:
         tickers = [line.strip().upper() for line in f if line.strip()]
 
+    # 讀取全部 RS 供 Phase 3 輸出用
     rs_map = {}
-    rs95_tickers = []   # list of (ticker, rs_int), sorted by RS desc
     if os.path.exists(RS_CSV):
         with open(RS_CSV, "r", newline="") as f:
             for row in csv.DictReader(f):
                 t = row["ticker"].upper()
-                rs_val = row.get("RS", 0)
-                rs_map[t] = rs_val
-                try:
-                    rs_int = int(float(rs_val))
-                    if rs_int >= 95:
-                        rs95_tickers.append((t, rs_int))
-                except (ValueError, KeyError):
-                    pass
-    rs95_tickers.sort(key=lambda x: -x[1])   # RS 高 → 低
+                rs_map[t] = row.get("RS", 0)
+
+    # Phase 1 用：RS95+ 且成交值 >= 100M
+    rs95_tickers = load_rs95_liquid(RS_CSV, STOCK_DATA_CSV)
 
     print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
 
     # Phase 1
     print("📡 Phase 1：建立今日熱門題材...")
-    hot_themes = fetch_hot_themes(client, rs95_tickers, serper_key)
+    hot_themes = fetch_hot_themes(client, rs95_tickers)
     if not hot_themes:
         raise RuntimeError("Phase 1 失敗")
 
@@ -235,7 +303,7 @@ def main():
 
     for i, ticker in enumerate(tickers, 1):
         print(f"  [{i:3d}/{len(tickers)}] {ticker}", end=" ... ", flush=True)
-        news_text = fetch_stock_news(ticker, serper_key)
+        news_text = fetch_stock_news(ticker)
         result = score_ticker(client, ticker, news_text, hot_themes)
         final_rows.append({
             "ticker":  result.get("ticker", ticker),
@@ -246,7 +314,7 @@ def main():
             "reason":  result.get("reason", ""),
         })
         print(f"rating={result.get('rating', '?')}")
-        time.sleep(0.5)
+        time.sleep(0.3)
 
     final_rows.sort(
         key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
