@@ -2,150 +2,261 @@ import os
 import csv
 import json
 import time
-import anthropic
+import datetime
+import requests
+from google import genai
+from google.genai import types
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
-INPUT_TXT  = "txt/technical_watchlist.txt"
-RS_CSV     = "stock_data_rs.csv"
-OUTPUT_CSV = "csv/theme_watchlist.csv"
-OUTPUT_TXT = "txt/theme_watchlist.txt"
-MODEL      = "claude-haiku-4-5"   # 最便宜；換成 claude-sonnet-4-6 可提升品質
+INPUT_TXT        = "txt/technical_watchlist.txt"
+RS_CSV           = "stock_data_rs.csv"
+OUTPUT_CSV       = "csv/watchlist_summary.csv"
+OUTPUT_WATCHLIST = "txt/watchlist.txt"
+OUTPUT_THEMES    = "txt/hot_themes.txt"   # Phase 1 題材清單，方便人工檢查
+RATING_THRESHOLD = 6
 
-def main():
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        raise EnvironmentError("ANTHROPIC_API_KEY 未設定")
+GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
+GEMINI_MODEL_PHASE3 = "gemini-3.1-flash-lite-preview"
 
-    client = anthropic.Anthropic(api_key=api_key)
+SERPER_NEWS_MAX        = 10      # 每檔個股抓幾則新聞
+SERPER_TIME_RANGE      = "qdr:w" # 過去一週；改 qdr:d 為過去 24 小時
+SERPER_THEMES_KEYWORDS = [       # Phase 1 大盤題材搜尋關鍵字
+    "US stock market hot sectors themes momentum today",
+    "top performing stock sectors this week 2026",
+]
 
-    # 讀取 Tickers
-    with open(INPUT_TXT, "r") as f:
-        tickers = [line.strip().upper() for line in f if line.strip()]
+TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
-    # 讀取 RS
-    rs_map = {}
-    if os.path.exists(RS_CSV):
-        with open(RS_CSV, "r", newline="") as f:
-            for row in csv.DictReader(f):
-                rs_map[row['ticker'].upper()] = row.get('RS', 0)
 
-    print(f"正在執行全量分析 (共 {len(tickers)} 檔)... 請稍候")
+# ── Serper 通用搜尋（回傳 snippet 文字）────────────────────────────────────
+def serper_search(query: str, serper_key: str, num: int = 5, news: bool = True) -> str:
+    endpoint = "https://google.serper.dev/news" if news else "https://google.serper.dev/search"
+    try:
+        resp = requests.post(
+            endpoint,
+            headers={"X-API-KEY": serper_key, "Content-Type": "application/json"},
+            json={"q": query, "num": num, "tbs": SERPER_TIME_RANGE, "hl": "en", "gl": "us"},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        items = data.get("news", data.get("organic", []))
+        if not items:
+            return ""
+        return "\n".join(
+            f"[{i.get('date', i.get('position', ''))}] {i.get('title', '')} — {i.get('snippet', '')}"
+            for i in items
+        )
+    except Exception:
+        return ""
 
-    prompt = f"""你是一位資深美股分析師。請針對以下 {len(tickers)} 檔股票進行「全局對比分析」：
-清單：{', '.join(tickers)}
 
-任務說明：
-1. **趨勢偵測**：利用 web search 檢索「當前」全球美股市場的資金流向與熱門板塊趨勢。
-2. **個股定位**：針對清單中的每檔個股，查明其所屬細分產業，並與當前市場趨勢進行比對。
-3. **題材權重評分 (1-10)**：
-   - 10分：處於當前市場最強主題的核心標的，題材具爆發性且資金高度集中。
-   - 9分：強勢主題的領頭羊，具備明確催化劑且市場關注度極高。
-   - 8分：強勢板塊的重要成員，題材清晰且有持續性資金流入。
-   - 7分：屬於熱門板塊，但非核心標的，或題材仍在醞釀階段。
-   - 6分：題材有一定支撐，但競爭者多或市場關注度尚未聚焦。
-   - 5分：中性，題材平淡或板塊輪動位置不明確。
-   - 4分：題材略顯老化，資金關注度下降，短期缺乏催化劑。
-   - 3分：題材退燒或處於資金流出板塊，基本面支撐有限。
-   - 2分：題材幾乎消失，市場已轉移焦點，個股邊緣化明顯。
-   - 1分：基本面惡化或完全被市場拋棄，題材與當前趨勢完全脫節。
-4. 輸出繁體中文 JSON 陣列，每個物件必須嚴格包含以下欄位：
-   - "ticker": 代號 (大寫)
-   - "rating": 1-10 整數
-   - "theme": 列出所有與該股票相關的題材
-   - "feature": 與當前熱門題材相關性，或是獨特競爭優勢(20字左右)
-   - "reason": 評分的理由(20字左右)
+# ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
+def fetch_hot_themes(client: genai.Client, rs90_tickers: list[str], serper_key: str) -> str:
+    # 1-A：Serper 搜尋大盤題材新聞
+    market_news_parts = []
+    for kw in SERPER_THEMES_KEYWORDS:
+        text = serper_search(kw, serper_key, num=8)
+        if text:
+            market_news_parts.append(text)
+    market_news = "\n\n".join(market_news_parts) or "（無搜尋結果）"
 
-**禁令**：僅回傳原始 JSON 陣列，禁止包含任何 Markdown 標籤（如 ```json）、解釋文字或補充說明。"""
+    # 1-B：RS>=90 ticker 列表
+    ticker_str = ", ".join(rs90_tickers)
 
-    # ── API 調用與重試邏輯 ──
-    results = None
-    for attempt in range(10):
+    prompt = f"""今天是 {TODAY}。你是一位資深美股分析師，任務是建立今日市場熱門題材清單。
+
+【資料來源 A：RS>=90 強勢股清單（共 {len(rs90_tickers)} 檔）】
+{ticker_str}
+
+請對上方清單進行題材分類，找出哪些板塊的強勢股數量最集中。
+
+【資料來源 B：即時市場新聞（來自 Serper/Google News）】
+{market_news}
+
+【輸出要求】
+綜合 A 和 B（各佔約 50% 權重），整理出今日最熱門的 8-12 個投資題材。
+格式：繁體中文，純文字條列，每行一個題材，附帶 1-2 句說明（包含代表性個股或板塊強度）。
+禁止輸出 Markdown 標題或多餘格式。"""
+
+    for attempt in range(5):
         try:
-            response = client.messages.create(
-                model=MODEL,
-                max_tokens=8192,
-                tools=[{
-                    "type": "web_search_20250305",
-                    "name": "web_search",
-                    "max_uses": 10,
-                }],
-                messages=[{"role": "user", "content": prompt}],
+            response = client.models.generate_content(
+                model=GEMINI_MODEL_PHASE1,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.3,
+                    max_output_tokens=2048,
+                ),
             )
+            return response.text.strip()
+        except Exception as e:
+            err = str(e)
+            if "429" in err or "quota" in err.lower():
+                time.sleep(60)
+            elif attempt < 4:
+                time.sleep(5)
+            else:
+                raise
+    return ""
 
-            # Anthropic 回傳多個 content block，取最後一個 text block
-            text = ""
-            for block in response.content:
-                if hasattr(block, "text"):
-                    text = block.text
 
-            # Strip markdown fences 以防萬一
-            raw = text.strip()
+# ── Phase 2：Serper 搜尋個股新聞 ─────────────────────────────────────────
+def fetch_stock_news(ticker: str, serper_key: str) -> str:
+    return serper_search(
+        f"{ticker} stock catalyst theme 2026",
+        serper_key,
+        num=SERPER_NEWS_MAX,
+        news=True,
+    ) or "（無最新新聞）"
+
+
+# ── Phase 3：Gemini Flash-Lite 評分 ──────────────────────────────────────
+def score_ticker(client: genai.Client, ticker: str, news_text: str, hot_themes: str) -> dict:
+    prompt = f"""你是一位資深美股分析師。今天是 {TODAY}。
+
+## 今日市場熱門題材
+{hot_themes}
+
+## 個股：{ticker}
+以下是過去一週的最新新聞摘要（來源：Google News via Serper）：
+{news_text}
+
+## 任務
+判斷 {ticker} 與今日熱門題材的契合度，給予 1-10 評分。
+
+評分標準：
+- 10：當前最強主題核心標的，題材爆發性強，資金高度集中
+- 9：強勢主題領頭羊，有明確催化劑，市場關注度極高
+- 8：強勢板塊重要成員，題材清晰且有持續性資金流入
+- 7：熱門板塊成員，但非核心，或題材仍在醞釀
+- 6：題材有支撐，但競爭者多或關注度尚未聚焦
+- 5：題材平淡，板塊輪動位置不明確
+- 4：題材略顯老化，資金關注度下降
+- 3：題材退燒，資金流出，基本面支撐有限
+- 2：題材幾乎消失，市場已轉移焦點
+- 1：完全被市場拋棄，與當前趨勢脫節
+
+原則：新聞資訊優先於訓練知識；若新聞顯示該股活躍交易，忽略任何已下市/收購的舊知識；禁止自行聯網搜尋。
+
+輸出：僅回傳單一 JSON 物件，繁體中文，欄位：
+- "ticker": 代號（大寫）
+- "rating": 1-10 整數
+- "theme": 所有相關題材（逗號分隔）
+- "feature": 與熱門題材關聯或競爭優勢（20字內）
+- "reason": 評分理由（20字內）
+
+禁止任何 Markdown 或額外說明。"""
+
+    for attempt in range(5):
+        try:
+            response = client.models.generate_content(
+                model=GEMINI_MODEL_PHASE3,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0.2, max_output_tokens=512),
+            )
+            raw = response.text.strip()
             if raw.startswith("```"):
                 raw = raw.split("```")[1]
                 if raw.lower().startswith("json"):
                     raw = raw[4:]
-            results = json.loads(raw.strip())
-            break
-
+            result = json.loads(raw.strip())
+            result["ticker"] = ticker.upper()
+            return result
+        except json.JSONDecodeError:
+            time.sleep(2)
         except Exception as e:
             err = str(e)
-            print(f"⚠️ API 第 {attempt + 1} 次調用失敗: {e}")
-
-            if "400" in err or "invalid_request" in err.lower():
-                print("❌ 請求參數錯誤，程式終止。")
-                return
-            if "401" in err or "authentication" in err.lower():
-                print("❌ API Key 無效，程式終止。")
-                return
-            if "529" in err or "credit" in err.lower() or "balance" in err.lower():
-                print("❌ 餘額不足，請至 platform.claude.com 儲值。")
-                return
-            if "429" in err:
-                wait = 60
-                print(f"  Rate limit，等待 {wait} 秒...")
-                time.sleep(wait)
-                continue
-
-            if attempt < 9:
-                time.sleep(5)
+            if "429" in err or "quota" in err.lower():
+                time.sleep(60)
+            elif attempt < 4:
+                time.sleep(3)
             else:
-                print("❌ 已達到最大重試次數，程式終止。")
-                return
+                return {"ticker": ticker.upper(), "rating": 0, "theme": "", "feature": "", "reason": ""}
+    return {"ticker": ticker.upper(), "rating": 0, "theme": "", "feature": "", "reason": ""}
 
-    if not results:
-        print("❌ 未取得有效結果。")
-        return
 
-    # 整合數據
+# ── 主流程 ────────────────────────────────────────────────────────────────
+def main():
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    serper_key = os.environ.get("SERPER_API_KEY")
+
+    if not gemini_key:
+        raise EnvironmentError("GEMINI_API_KEY 未設定")
+    if not serper_key:
+        raise EnvironmentError("SERPER_API_KEY 未設定")
+
+    client = genai.Client(api_key=gemini_key)
+
+    with open(INPUT_TXT, "r") as f:
+        tickers = [line.strip().upper() for line in f if line.strip()]
+
+    rs_map = {}
+    rs90_tickers = []
+    if os.path.exists(RS_CSV):
+        with open(RS_CSV, "r", newline="") as f:
+            for row in csv.DictReader(f):
+                t = row["ticker"].upper()
+                rs_val = row.get("RS", 0)
+                rs_map[t] = rs_val
+                try:
+                    if int(float(rs_val)) >= 90:
+                        rs90_tickers.append(t)
+                except (ValueError, KeyError):
+                    pass
+
+    print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=90 參考股：{len(rs90_tickers)} 檔\n")
+
+    # Phase 1
+    print("📡 Phase 1：建立今日熱門題材...")
+    hot_themes = fetch_hot_themes(client, rs90_tickers, serper_key)
+    if not hot_themes:
+        raise RuntimeError("Phase 1 失敗")
+
+    os.makedirs("txt", exist_ok=True)
+    with open(OUTPUT_THEMES, "w", encoding="utf-8") as f:
+        f.write(f"# {TODAY}\n\n{hot_themes}\n")
+    print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
+
+    # Phase 2 + 3
+    print(f"🔍 Phase 2+3：逐一處理（共 {len(tickers)} 檔）...\n")
     final_rows = []
-    for item in results:
-        t = item['ticker'].upper()
+
+    for i, ticker in enumerate(tickers, 1):
+        print(f"  [{i:3d}/{len(tickers)}] {ticker}", end=" ... ", flush=True)
+        news_text = fetch_stock_news(ticker, serper_key)
+        result = score_ticker(client, ticker, news_text, hot_themes)
         final_rows.append({
-            "ticker":  t,
-            "RS":      rs_map.get(t, 0),
-            "rating":  item.get("rating", 0),
-            "theme":   item.get("theme", ""),
-            "feature": item.get("feature", ""),
-            "reason":  item.get("reason", ""),
+            "ticker":  result.get("ticker", ticker),
+            "RS":      rs_map.get(ticker, 0),
+            "rating":  result.get("rating", 0),
+            "theme":   result.get("theme", ""),
+            "feature": result.get("feature", ""),
+            "reason":  result.get("reason", ""),
         })
+        print(f"rating={result.get('rating', '?')}")
+        time.sleep(0.5)
 
-    # 排序：Rating 高 -> RS 高
-    final_rows.sort(key=lambda x: (-int(x["rating"]), -int(x["RS"])))
+    final_rows.sort(
+        key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
+    )
 
-    # 輸出 CSV
     os.makedirs("csv", exist_ok=True)
     with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "feature", "reason"])
         writer.writeheader()
         writer.writerows(final_rows)
 
-    # 輸出 TXT
-    os.makedirs("txt", exist_ok=True)
-    with open(OUTPUT_TXT, "w", encoding="utf-8") as f_txt:
-        for row in final_rows:
-            f_txt.write(f"{row['ticker']}\n")
+    watchlist = [row["ticker"] for row in final_rows if int(row["rating"]) >= RATING_THRESHOLD]
+    with open(OUTPUT_WATCHLIST, "w", encoding="utf-8") as f:
+        f.write("\n".join(watchlist) + "\n")
 
-    print(f"✅ 完成！已產出報表與 Ticker 清單。")
+    print(f"\n{'='*50}")
+    print(f"✅ 完成！分析 {len(final_rows)} 檔，watchlist {len(watchlist)} 檔")
+    print(f"   {OUTPUT_CSV}")
+    print(f"   {OUTPUT_WATCHLIST}")
+    print(f"   {OUTPUT_THEMES}")
+
 
 if __name__ == "__main__":
     main()
