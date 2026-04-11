@@ -18,14 +18,17 @@ RATING_THRESHOLD = 6
 GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
 GEMINI_MODEL_PHASE3 = "gemini-3.1-flash-lite-preview"
 
-SERPER_NEWS_MAX        = 20      # 每檔個股抓幾則新聞
-SERPER_TIME_RANGE      = "qdr:m" # 過去一月；改 qdr:d 為過去 24 小時
+SERPER_NEWS_MAX        = 10      # 每檔個股抓幾則新聞
+SERPER_TIME_RANGE      = "qdr:w" # 過去一周；改 qdr:d 為過去 24 小時
 TODAY      = datetime.date.today().strftime("%Y-%m-%d")
-THIS_MONTH = datetime.date.today().strftime("%B %Y") 
+THIS_MONTH = datetime.date.today().strftime("%B %Y")
 
-SERPER_THEMES_KEYWORDS = [       # Phase 1 大盤題材搜尋關鍵字
+SERPER_THEMES_KEYWORDS = [       # Phase 1 大盤題材搜尋關鍵字，每個上限10則
     f"US stock market hot sectors themes momentum {THIS_MONTH}",
     f"top performing stock sectors this week {THIS_MONTH}",
+    f"best performing industry groups stocks {THIS_MONTH}",
+    f"stock market sector rotation leaders {THIS_MONTH}",
+    f"high relative strength stocks sector catalyst {THIS_MONTH}",
 ]
 
 
@@ -54,10 +57,10 @@ def serper_search(query: str, serper_key: str, num: int = 10, news: bool = True)
 
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple], serper_key: str) -> str:
-    # 1-A：Serper 搜尋大盤題材新聞
+    # 1-A：Serper 多角度搜尋大盤題材新聞（每個關鍵字最多10則，共最多50則）
     market_news_parts = []
     for kw in SERPER_THEMES_KEYWORDS:
-        text = serper_search(kw, serper_key, num=20)
+        text = serper_search(kw, serper_key, num=10)
         if text:
             market_news_parts.append(text)
     market_news = "\n\n".join(market_news_parts) or "（無搜尋結果）"
@@ -76,7 +79,7 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple], serper_key
 - 多檔 RS99 股票集中同一板塊，代表該題材資金極度集中，應列為頂級熱門
 - 請對清單進行題材分類，計算各板塊的加權強度（高 RS 貢獻更多權重）
 
-【資料來源 B：即時市場新聞（來自 Serper/Google News）】
+【資料來源 B：即時市場新聞（來自 Serper/Google News，多角度搜尋）】
 {market_news}
 
 【輸出要求】
