@@ -21,7 +21,7 @@ GEMINI_MODEL_PHASE3 = "gemini-3.1-flash-lite-preview"
 SERPER_NEWS_MAX        = 20      # 每檔個股抓幾則新聞
 SERPER_TIME_RANGE      = "qdr:m" # 過去一月；改 qdr:d 為過去 24 小時
 TODAY      = datetime.date.today().strftime("%Y-%m-%d")
-THIS_MONTH = datetime.date.today().strftime("%B %Y")   
+THIS_MONTH = datetime.date.today().strftime("%B %Y") 
 
 SERPER_THEMES_KEYWORDS = [       # Phase 1 大盤題材搜尋關鍵字
     f"US stock market hot sectors themes momentum {THIS_MONTH}",
@@ -53,31 +53,36 @@ def serper_search(query: str, serper_key: str, num: int = 10, news: bool = True)
 
 
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
-def fetch_hot_themes(client: genai.Client, rs90_tickers: list[str], serper_key: str) -> str:
+def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple], serper_key: str) -> str:
     # 1-A：Serper 搜尋大盤題材新聞
     market_news_parts = []
     for kw in SERPER_THEMES_KEYWORDS:
-        text = serper_search(kw, serper_key, num=8)
+        text = serper_search(kw, serper_key, num=20)
         if text:
             market_news_parts.append(text)
     market_news = "\n\n".join(market_news_parts) or "（無搜尋結果）"
 
-    # 1-B：RS>=90 ticker 列表
-    ticker_str = ", ".join(rs90_tickers)
+    # 1-B：RS>=95 ticker 列表，附帶 RS 分數，依 RS 降序排列
+    ticker_lines = "\n".join(f"  RS{rs:>2}  {t}" for t, rs in rs95_tickers)
 
     prompt = f"""今天是 {TODAY}。你是一位資深美股分析師，任務是建立今日市場熱門題材清單。
 
-【資料來源 A：RS>=90 強勢股清單（共 {len(rs90_tickers)} 檔）】
-{ticker_str}
+【資料來源 A：RS>=95 強勢股清單（共 {len(rs95_tickers)} 檔，依 RS 分數降序）】
+{ticker_lines}
 
-請對上方清單進行題材分類，找出哪些板塊的強勢股數量最集中。
+分析說明：
+- RS 為相對強度分數，RS99 代表全市場前 1% 最強勢，RS95 代表前 5%
+- 請依 RS 分數加權判斷題材熱度：RS99 的權重遠高於 RS95，RS98/97 次之
+- 多檔 RS99 股票集中同一板塊，代表該題材資金極度集中，應列為頂級熱門
+- 請對清單進行題材分類，計算各板塊的加權強度（高 RS 貢獻更多權重）
 
 【資料來源 B：即時市場新聞（來自 Serper/Google News）】
 {market_news}
 
 【輸出要求】
-綜合 A 和 B（各佔約 50% 權重），整理出今日最熱門的 8-12 個投資題材。
-格式：繁體中文，純文字條列，每行一個題材，附帶 1-2 句說明（包含代表性個股或板塊強度）。
+綜合 A（RS 加權題材分析）和 B（即時新聞）各佔約 80%/20% 權重，整理出今日最熱門的 10 個投資題材。
+格式：繁體中文，純文字條列，每行一個題材，附帶 1-2 句說明（含代表性個股的 RS 分數與板塊強度）。
+題材排序應反映加權後的熱度，最強題材排最前。
 禁止輸出 Markdown 標題或多餘格式。"""
 
     for attempt in range(5):
@@ -86,7 +91,7 @@ def fetch_hot_themes(client: genai.Client, rs90_tickers: list[str], serper_key: 
                 model=GEMINI_MODEL_PHASE1,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    temperature=0.3,
+                    temperature=0,
                     max_output_tokens=2048,
                 ),
             )
@@ -154,7 +159,7 @@ def score_ticker(client: genai.Client, ticker: str, news_text: str, hot_themes: 
             response = client.models.generate_content(
                 model=GEMINI_MODEL_PHASE3,
                 contents=prompt,
-                config=types.GenerateContentConfig(temperature=0.2, max_output_tokens=512),
+                config=types.GenerateContentConfig(temperature=0, max_output_tokens=512),
             )
             raw = response.text.strip()
             if raw.startswith("```"):
@@ -193,7 +198,7 @@ def main():
         tickers = [line.strip().upper() for line in f if line.strip()]
 
     rs_map = {}
-    rs90_tickers = []
+    rs95_tickers = []   # list of (ticker, rs_int), sorted by RS desc
     if os.path.exists(RS_CSV):
         with open(RS_CSV, "r", newline="") as f:
             for row in csv.DictReader(f):
@@ -201,16 +206,18 @@ def main():
                 rs_val = row.get("RS", 0)
                 rs_map[t] = rs_val
                 try:
-                    if int(float(rs_val)) >= 90:
-                        rs90_tickers.append(t)
+                    rs_int = int(float(rs_val))
+                    if rs_int >= 95:
+                        rs95_tickers.append((t, rs_int))
                 except (ValueError, KeyError):
                     pass
+    rs95_tickers.sort(key=lambda x: -x[1])   # RS 高 → 低
 
-    print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=90 參考股：{len(rs90_tickers)} 檔\n")
+    print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
 
     # Phase 1
     print("📡 Phase 1：建立今日熱門題材...")
-    hot_themes = fetch_hot_themes(client, rs90_tickers, serper_key)
+    hot_themes = fetch_hot_themes(client, rs95_tickers, serper_key)
     if not hot_themes:
         raise RuntimeError("Phase 1 失敗")
 
