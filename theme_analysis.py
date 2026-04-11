@@ -314,7 +314,7 @@ def main():
             "reason":  result.get("reason", ""),
         })
         print(f"rating={result.get('rating', '?')}")
-        time.sleep(0.3)
+        time.sleep(4)
 
     final_rows.sort(
         key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
