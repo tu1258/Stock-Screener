@@ -1,56 +1,36 @@
 # 2026-04-11
 
-## 題材統計（RS95+ 且成交值>=100M，共 34 檔）
+## 題材統計（RS95+ 且成交值>=100M，共 78 檔）
 
-光通訊：AAOI(RS99), CIEN(RS99), COHR(RS98), GLW(RS98), FN(RS97)　共 5 檔
-生物製藥：ABVX(RS99), COGT(RS98), CNTA(RS97), APLS(RS95)　共 4 檔
-半導體設備：AEHR(RS99), FORM(RS98), AEIS(RS98), AMAT(RS95)　共 4 檔
-新能源：AMPX(RS99), BE(RS99), GEV(RS97)　共 3 檔
-航太國防：ATI(RS96), ESLT(RS95), CRS(RS95)　共 3 檔
-工業金屬：CENX(RS98), HBM(RS96)　共 2 檔
-電子製造服務：FN(RS97), CLS(RS97)　共 2 檔
-特種合金：ATI(RS96), CRS(RS95)　共 2 檔
-貴金屬：AU(RS96), AG(RS95)　共 2 檔
-半導體封測：AMKR(RS96), ASX(RS96)　共 2 檔
-AI 基礎設施：AAOI(RS99)　共 1 檔
-碳化矽：AEHR(RS99)　共 1 檔
-雲端基礎設施：CIEN(RS99)　共 1 檔
+半導體設備與測試：AEHR(RS99), TSEM(RS99), FORM(RS98), TER(RS98), AEIS(RS98), MKSI(RS97), LRCX(RS97), INTC(RS96), AMKR(RS96), ASX(RS96), MTSI(RS96), AMAT(RS95), NVTS(RS95), KEYS(RS95)　共 14 檔
+生技醫療與新藥研發：TERN(RS99), ABVX(RS99), PRAX(RS99), COGT(RS98), IBRX(RS98), CNTA(RS96), APLS(RS95), LGN(RS95), ROIV(RS95)　共 9 檔
+光通訊與光學元件：LITE(RS99), AAOI(RS99), CIEN(RS99), LASR(RS99), VIAV(RS99), COHR(RS98), GLW(RS98), FN(RS97)　共 8 檔
+貴金屬與基礎材料：CENX(RS97), SSRM(RS96), ATI(RS96), IAG(RS96), AU(RS96), HBM(RS96), HL(RS95), AG(RS95)　共 8 檔
+太空科技與衛星通訊：PL(RS99), SATL(RS98), SATS(RS97), SIDU(RS97), GSAT(RS96), LUNR(RS96)　共 6 檔
+能源與潔淨技術：SKYQ(RS99), BE(RS99), GEV(RS97), FTI(RS96), UUUU(RS96), RIG(RS95)　共 6 檔
+工業建設與基礎設施：AGX(RS99), FIX(RS98), MTZ(RS97), STRL(RS97), IESC(RS96)　共 5 檔
+記憶體與儲存設備：SNDK(RS99), WDC(RS99), STX(RS99), MU(RS98)　共 4 檔
+資料中心基礎設施與電力管理：POWL(RS98), VICR(RS98), VRT(RS97), MOD(RS97)　共 4 檔
+加密貨幣挖礦：WULF(RS98), HUT(RS98), IREN(RS97), CIFR(RS96)　共 4 檔
+電子製造服務 (EMS)：TTMI(RS98), CLS(RS97)　共 2 檔
+無人機與自動化：ONDS(RS99)　共 1 檔
 電池技術：AMPX(RS99)　共 1 檔
-氫能：BE(RS99)　共 1 檔
-旅遊運輸：CAR(RS99)　共 1 檔
-能源建設：AGX(RS99)　共 1 檔
-電力基礎設施：AGX(RS99)　共 1 檔
-人工智慧：AIXI(RS99)　共 1 檔
-數據分析：AIXI(RS99)　共 1 檔
-晶圓測試：FORM(RS98)　共 1 檔
-雷射技術：COHR(RS98)　共 1 檔
-邊緣運算：FSLY(RS98)　共 1 檔
-雲端服務：FSLY(RS98)　共 1 檔
-基礎建設：FIX(RS98)　共 1 檔
-資料中心冷卻：FIX(RS98)　共 1 檔
-特種玻璃：GLW(RS98)　共 1 檔
-電力轉換：AEIS(RS98)　共 1 檔
-鋁業：CENX(RS98)　共 1 檔
-AI 伺服器：CLS(RS97)　共 1 檔
-電網現代化：GEV(RS97)　共 1 檔
-能源服務：FTI(RS97)　共 1 檔
-離岸油氣：FTI(RS97)　共 1 檔
-加密貨幣：CIFR(RS97)　共 1 檔
-比特幣挖礦：CIFR(RS97)　共 1 檔
-衛星通訊：GSAT(RS96)　共 1 檔
-黃金：AU(RS96)　共 1 檔
-銅礦：HBM(RS96)　共 1 檔
-白銀：AG(RS95)　共 1 檔
+汽車租賃與交通服務：CAR(RS99)　共 1 檔
+人工智慧技術：AIXI(RS99)　共 1 檔
+雲端運算與邊緣運算：FSLY(RS98)　共 1 檔
+軟體與資訊服務：NBIS(RS98)　共 1 檔
+電信服務：TIGO(RS97)　共 1 檔
+國防與航太：ESLT(RS95)　共 1 檔
 
 ## 今日熱門題材（Gemini 分析）
 
-光通訊與 AI 硬體 — 資金高度集中於 AI 基礎設施升級，多檔 RS99/98 標的如 AAOI、CIEN、COHR 展現極強動能。
-新能源與電力基礎設施 — 隨著資料中心電力需求激增，BE(RS99)、AGX(RS99) 與 GEV(RS97) 成為能源轉型與電網建設核心。
-半導體設備與測試 — 晶片製造需求穩健，AEHR(RS99) 與 FORM(RS98) 領銜設備板塊，反映先進封裝與測試需求。
-生物製藥 — 研發突破驅動個股行情，ABVX(RS99) 與 COGT(RS98) 顯示生技板塊具備強大的獨立走勢。
-AI 伺服器與電子製造 — CLS(RS97) 與 FN(RS97) 受益於 AI 伺服器供應鏈外包需求，維持高強度擴張。
-特種金屬與工業材料 — 工業復甦帶動原物料需求，CENX(RS98) 與 ATI(RS96) 顯示鋁、銅及特種合金價格支撐強勁。
-航太國防 — 地緣政治與航太更新需求，ATI(RS96) 與 ESLT(RS95) 展現穩定的防禦性成長特質。
-雲端與邊緣運算 — 數位轉型需求不減，FSLY(RS98) 與 CIEN(RS99) 顯示網路流量優化與雲端架構仍是市場焦點。
-貴金屬採礦 — 通膨預期或避險情緒推升金銀價格，AU(RS96) 與 AG(95) 吸引避險資金流入。
-加密貨幣挖礦 — 數位資產價格波動帶動相關基建，CIFR(RS97) 展現極高的股價彈性。
+光通訊與光學元件 — 資金高度集中於 RS99 標的如 LITE、AAOI、CIEN，受惠於 AI 資料中心對高速傳輸的需求。
+記憶體與儲存設備 — SNDK、WDC、STX 等多檔 RS99 領軍，顯示儲存硬體進入強勁循環週期。
+半導體設備與測試 — 涵蓋 AEHR (RS99) 到 AMAT (RS95)，反映半導體產能擴張與先進封裝測試的持續熱度。
+生技醫療與新藥研發 — TERN、ABVX、PRAX 等多檔 RS99 集中，顯示生技板塊具備極強的個股突破動能。
+太空科技與衛星通訊 — PL (RS99) 與 SATL (RS98) 領頭，低軌衛星與太空探索題材獲得市場資金青睞。
+資料中心基礎設施與電力管理 — VRT (RS97) 與 POWL (RS98) 表現強勁，AI 基礎設施帶動的散熱與電力需求持續升溫。
+工業建設與基礎設施 — AGX (RS99) 與 FIX (RS98) 顯示美國本土基礎建設與工業設施更新的強勁需求。
+加密貨幣挖礦 — WULF (RS98) 與 HUT (RS98) 隨比特幣行情波動，挖礦業者展現極高的相對強度。
+能源與潔淨技術 — BE (RS99) 與 GEV (RS97) 領銜，涵蓋氫能、核能及傳統能源服務的轉型題材。
+貴金屬與基礎材料 — SSRM (RS96) 與 HL (RS95) 隨金銀價格走強，避險資金與通膨預期推升相關礦業股。
