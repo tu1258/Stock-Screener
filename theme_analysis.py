@@ -18,8 +18,8 @@ RATING_THRESHOLD = 6
 GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
 GEMINI_MODEL_PHASE3 = "gemini-3.1-flash-lite-preview"
 
-SERPER_NEWS_MAX        = 10      # 每檔個股抓幾則新聞
-SERPER_TIME_RANGE      = "qdr:w" # 過去一週；改 qdr:d 為過去 24 小時
+SERPER_NEWS_MAX        = 20      # 每檔個股抓幾則新聞
+SERPER_TIME_RANGE      = "qdr:m" # 過去一週；改 qdr:d 為過去 24 小時
 SERPER_THEMES_KEYWORDS = [       # Phase 1 大盤題材搜尋關鍵字
     "US stock market hot sectors themes momentum today",
     "top performing stock sectors this week 2026",
@@ -29,7 +29,7 @@ TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
 
 # ── Serper 通用搜尋（回傳 snippet 文字）────────────────────────────────────
-def serper_search(query: str, serper_key: str, num: int = 5, news: bool = True) -> str:
+def serper_search(query: str, serper_key: str, num: int = 10, news: bool = True) -> str:
     endpoint = "https://google.serper.dev/news" if news else "https://google.serper.dev/search"
     try:
         resp = requests.post(
@@ -75,7 +75,7 @@ def fetch_hot_themes(client: genai.Client, rs90_tickers: list[str], serper_key: 
 {market_news}
 
 【輸出要求】
-綜合 A 和 B（各佔約 50% 權重），整理出今日最熱門的 8-12 個投資題材。
+綜合 A 和 B（各佔約 50% 權重），整理出今日最熱門的10個投資題材。
 格式：繁體中文，純文字條列，每行一個題材，附帶 1-2 句說明（包含代表性個股或板塊強度）。
 禁止輸出 Markdown 標題或多餘格式。"""
 
