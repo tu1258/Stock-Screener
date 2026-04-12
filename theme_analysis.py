@@ -14,13 +14,14 @@ RS_CSV           = "stock_data_rs.csv"
 OUTPUT_CSV       = "csv/watchlist_summary.csv"
 OUTPUT_WATCHLIST = "txt/watchlist.txt"
 OUTPUT_THEMES    = "txt/hot_themes.txt"
+OUTPUT_HOT_WL    = "txt/hot_theme_watchlist.txt"
 RATING_THRESHOLD = 6
 
 GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
 GEMINI_MODEL_PHASE3 = "gemini-3.1-flash-lite-preview"
 
-STOCK_DATA_CSV = "stock_data.csv"   # 含 OHLCV 的原始價量資料
-MIN_AVG_VALUE_10M = 100             # 10日平均成交值門檻（百萬美元）
+STOCK_DATA_CSV = "stock_data.csv"
+MIN_AVG_VALUE_10M = 100
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
@@ -28,7 +29,6 @@ TODAY = datetime.date.today().strftime("%Y-%m-%d")
 # ── 計算 RS95+ 且成交值 >= 100M 的清單 ──────────────────────────────────
 def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list[tuple]:
     """回傳 (ticker, rs_int) list，僅保留 RS>=95 且 10日均成交值 >= 100M"""
-    # 讀 RS
     rs_map = {}
     with open(rs_csv, newline="") as f:
         for row in csv.DictReader(f):
@@ -42,13 +42,11 @@ def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list[tuple]:
     if not os.path.exists(stock_data_csv) or not rs_map:
         return sorted(rs_map.items(), key=lambda x: -x[1])
 
-    # 讀價量，只處理 RS95+ 的 ticker
     price_df = pd.read_csv(stock_data_csv, parse_dates=["date"],
                            usecols=["ticker", "date", "close", "volume"])
     price_df = price_df[price_df["ticker"].str.upper().isin(rs_map)]
     price_df = price_df.sort_values(["ticker", "date"])
 
-    # 計算 10 日平均成交值（單位：百萬美元）
     price_df["daily_value"] = price_df["close"] * price_df["volume"] / 1_000_000
     avg_val = (
         price_df.groupby("ticker")["daily_value"]
@@ -58,7 +56,6 @@ def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list[tuple]:
     )
     avg_val["ticker"] = avg_val["ticker"].str.upper()
 
-    # 過濾成交值門檻
     liquid = avg_val[avg_val["avg_value_10"] >= MIN_AVG_VALUE_10M]["ticker"].tolist()
     liquid_set = set(liquid)
 
@@ -86,23 +83,19 @@ def fetch_yahoo_news(ticker: str) -> list[str]:
 
 
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
-def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple]) -> str:
+def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple]) -> tuple:
     print(f"  抓取 {len(rs95_tickers)} 檔 RS95+ 個股的 Yahoo Finance 新聞...")
 
-    # 每檔都抓 Yahoo 新聞，彙總成一份大文本
     all_news_parts = []
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
         news_lines = fetch_yahoo_news(ticker)
         if news_lines:
             block = f"[{ticker} RS{rs}]\n" + "\n".join(news_lines)
             all_news_parts.append(block)
-        # 避免對 Yahoo Finance 請求過快
         if i % 50 == 0:
             time.sleep(1)
 
     all_news = "\n\n".join(all_news_parts) or "（無新聞）"
-
-    # RS 清單（供 AI 做板塊分類加權）
     ticker_lines = "\n".join(f"  RS{rs:>2}  {t}" for t, rs in rs95_tickers)
 
     prompt = f"""今天是 {TODAY}。你是一位資深美股分析師，任務是建立今日市場熱門題材清單。
@@ -156,9 +149,11 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple]) -> str:
             ticker_themes: dict = data.get("ticker_themes", {})
             hot_themes_list: list = data.get("hot_themes", [])
 
-            # 統計每個題材有幾檔（一檔可重複計入多個題材）
-            theme_count: dict[str, list[str]] = {}
+            hot_theme_names_ordered = [item.split("—")[0].strip() for item in hot_themes_list]
+
             rs_lookup = {t: rs for t, rs in rs95_tickers}
+
+            theme_count: dict[str, list[str]] = {}
             for ticker_upper, themes in ticker_themes.items():
                 t = ticker_upper.upper()
                 for theme in themes:
@@ -166,7 +161,6 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple]) -> str:
                         f"{t}(RS{rs_lookup.get(t, '?')})"
                     )
 
-            # 組合輸出文字
             lines = [f"## 題材統計（RS95+ 且成交值>=100M，共 {len(rs95_tickers)} 檔）\n"]
             for theme, members in sorted(theme_count.items(), key=lambda x: -len(x[1])):
                 members_str = ", ".join(members[:20])
@@ -176,7 +170,9 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple]) -> str:
             lines.append("\n## 今日熱門題材（Gemini 分析）\n")
             lines.extend(hot_themes_list)
 
-            return "\n".join(lines)
+            themes_text = "\n".join(lines)
+
+            return themes_text, ticker_themes, hot_theme_names_ordered, rs_lookup
 
         except (json.JSONDecodeError, KeyError):
             time.sleep(2)
@@ -188,7 +184,49 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple]) -> str:
                 time.sleep(5)
             else:
                 raise
-    return ""
+
+    return "", {}, [], {}
+
+
+# ── 產生 hot_theme_watchlist ──────────────────────────────────────────────
+def build_hot_theme_watchlist(
+    ticker_themes: dict,
+    hot_theme_names_ordered: list[str],
+    rs_lookup: dict[str, int],
+) -> list[str]:
+    """依熱門題材順序分組，同組照 RS 降序，每個 ticker 只出現一次。"""
+    theme_rank = {name: i for i, name in enumerate(hot_theme_names_ordered)}
+
+    ticker_best_theme: dict[str, str] = {}
+    for ticker_raw, themes in ticker_themes.items():
+        t = ticker_raw.upper()
+        if not themes:
+            continue
+        best = min(
+            (th for th in themes if th in theme_rank),
+            key=lambda th: theme_rank[th],
+            default=None,
+        )
+        if best:
+            ticker_best_theme[t] = best
+
+    groups: dict[str, list[str]] = {name: [] for name in hot_theme_names_ordered}
+    for t, best_theme in ticker_best_theme.items():
+        groups[best_theme].append(t)
+
+    result = []
+    seen = set()
+    for theme_name in hot_theme_names_ordered:
+        tickers_in_group = sorted(
+            groups.get(theme_name, []),
+            key=lambda t: -rs_lookup.get(t, 0),
+        )
+        for t in tickers_in_group:
+            if t not in seen:
+                seen.add(t)
+                result.append(t)
+
+    return result
 
 
 # ── Phase 2：Yahoo Finance 個股新聞 ──────────────────────────────────────
@@ -209,7 +247,8 @@ def score_ticker(client: genai.Client, ticker: str, news_text: str, hot_themes: 
 {news_text}
 
 ## 任務
-判斷 {ticker} 與今日熱門題材的契合度，給予 1-10 評分，個股本身RS不列入考慮。
+判斷 {ticker} 與今日熱門題材的契合度，給予 1-10 評分。
+評分只看題材契合度與炒作潛力，與個股 RS 分數完全無關。
 
 評分標準：
 - 10：當前最強主題核心標的，題材爆發性強，資金高度集中
@@ -273,7 +312,6 @@ def main():
     with open(INPUT_TXT, "r") as f:
         tickers = [line.strip().upper() for line in f if line.strip()]
 
-    # 讀取全部 RS 供 Phase 3 輸出用
     rs_map = {}
     if os.path.exists(RS_CSV):
         with open(RS_CSV, "r", newline="") as f:
@@ -281,14 +319,12 @@ def main():
                 t = row["ticker"].upper()
                 rs_map[t] = row.get("RS", 0)
 
-    # Phase 1 用：RS95+ 且成交值 >= 100M
     rs95_tickers = load_rs95_liquid(RS_CSV, STOCK_DATA_CSV)
 
     print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
 
-    # Phase 1
     print("📡 Phase 1：建立今日熱門題材...")
-    hot_themes = fetch_hot_themes(client, rs95_tickers)
+    hot_themes, ticker_themes, hot_theme_names_ordered, rs_lookup = fetch_hot_themes(client, rs95_tickers)
     if not hot_themes:
         raise RuntimeError("Phase 1 失敗")
 
@@ -297,7 +333,11 @@ def main():
         f.write(f"# {TODAY}\n\n{hot_themes}\n")
     print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
 
-    # Phase 2 + 3
+    hot_wl_tickers = build_hot_theme_watchlist(ticker_themes, hot_theme_names_ordered, rs_lookup)
+    with open(OUTPUT_HOT_WL, "w", encoding="utf-8") as f:
+        f.write("\n".join(hot_wl_tickers) + "\n")
+    print(f"✅ 熱門題材 watchlist 已存至 {OUTPUT_HOT_WL}（{len(hot_wl_tickers)} 檔）\n")
+
     print(f"🔍 Phase 2+3：逐一處理（共 {len(tickers)} 檔）...\n")
     final_rows = []
 
@@ -335,6 +375,7 @@ def main():
     print(f"   {OUTPUT_CSV}")
     print(f"   {OUTPUT_WATCHLIST}")
     print(f"   {OUTPUT_THEMES}")
+    print(f"   {OUTPUT_HOT_WL}")
 
 
 if __name__ == "__main__":
