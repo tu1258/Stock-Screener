@@ -126,7 +126,7 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple]) -> tuple:
 
 要求：
 - ticker_themes：對清單中每一檔股票標注所有相關題材（可多個）
-- hot_themes：依加權熱度排序的前 8 大題材，每條附 1-2 句說明
+- hot_themes：依加權熱度排序的前 10 大題材，每條附 1-2 句說明
 - 題材用繁體中文，力求精準"""
 
     for attempt in range(5):
