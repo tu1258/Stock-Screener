@@ -130,7 +130,6 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
     all_news = "\n\n".join(all_news_parts) or "（無新聞）"
     ticker_lines = "\n".join(f"  RS{rs:>2}  {t}" for t, rs in rs95_tickers)
 
-    # 加入 industry 對照，讓 AI 知道每個 ticker 屬於哪個 industry
     ticker_ind_lines = "\n".join(
         f"  {t}：{ticker_to_industry.get(t, 'N/A')}"
         for t, rs in rs95_tickers
@@ -168,19 +167,23 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
 
 【輸出格式：嚴格回傳以下 JSON，禁止任何 Markdown 或額外說明】
 {{
+  "hot_themes": [
+    {{
+      "name": "題材名稱",
+      "desc": "說明（含代表性個股RS分數）",
+      "tickers": ["TICKER1", "TICKER2"]
+    }},
+    ...
+  ],
   "ticker_themes": {{
     "TICKER": ["題材A", "題材B"],
     ...
-  }},
-  "hot_themes": [
-    "題材名稱 — 說明（含代表性個股RS分數）",
-    ...
-  ]
+  }}
 }}
 
 要求：
+- hot_themes：依加權熱度排序的前 10 大題材，每條附 1-2 句說明，tickers 列出該題材所有相關個股（大寫）
 - ticker_themes：對清單中每一檔股票標注所有相關題材（可多個）
-- hot_themes：依加權熱度排序的前 10 大題材，每條附 1-2 句說明
 - 題材用繁體中文，力求精準"""
 
     for attempt in range(5):
@@ -200,13 +203,12 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                     raw = raw[4:]
             data = json.loads(raw.strip())
 
-            ticker_themes: dict = data.get("ticker_themes", {})
             hot_themes_list: list = data.get("hot_themes", [])
-
-            hot_theme_names_ordered = [item.split("—")[0].strip() for item in hot_themes_list]
+            ticker_themes: dict   = data.get("ticker_themes", {})
 
             rs_lookup = {t: rs for t, rs in rs95_tickers}
 
+            # 題材統計（用 ticker_themes）
             theme_count: dict[str, list[str]] = {}
             for ticker_upper, themes in ticker_themes.items():
                 t = ticker_upper.upper()
@@ -222,11 +224,15 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                 lines.append(f"{theme}：{members_str}　{suffix}")
 
             lines.append("\n## 今日熱門題材（Gemini 分析）\n")
-            lines.extend(hot_themes_list)
+            for item in hot_themes_list:
+                name    = item.get("name", "")
+                desc    = item.get("desc", "")
+                tickers = item.get("tickers", [])
+                lines.append(f"{name} — {desc}（{', '.join(tickers)}）")
 
             themes_text = "\n".join(lines)
 
-            return themes_text, ticker_themes, hot_theme_names_ordered, rs_lookup
+            return themes_text, hot_themes_list, rs_lookup
 
         except (json.JSONDecodeError, KeyError):
             time.sleep(2)
@@ -239,47 +245,26 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
             else:
                 raise
 
-    return "", {}, [], {}
+    return "", [], {}
 
 
 # ── 產生 hot_theme_watchlist ──────────────────────────────────────────────
 def build_hot_theme_watchlist(
-    ticker_themes: dict,
-    hot_theme_names_ordered: list[str],
+    hot_themes_list: list[dict],
     rs_lookup: dict[str, int],
 ) -> list[str]:
-    """依熱門題材順序分組，同組照 RS 降序，每個 ticker 只出現一次。"""
-    theme_rank = {name: i for i, name in enumerate(hot_theme_names_ordered)}
-
-    ticker_best_theme: dict[str, str] = {}
-    for ticker_raw, themes in ticker_themes.items():
-        t = ticker_raw.upper()
-        if not themes:
-            continue
-        best = min(
-            (th for th in themes if th in theme_rank),
-            key=lambda th: theme_rank[th],
-            default=None,
-        )
-        if best:
-            ticker_best_theme[t] = best
-
-    groups: dict[str, list[str]] = {name: [] for name in hot_theme_names_ordered}
-    for t, best_theme in ticker_best_theme.items():
-        groups[best_theme].append(t)
-
+    """依熱門題材順序，同題材內照 RS 降序，每個 ticker 只出現一次。"""
     result = []
-    seen = set()
-    for theme_name in hot_theme_names_ordered:
+    seen   = set()
+    for item in hot_themes_list:
         tickers_in_group = sorted(
-            groups.get(theme_name, []),
+            [t.upper() for t in item.get("tickers", [])],
             key=lambda t: -rs_lookup.get(t, 0),
         )
         for t in tickers_in_group:
             if t not in seen:
                 seen.add(t)
                 result.append(t)
-
     return result
 
 
@@ -375,14 +360,12 @@ def main():
 
     rs95_tickers = load_rs95_liquid(RS_CSV, STOCK_DATA_CSV)
 
-    # 讀取 industry 資料
     industry_text, ticker_to_industry = load_industry_ranking(INDUSTRY_RS_CSV, TICKER_IND_CSV)
 
     print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
 
-    # Phase 1
     print("📡 Phase 1：建立今日熱門題材...")
-    hot_themes, ticker_themes, hot_theme_names_ordered, rs_lookup = fetch_hot_themes(
+    hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
         client, rs95_tickers, industry_text, ticker_to_industry
     )
     if not hot_themes:
@@ -393,12 +376,11 @@ def main():
         f.write(f"# {TODAY}\n\n{hot_themes}\n")
     print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
 
-    hot_wl_tickers = build_hot_theme_watchlist(ticker_themes, hot_theme_names_ordered, rs_lookup)
+    hot_wl_tickers = build_hot_theme_watchlist(hot_themes_list, rs_lookup)
     with open(OUTPUT_HOT_WL, "w", encoding="utf-8") as f:
         f.write("\n".join(hot_wl_tickers) + "\n")
     print(f"✅ 熱門題材 watchlist 已存至 {OUTPUT_HOT_WL}（{len(hot_wl_tickers)} 檔）\n")
 
-    # Phase 2 + 3
     print(f"🔍 Phase 2+3：逐一處理（共 {len(tickers)} 檔）...\n")
     final_rows = []
 
