@@ -252,11 +252,12 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
 def build_hot_theme_watchlist(
     hot_themes_list: list[dict],
     rs_lookup: dict[str, int],
+    top_n: int = 5,
 ) -> list[str]:
     """依熱門題材順序，同題材內照 RS 降序，每個 ticker 只出現一次。"""
     result = []
     seen   = set()
-    for item in hot_themes_list:
+    for item in hot_themes_list[:top_n]:
         tickers_in_group = sorted(
             [t.upper() for t in item.get("tickers", [])],
             key=lambda t: -rs_lookup.get(t, 0),
