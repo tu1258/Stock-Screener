@@ -6,7 +6,7 @@ os.makedirs("csv", exist_ok=True)
 os.makedirs("txt", exist_ok=True)
 
 PRICE_CSV = "stock_data.csv"
-RS_CSV = "stock_data_rs.csv"
+RS_CSV = "stock_rs.csv"
 OUTPUT_CSV_50 = "csv/watchlist_50ma.csv"
 OUTPUT_TXT_50 = "txt/watchlist_50ma.txt"
 
