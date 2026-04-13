@@ -4,7 +4,6 @@ import json
 import time
 import datetime
 import pandas as pd
-import yfinance as yf
 from google import genai
 from google.genai import types
 
@@ -94,15 +93,16 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
     return "\n".join(lines), ticker_to_industry
 
 
-# ── Search Grounding 個股摘要 ────────────────────────────────────────────
-def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
-    prompt = f"""今天是 {TODAY}。請搜尋 {ticker} 股票的近期資訊，並從投資題材與市場炒作的角度進行分析：
-- 這支股票的主要業務是什麼？
-- 這支股票目前最強的投資題材是什麼？為什麼市場在關注它？
-- 近期有哪些催化劑（財報、產品、合作、法規、產業趨勢）推動股價？
-- 它在哪個板塊或題材中具備炒作潛力或稀缺性？
+# ── Phase 1a：Search Grounding 個股分析 ──────────────────────────────────
+def fetch_ticker_analysis(client: genai.Client, ticker: str) -> dict:
+    prompt = f"""Today is {TODAY}. Search for recent information on {ticker} stock and analyze it from an investment theme and market speculation perspective:
+- What is this company's core business?
+- What is the strongest investment theme driving this stock right now, and why is the market paying attention?
+- What recent catalysts (earnings, products, partnerships, regulations, industry trends) are driving the stock?
+- What speculative potential or scarcity does it have within its sector or theme?
 
-請條列整理，聚焦在題材面與炒作邏輯，不需要列流水帳新聞。"""
+Write a concise analysis in English. At the very end, add one line in this exact format:
+THEMES: theme1, theme2, theme3"""
 
     for attempt in range(3):
         try:
@@ -115,27 +115,35 @@ def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
                     max_output_tokens=1024,
                 ),
             )
-            return response.text.strip()
+            raw = response.text.strip()
+            themes = []
+            summary = raw
+            for line in raw.splitlines():
+                if line.strip().upper().startswith("THEMES:"):
+                    themes = [t.strip() for t in line.split(":", 1)[1].split(",") if t.strip()]
+                    summary = raw[:raw.rfind(line)].strip()
+                    break
+            return {"summary": summary, "themes": themes}
         except Exception as e:
             err = str(e)
             if "429" in err or "quota" in err.lower():
                 time.sleep(60)
             elif attempt < 2:
                 time.sleep(5)
-    return ""
+    return {"summary": "", "themes": []}
 
 
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict) -> tuple:
-    print(f"  用 search grounding 抓取 {len(rs95_tickers)} 檔個股摘要...")
 
-    ticker_summaries = {}
+    print(f"  Phase 1a：search grounding 分析 {len(rs95_tickers)} 檔...")
+    ticker_analyses = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
         print(f"    [{i:3d}/{len(rs95_tickers)}] {ticker} RS{rs}", end=" ... ", flush=True)
-        summary = fetch_ticker_summary(client, ticker)
-        ticker_summaries[ticker] = summary
-        print("✓" if summary else "（無）")
+        analysis = fetch_ticker_analysis(client, ticker)
+        ticker_analyses[ticker] = analysis
+        print("✓" if analysis.get("summary") else "（無）")
         time.sleep(GROUNDING_SLEEP)
 
     ticker_lines = "\n".join(f"  RS{rs:>2}  {t}" for t, rs in rs95_tickers)
@@ -145,8 +153,8 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
         for t, rs in rs95_tickers
     )
 
-    summaries_text = "\n\n".join(
-        f"[{t} RS{rs}]\n{ticker_summaries.get(t, '（無資料）')}"
+    analyses_text = "\n\n".join(
+        f"[{t} RS{rs}]\nTHEMES: {', '.join(ticker_analyses.get(t, {}).get('themes', []) or ['N/A'])}\n{ticker_analyses.get(t, {}).get('summary', '（無資料）')}"
         for t, rs in rs95_tickers
     )
 
@@ -157,9 +165,8 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
 {industry_text}
 
 分析說明：
-- 此排行反映整體 industry 的強弱，而非個別股票
-- Industry 平均 RS 高，代表該板塊整體資金動能強，不只是少數個股拉抬
-- 請將此數據與資料來源 A 的個股 RS 交叉比對，避免單一暴漲股扭曲題材判斷
+- Industry 平均 RS 可作為題材熱度的輔助參考，但影響權重應低於個股 RS 分數
+- 上調或下修幅度不宜過大，避免少數個股的強弱被整體 industry 表現過度稀釋或放大
 """
 
     prompt = f"""今天是 {TODAY}。你是一位資深美股分析師，任務是建立今日市場熱門題材清單。
@@ -170,17 +177,14 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
 【資料來源 B：RS95+ 個股所屬 Sector（僅供參考，請以你對各公司業務的專業知識為主進行分類）】
 {ticker_ind_lines}
 {industry_section}
-【資料來源 D：RS95+ 個股近期新聞摘要（來源：Google Search Grounding）】
-{summaries_text}
+【資料來源 D：RS95+ 個股分析摘要與初步題材標注（來源：Google Search Grounding，英文）】
+{analyses_text}
 
 分析說明：
 - RS 為相對強度分數，RS99 代表全市場前 1% 最強勢，RS95 代表前 5%
 - 請依 RS 分數加權判斷題材熱度：RS越高權重越高
 - 多檔 RS99 股票集中同一板塊，代表該題材資金極度集中，應列為頂級熱門
-- 一檔個股可歸屬多個題材
 - 公司業務分類請優先使用你對各公司的專業知識，資料來源 B 的 industry 分類較粗糙僅供輔助參考
-- 資料來源 D 的摘要用於判斷近期催化劑與市場關注度
-- 請同時參考 Industry 平均 RS，若某題材個股 RS 高但 Industry 整體 RS 偏低，熱度評分應適度保守
 
 【輸出格式：嚴格回傳以下 JSON，禁止任何 Markdown 或額外說明】
 {{
@@ -200,7 +204,7 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
 
 要求：
 - hot_themes：依加權熱度排序的前 10 大題材，每條附 1-2 句說明，tickers 列出該題材所有相關個股（大寫）
-- ticker_themes：對清單中每一檔股票標注所有相關題材（可多個），分類請基於你對公司業務的專業知識
+- ticker_themes：對清單中每一檔股票重新標注題材，題材名稱必須完全來自 hot_themes 的 name 欄位，不得使用其他名稱，一個 ticker 可對應多個 hot_themes 題材
 - 題材用繁體中文，力求精準"""
 
     for attempt in range(5):
