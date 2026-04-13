@@ -1,13 +1,13 @@
 import pandas as pd
+import requests
 import yfinance as yf
 from ftplib import FTP
 from io import StringIO
-import re
 from datetime import date, timedelta
 import time
 
-OUTPUT_FILE = "stock_data.csv"
-TICKER_FILE = "stock_ticker.csv"
+OUTPUT_FILE  = "stock_data.csv"
+TICKER_FILE  = "stock_ticker.csv"
 INDUSTRY_FILE = "ticker_industry.csv"
 DAYS = 400
 
@@ -24,8 +24,8 @@ def get_nasdaq_tickers(limit=None):
         cols = line.split("|")
         if len(cols) < 8:
             continue
-        ticker = cols[1]
-        is_etf = cols[5]
+        ticker  = cols[1]
+        is_etf  = cols[5]
         is_test = cols[7]
         if is_etf == "N" and is_test == "N" and len(ticker) <= 4:
             if "$" in ticker or "." in ticker:
@@ -34,31 +34,33 @@ def get_nasdaq_tickers(limit=None):
     return raw_tickers[:limit] if limit else raw_tickers
 
 def fetch_industry_meta(tickers: list) -> pd.DataFrame:
-    """抓每個 ticker 的 sector / industry / industryKey，失敗跳過。"""
-    rows = []
-    total = len(tickers)
-    for i, ticker in enumerate(tickers, 1):
-        for attempt in range(3):
-            try:
-                info = yf.Ticker(ticker).info
-                rows.append({
-                    "ticker":      ticker,
-                    "sector":      info.get("sector", ""),
-                    "industry":    info.get("industry", ""),
-                    "industryKey": info.get("industryKey", ""),
-                })
-                break
-            except Exception:
-                if attempt < 2:
-                    time.sleep(2)
-        if i % 100 == 0 or i == total:
-            success = len(rows)
-            print(f"  [{i}/{total}] industry meta 成功 {success} 檔，失敗 {i - success} 檔")
-        time.sleep(0.3)
-    return pd.DataFrame(rows, columns=["ticker", "sector", "industry", "industryKey"])
+    """Nasdaq screener API 一次抓全市場 sector/industry，再 join 到 ticker 清單。"""
+    print("  從 Nasdaq screener 抓取 industry 資料...")
+    url = "https://api.nasdaq.com/api/screener/stocks"
+    params  = {"tableonly": "true", "limit": 25000, "download": "true"}
+    headers = {"User-Agent": "Mozilla/5.0"}
+
+    try:
+        resp = requests.get(url, params=params, headers=headers, timeout=30)
+        resp.raise_for_status()
+        rows = resp.json()["data"]["rows"]
+        df_nasdaq = pd.DataFrame(rows)[["symbol", "sector", "industry"]]
+        df_nasdaq.columns = ["ticker", "sector", "industry"]
+        df_nasdaq["ticker"] = df_nasdaq["ticker"].str.upper().str.strip()
+    except Exception as e:
+        print(f"  ⚠️ Nasdaq screener 失敗：{e}，回傳空表")
+        return pd.DataFrame(columns=["ticker", "sector", "industry"])
+
+    df_tickers = pd.DataFrame({"ticker": [t.upper() for t in tickers]})
+    df_merged  = df_tickers.merge(df_nasdaq, on="ticker", how="left")
+
+    total    = len(df_merged)
+    success  = df_merged["industry"].notna().sum()
+    print(f"  完成：{success}/{total} 檔有 industry 資料（{success/total*100:.1f}%）")
+    return df_merged
 
 def main():
-    end = date.today()
+    end   = date.today()
     start = end - timedelta(days=DAYS)
     tickers = get_nasdaq_tickers()
     print(f"Downloading {len(tickers)} tickers")
@@ -99,8 +101,7 @@ def main():
     print(f"\n抓取 industry meta（共 {len(tickers)} 檔）...")
     df_industry = fetch_industry_meta(tickers)
     df_industry.to_csv(INDUSTRY_FILE, index=False)
-    success_rate = len(df_industry) / len(tickers) * 100
-    print(f"Saved {INDUSTRY_FILE}，成功率 {success_rate:.1f}%（{len(df_industry)}/{len(tickers)}）")
+    print(f"Saved {INDUSTRY_FILE}")
 
 if __name__ == "__main__":
     main()
