@@ -6,7 +6,7 @@ import yfinance as yf
 DIR = os.path.dirname(os.path.realpath(__file__))
 
 PRICE_DATA_CSV = os.path.join(DIR, "stock_data.csv")
-OUTPUT_CSV = os.path.join(DIR, "stock_data_rs.csv")
+OUTPUT_CSV = os.path.join(DIR, "stock_rs.csv")
 
 REFERENCE_TICKER = "^GSPC"   # S&P500 index ticker in Yahoo Finance
 MIN_DATA_POINTS = 63
