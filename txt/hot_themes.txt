@@ -2,75 +2,32 @@
 
 ## 題材統計（RS95+ 且成交值>=100M，共 79 檔）
 
-半導體：AAOI(RS99), LASR(RS99), TSEM(RS99), VIAV(RS99), FORM(RS98), MU(RS98), INTC(RS96), NVTS(RS96), AMKR(RS96), ASX(RS96), MTSI(RS96), AMAT(RS95)　共 12 檔
-電信設備：LITE(RS99), CIEN(RS99), GLW(RS98), SATS(RS98), SIDU(RS97), FN(RS97), TIGO(RS96), GSAT(RS96)　共 8 檔
-工業機械：AMPX(RS99), BE(RS99), VICR(RS98), AEIS(RS97), VRT(RS97), MKSI(RS97), LUNR(RS97), LRCX(RS97)　共 8 檔
-生物技術：TERN(RS99), ABVX(RS99), PRAX(RS99), COGT(RS98), IBRX(RS98), CNTA(RS96), APLS(RS95)　共 7 檔
-光通訊：LITE(RS99), AAOI(RS99), CIEN(RS99), COHR(RS98), GLW(RS98)　共 5 檔
-電力設備：AEHR(RS99), TTMI(RS98), POWL(RS98), TER(RS98), CLS(RS97)　共 5 檔
-基礎建設工程：AGX(RS99), FIX(RS98), MTZ(RS97), IESC(RS96), LGN(RS95)　共 5 檔
-加密貨幣挖礦：WULF(RS98), HUT(RS98), CIFR(RS97), IREN(RS97), APLD(RS95)　共 5 檔
-貴金屬：IAG(RS96), SSRM(RS96), AU(RS96), AG(RS95), CDE(RS95)　共 5 檔
-電子元件：SNDK(RS99), WDC(RS99), STX(RS99), COHR(RS98)　共 4 檔
-新藥研發：TERN(RS99), ABVX(RS99), PRAX(RS99), COGT(RS98)　共 4 檔
-半導體設備：AEHR(RS99), MKSI(RS97), LRCX(RS97), AMAT(RS95)　共 4 檔
-儲存設備：SNDK(RS99), WDC(RS99), STX(RS99)　共 3 檔
-無線通訊設備：ONDS(RS99), PL(RS99), SATL(RS98)　共 3 檔
+電力基礎設施與工業機械：AEHR(RS99), AMPX(RS99), BE(RS99), TTMI(RS98), POWL(RS98), VICR(RS98), TER(RS98), AEIS(RS97), VRT(RS97), CLS(RS97), MKSI(RS97), GEV(RS97), LUNR(RS97), LRCX(RS97)　共 14 檔
+半導體設備與高效能運算：AAOI(RS99), LASR(RS99), TSEM(RS99), VIAV(RS99), FORM(RS98), MU(RS98), TER(RS98), INTC(RS96), NVTS(RS96), AMKR(RS96), ASX(RS96), MTSI(RS96), AMAT(RS95)　共 13 檔
+通訊設備與低軌衛星：LITE(RS99), ONDS(RS99), PL(RS99), CIEN(RS99), SATL(RS98), GLW(RS98), SATS(RS98), SIDU(RS97), FN(RS97), TIGO(RS96), GSAT(RS96)　共 11 檔
+貴金屬與採礦：IAG(RS96), SSRM(RS96), UUUU(RS96), HBM(RS96), AU(RS96), AG(RS95), HL(RS95), CDE(RS95)　共 8 檔
+生物技術與新藥研發：TERN(RS99), ABVX(RS99), PRAX(RS99), COGT(RS98), IBRX(RS98), CNTA(RS96), APLS(RS95)　共 7 檔
+工程建設與基礎設施：AGX(RS99), FIX(RS98), MTZ(RS97), STRL(RS97), IESC(RS96), LGN(RS95)　共 6 檔
+電子元件與存儲技術：SNDK(RS99), WDC(RS99), STX(RS99), TTMI(RS98), COHR(RS98)　共 5 檔
+數位資產與加密貨幣挖礦：WULF(RS98), HUT(RS98), CIFR(RS97), IREN(RS97)　共 4 檔
+航太國防與政府技術服務：LUNR(RS97), STRL(RS97), ESLT(RS95), RKLB(RS95)　共 4 檔
 軟體服務：AIXI(RS98), FSLY(RS98), NBIS(RS98)　共 3 檔
-國防航太：STRL(RS97), ESLT(RS95), RKLB(RS95)　共 3 檔
-黃金採礦：IAG(RS96), SSRM(RS96), AU(RS96)　共 3 檔
-白銀採礦：AG(RS95), HL(RS95), CDE(RS95)　共 3 檔
-數位基礎設施：WULF(RS98), IREN(RS97)　共 2 檔
-金融服務：HUT(RS98), CIFR(RS97)　共 2 檔
-衛星通訊：SATS(RS98), GSAT(RS96)　共 2 檔
-航太：SIDU(RS97), LUNR(RS97)　共 2 檔
-鋼鐵：ATI(RS96), CRS(RS95)　共 2 檔
-特殊合金：ATI(RS96), CRS(RS95)　共 2 檔
-採礦：UUUU(RS96), HL(RS95)　共 2 檔
-封裝測試：AMKR(RS96), ASX(RS96)　共 2 檔
-衛星影像：PL(RS99)　共 1 檔
-能源儲存：AMPX(RS99)　共 1 檔
+鋼鐵與鋁業金屬：CENX(RS97), ATI(RS96), CRS(RS95)　共 3 檔
 環境服務：SKYQ(RS99)　共 1 檔
-雷射技術：LASR(RS99)　共 1 檔
-晶圓代工：TSEM(RS99)　共 1 檔
-燃料電池：BE(RS99)　共 1 檔
 租賃服務：CAR(RS99)　共 1 檔
-光學檢測：VIAV(RS99)　共 1 檔
-電路板：TTMI(RS98)　共 1 檔
-測試設備：FORM(RS98)　共 1 檔
-配電系統：POWL(RS98)　共 1 檔
-電源模組：VICR(RS98)　共 1 檔
-邊緣運算：FSLY(RS98)　共 1 檔
-低軌衛星：SATL(RS98)　共 1 檔
-記憶體：MU(RS98)　共 1 檔
-自動化測試：TER(RS98)　共 1 檔
-鋁業：CENX(RS97)　共 1 檔
-基礎材料：CENX(RS97)　共 1 檔
-電源供應：AEIS(RS97)　共 1 檔
-資料中心基礎設施：VRT(RS97)　共 1 檔
-電子製造服務：CLS(RS97)　共 1 檔
-光模組：FN(RS97)　共 1 檔
-能源設備：GEV(RS97)　共 1 檔
 汽車零件：MOD(RS97)　共 1 檔
-能源管線：MTZ(RS97)　共 1 檔
-基礎建設：STRL(RS97)　共 1 檔
-油氣設備：FTI(RS96)　共 1 檔
-鈾礦：UUUU(RS96)　共 1 檔
-氮化鎵：NVTS(RS96)　共 1 檔
-金屬採礦：HBM(RS96)　共 1 檔
-電力工程：IESC(RS96)　共 1 檔
-火箭發射：RKLB(RS95)　共 1 檔
-資料中心：APLD(RS95)　共 1 檔
+能源設備：FTI(RS96)　共 1 檔
+數位資產與資料中心服務：APLD(RS95)　共 1 檔
 
 ## 今日熱門題材（Gemini 分析）
 
-光通訊與電信設備 — 受惠 AI 資料中心高速傳輸需求，多檔 RS99 領頭（LITE RS99, CIEN RS99, AAOI RS99, GLW RS98）。
-電力設備與能源管理 — 資料中心與電網升級帶動強勁動能，Industry RS 高達 94.0（AEHR RS99, POWL RS98, CLS RS97, VRT RS97）。
-資料中心儲存方案 — 記憶體與硬碟需求回升，板塊集中度極高（SNDK RS99, WDC RS99, STX RS99, MU RS98）。
-半導體設備與製造 — 晶圓代工與測試設備持續走強，涵蓋多檔高 RS 個股（TSEM RS99, FORM RS98, LRCX RS97, AMAT RS95）。
-貴金屬採礦 — 避險與通膨預期推升金銀礦商，Industry RS 表現優異（IAG RS96, AU RS96, AG RS95, HL RS95）。
-加密貨幣基礎設施 — 比特幣挖礦與相關資料中心服務動能強勁（WULF RS98, HUT RS98, IREN RS97, APLD RS95）。
-基礎建設與工程服務 — 工業建設與能源管線需求穩健，Industry RS 達 79.8（AGX RS99, FIX RS98, IESC RS96, MTZ RS97）。
-航太與衛星通訊 — 低軌衛星與太空探索題材活躍（ONDS RS99, SATL RS98, LUNR RS97, RKLB RS95）。
-生物技術新藥研發 — 雖然板塊平均 RS 較低，但特定新藥標的展現極強個股動能（TERN RS99, ABVX RS99, PRAX RS99）。
-鋁業與特殊金屬 — 基礎材料板塊領頭羊，Industry RS 居全市場之冠（CENX RS97, ATI RS96, CRS RS95）。
+通訊設備與低軌衛星 — 資金高度集中於光通訊與衛星通訊，多檔個股如 LITE、CIEN、ONDS、PL 均達 RS99，板塊平均動能極強。（LITE, ONDS, PL, CIEN, GLW, SATS, SATL, SIDU, FN, TIGO, GSAT）
+半導體設備與高效能運算 — 半導體產業鏈全面走強，包含設備商與製造端，AAOI、LASR、TSEM 等多檔指標股 RS 分數達 99。（AAOI, LASR, TSEM, VIAV, FORM, MU, TER, INTC, NVTS, AMKR, ASX, MTSI, AMAT）
+電子元件與存儲技術 — 存儲設備與電子零組件需求強勁，SNDK、WDC、STX 等硬碟與記憶體大廠集體衝上 RS99。（SNDK, WDC, STX, COHR, TTMI）
+電力基礎設施與工業機械 — 受惠於能源轉型與資料中心電力需求，Electrical Products 行業 RS 高達 94，代表股包含 AEHR、POWL、VRT。（AEHR, AMPX, BE, POWL, VICR, AEIS, VRT, MKSI, LUNR, LRCX, GEV）
+貴金屬與採礦 — 避險資金湧入，Precious Metals 行業 RS 均值超過 82，多檔金銀礦股如 IAG、SSRM、AU 展現強勢動能。（IAG, SSRM, AU, AG, HL, CDE, HBM, UUUU）
+生物技術與新藥研發 — 生技板塊雖整體 RS 較低，但個股表現極端強勢，TERN、ABVX、PRAX 均為 RS99 的領先者。（TERN, ABVX, PRAX, COGT, IBRX, CNTA, APLS）
+工程建設與基礎設施 — 基礎建設與管線工程需求穩定，行業 RS 均值接近 80，代表股為 AGX、FIX 與 MTZ。（AGX, FIX, MTZ, STRL, IESC, LGN）
+數位資產與加密貨幣挖礦 — 加密貨幣相關服務動能顯著，WULF、HUT、IREN 等挖礦股 RS 分數均在 97 以上。（WULF, HUT, IREN, CIFR, APLD）
+航太國防與政府技術服務 — 國防預算與太空競賽推升相關標的，包含 LUNR、STRL、RKLB 等強勢股。（LUNR, STRL, ESLT, RKLB）
+鋼鐵與鋁業金屬 — 工業金屬價格走揚，Aluminum 行業 RS 達 95.5 位居榜首，CENX、ATI 為主要代表。（CENX, ATI, CRS）
