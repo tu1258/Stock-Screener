@@ -10,7 +10,7 @@ from google.genai import types
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "txt/technical_watchlist.txt"
-RS_CSV           = "stock_data_rs.csv"
+RS_CSV           = "stock_rs.csv"
 OUTPUT_CSV       = "csv/watchlist_summary.csv"
 OUTPUT_WATCHLIST = "txt/watchlist.txt"
 OUTPUT_THEMES    = "txt/hot_themes.txt"
@@ -20,7 +20,9 @@ RATING_THRESHOLD = 6
 GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
 GEMINI_MODEL_PHASE3 = "gemini-3.1-flash-lite-preview"
 
-STOCK_DATA_CSV = "stock_data.csv"
+STOCK_DATA_CSV   = "stock_data.csv"
+INDUSTRY_RS_CSV  = "industry_rs.csv"
+TICKER_IND_CSV   = "ticker_industry.csv"
 MIN_AVG_VALUE_10M = 100
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
@@ -63,6 +65,40 @@ def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list[tuple]:
     return sorted(result, key=lambda x: -x[1])
 
 
+# ── 讀取 industry RS 排行 ────────────────────────────────────────────────
+def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[str, dict]:
+    """
+    回傳:
+      industry_text: 給 Phase 1 prompt 用的文字
+      ticker_to_industry: {ticker: industry} 對照表
+    """
+    ticker_to_industry = {}
+    if os.path.exists(ticker_ind_csv):
+        df_ind = pd.read_csv(ticker_ind_csv)
+        for _, row in df_ind.iterrows():
+            t = str(row.get("ticker", "")).upper()
+            ind = str(row.get("industry", ""))
+            if t and ind:
+                ticker_to_industry[t] = ind
+
+    if not os.path.exists(industry_rs_csv):
+        return "", ticker_to_industry
+
+    df = pd.read_csv(industry_rs_csv)
+    df = df.sort_values("avg_rs", ascending=False)
+
+    lines = []
+    for _, row in df.iterrows():
+        ind_key  = row.get("industryKey", "")
+        industry = row.get("industry", "")
+        sector   = row.get("sector", "")
+        avg_rs   = row.get("avg_rs", 0)
+        count    = int(row.get("ticker_count", 0))
+        lines.append(f"  {avg_rs:5.1f}  {industry}（{sector}，{count} 檔）")
+
+    return "\n".join(lines), ticker_to_industry
+
+
 # ── Yahoo Finance 新聞抓取 ────────────────────────────────────────────────
 def fetch_yahoo_news(ticker: str) -> list[str]:
     lines = []
@@ -73,8 +109,8 @@ def fetch_yahoo_news(ticker: str) -> list[str]:
                 item.get("providerPublishTime", 0), tz=datetime.timezone.utc
             )
             date_str = pub_dt.strftime("%Y-%m-%d")
-            title   = item.get("title", "")
-            summary = item.get("summary", item.get("publisher", ""))
+            title    = item.get("title", "")
+            summary  = item.get("summary", item.get("publisher", ""))
             if title:
                 lines.append(f"[{date_str}] {title} — {summary}")
     except Exception:
@@ -83,7 +119,8 @@ def fetch_yahoo_news(ticker: str) -> list[str]:
 
 
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
-def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple]) -> tuple:
+def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
+                     industry_text: str, ticker_to_industry: dict) -> tuple:
     print(f"  抓取 {len(rs95_tickers)} 檔 RS95+ 個股的 Yahoo Finance 新聞...")
 
     all_news_parts = []
@@ -98,19 +135,41 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple]) -> tuple:
     all_news = "\n\n".join(all_news_parts) or "（無新聞）"
     ticker_lines = "\n".join(f"  RS{rs:>2}  {t}" for t, rs in rs95_tickers)
 
+    # 加入 industry 對照，讓 AI 知道每個 ticker 屬於哪個 industry
+    ticker_ind_lines = "\n".join(
+        f"  {t}：{ticker_to_industry.get(t, 'N/A')}"
+        for t, rs in rs95_tickers
+    )
+
+    industry_section = ""
+    if industry_text:
+        industry_section = f"""
+【資料來源 C：各 Industry 平均 RS 排行（依全市場個股 RS 分數計算，降序）】
+{industry_text}
+
+分析說明：
+- 此排行反映整體 industry 的強弱，而非個別股票
+- Industry 平均 RS 高，代表該板塊整體資金動能強，不只是少數個股拉抬
+- 請將此數據與資料來源 A 的個股 RS 交叉比對，避免單一暴漲股扭曲題材判斷
+"""
+
     prompt = f"""今天是 {TODAY}。你是一位資深美股分析師，任務是建立今日市場熱門題材清單。
 
 【資料來源 A：RS>=95 且成交值>=100M 強勢股清單（共 {len(rs95_tickers)} 檔，依 RS 分數降序）】
 {ticker_lines}
+
+【資料來源 B：RS95+ 個股所屬 Industry】
+{ticker_ind_lines}
+{industry_section}
+【資料來源 D：RS95+ 個股 Yahoo Finance 新聞】
+{all_news}
 
 分析說明：
 - RS 為相對強度分數，RS99 代表全市場前 1% 最強勢，RS95 代表前 5%
 - 請依 RS 分數加權判斷題材熱度：RS越高權重越高
 - 多檔 RS99 股票集中同一板塊，代表該題材資金極度集中，應列為頂級熱門
 - 一檔個股可歸屬多個題材
-
-【資料來源 B：RS95+ 個股 Yahoo Finance 新聞】
-{all_news}
+- 請同時參考 Industry 平均 RS，若某題材個股 RS 高但 Industry 整體 RS 偏低，熱度評分應適度保守
 
 【輸出格式：嚴格回傳以下 JSON，禁止任何 Markdown 或額外說明】
 {{
@@ -321,10 +380,16 @@ def main():
 
     rs95_tickers = load_rs95_liquid(RS_CSV, STOCK_DATA_CSV)
 
+    # 讀取 industry 資料
+    industry_text, ticker_to_industry = load_industry_ranking(INDUSTRY_RS_CSV, TICKER_IND_CSV)
+
     print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
 
+    # Phase 1
     print("📡 Phase 1：建立今日熱門題材...")
-    hot_themes, ticker_themes, hot_theme_names_ordered, rs_lookup = fetch_hot_themes(client, rs95_tickers)
+    hot_themes, ticker_themes, hot_theme_names_ordered, rs_lookup = fetch_hot_themes(
+        client, rs95_tickers, industry_text, ticker_to_industry
+    )
     if not hot_themes:
         raise RuntimeError("Phase 1 失敗")
 
@@ -338,6 +403,7 @@ def main():
         f.write("\n".join(hot_wl_tickers) + "\n")
     print(f"✅ 熱門題材 watchlist 已存至 {OUTPUT_HOT_WL}（{len(hot_wl_tickers)} 檔）\n")
 
+    # Phase 2 + 3
     print(f"🔍 Phase 2+3：逐一處理（共 {len(tickers)} 檔）...\n")
     final_rows = []
 
