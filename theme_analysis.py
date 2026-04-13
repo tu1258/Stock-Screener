@@ -67,11 +67,7 @@ def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list[tuple]:
 
 # ── 讀取 industry RS 排行 ────────────────────────────────────────────────
 def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[str, dict]:
-    """
-    回傳:
-      industry_text: 給 Phase 1 prompt 用的文字
-      ticker_to_industry: {ticker: industry} 對照表
-    """
+
     ticker_to_industry = {}
     if os.path.exists(ticker_ind_csv):
         df_ind = pd.read_csv(ticker_ind_csv)
@@ -89,7 +85,6 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
 
     lines = []
     for _, row in df.iterrows():
-        ind_key  = row.get("industryKey", "")
         industry = row.get("industry", "")
         sector   = row.get("sector", "")
         avg_rs   = row.get("avg_rs", 0)
