@@ -1,3 +1,119 @@
+import os
+import csv
+import json
+import time
+import datetime
+import pandas as pd
+import yfinance as yf
+from google import genai
+from google.genai import types
+
+# ── 設定 ──────────────────────────────────────────────────────────────────
+INPUT_TXT        = "txt/technical_watchlist.txt"
+RS_CSV           = "stock_rs.csv"
+OUTPUT_CSV       = "csv/watchlist_summary.csv"
+OUTPUT_WATCHLIST = "txt/watchlist.txt"
+OUTPUT_THEMES    = "txt/hot_themes.txt"
+OUTPUT_HOT_WL    = "txt/hot_theme_watchlist.txt"
+RATING_THRESHOLD = 6
+
+GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
+GEMINI_MODEL_PHASE3 = "gemini-3.1-flash-lite-preview"
+
+STOCK_DATA_CSV   = "stock_data.csv"
+INDUSTRY_RS_CSV  = "industry_rs.csv"
+TICKER_IND_CSV   = "ticker_industry.csv"
+MIN_AVG_VALUE_10M = 100
+
+TODAY = datetime.date.today().strftime("%Y-%m-%d")
+
+
+# ── 計算 RS95+ 且成交值 >= 100M 的清單 ──────────────────────────────────
+def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list[tuple]:
+    """回傳 (ticker, rs_int) list，僅保留 RS>=95 且 10日均成交值 >= 100M"""
+    rs_map = {}
+    with open(rs_csv, newline="") as f:
+        for row in csv.DictReader(f):
+            try:
+                rs_int = int(float(row.get("RS", 0)))
+                if rs_int >= 95:
+                    rs_map[row["ticker"].upper()] = rs_int
+            except (ValueError, KeyError):
+                pass
+
+    if not os.path.exists(stock_data_csv) or not rs_map:
+        return sorted(rs_map.items(), key=lambda x: -x[1])
+
+    price_df = pd.read_csv(stock_data_csv, parse_dates=["date"],
+                           usecols=["ticker", "date", "close", "volume"])
+    price_df = price_df[price_df["ticker"].str.upper().isin(rs_map)]
+    price_df = price_df.sort_values(["ticker", "date"])
+
+    price_df["daily_value"] = price_df["close"] * price_df["volume"] / 1_000_000
+    avg_val = (
+        price_df.groupby("ticker")["daily_value"]
+        .apply(lambda x: x.tail(10).mean())
+        .reset_index()
+        .rename(columns={"daily_value": "avg_value_10"})
+    )
+    avg_val["ticker"] = avg_val["ticker"].str.upper()
+
+    liquid = avg_val[avg_val["avg_value_10"] >= MIN_AVG_VALUE_10M]["ticker"].tolist()
+    liquid_set = set(liquid)
+
+    result = [(t, rs) for t, rs in rs_map.items() if t in liquid_set]
+    return sorted(result, key=lambda x: -x[1])
+
+
+# ── 讀取 industry RS 排行 ────────────────────────────────────────────────
+def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[str, dict]:
+
+    ticker_to_industry = {}
+    if os.path.exists(ticker_ind_csv):
+        df_ind = pd.read_csv(ticker_ind_csv)
+        for _, row in df_ind.iterrows():
+            t = str(row.get("ticker", "")).upper()
+            ind = str(row.get("industry", ""))
+            if t and ind:
+                ticker_to_industry[t] = ind
+
+    if not os.path.exists(industry_rs_csv):
+        return "", ticker_to_industry
+
+    df = pd.read_csv(industry_rs_csv)
+    df = df.sort_values("avg_rs", ascending=False)
+
+    lines = []
+    for _, row in df.iterrows():
+        industry = row.get("industry", "")
+        sector   = row.get("sector", "")
+        avg_rs   = row.get("avg_rs", 0)
+        count    = int(row.get("ticker_count", 0))
+        lines.append(f"  {avg_rs:5.1f}  {industry}（{sector}，{count} 檔）")
+
+    return "\n".join(lines), ticker_to_industry
+
+
+# ── Yahoo Finance 新聞抓取 ────────────────────────────────────────────────
+def fetch_yahoo_news(ticker: str) -> list[str]:
+    lines = []
+    try:
+        items = yf.Ticker(ticker).news or []
+        for item in items:
+            pub_dt = datetime.datetime.fromtimestamp(
+                item.get("providerPublishTime", 0), tz=datetime.timezone.utc
+            )
+            date_str = pub_dt.strftime("%Y-%m-%d")
+            title    = item.get("title", "")
+            summary  = item.get("summary", item.get("publisher", ""))
+            if title:
+                lines.append(f"[{date_str}] {title} — {summary}")
+    except Exception:
+        pass
+    return lines
+
+
+# ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict) -> tuple:
     print(f"  抓取 {len(rs95_tickers)} 檔 RS95+ 個股的 Yahoo Finance 新聞...")
@@ -131,3 +247,180 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                 raise
 
     return "", [], {}
+
+
+# ── 產生 hot_theme_watchlist ──────────────────────────────────────────────
+def build_hot_theme_watchlist(
+    hot_themes_list: list[dict],
+    rs_lookup: dict[str, int],
+) -> list[str]:
+    """依熱門題材順序，同題材內照 RS 降序，每個 ticker 只出現一次。"""
+    result = []
+    seen   = set()
+    for item in hot_themes_list:
+        tickers_in_group = sorted(
+            [t.upper() for t in item.get("tickers", [])],
+            key=lambda t: -rs_lookup.get(t, 0),
+        )
+        for t in tickers_in_group:
+            if t not in seen:
+                seen.add(t)
+                result.append(t)
+    return result
+
+
+# ── Phase 2：Yahoo Finance 個股新聞 ──────────────────────────────────────
+def fetch_stock_news(ticker: str) -> str:
+    lines = fetch_yahoo_news(ticker)
+    return "\n".join(lines) or "（無最新新聞）"
+
+
+# ── Phase 3：Gemini Flash-Lite 評分 ──────────────────────────────────────
+def score_ticker(client: genai.Client, ticker: str, news_text: str, hot_themes: str) -> dict:
+    prompt = f"""你是一位資深美股分析師。今天是 {TODAY}。
+
+## 今日市場熱門題材
+{hot_themes}
+
+## 個股：{ticker}
+以下是過去 7 天的最新新聞摘要（來源：Yahoo Finance）：
+{news_text}
+
+## 任務
+判斷 {ticker} 與今日熱門題材的契合度，給予 1-10 評分。
+評分只看題材契合度與炒作潛力，與個股 RS 分數完全無關。
+
+評分標準：
+- 10：當前最強主題核心標的，題材爆發性強，資金高度集中
+- 9：強勢主題領頭羊，有明確催化劑，市場關注度極高
+- 8：強勢板塊重要成員，題材清晰且有持續性資金流入
+- 7：熱門板塊成員，但非核心，或題材仍在醞釀
+- 6：題材有支撐，但競爭者多或關注度尚未聚焦
+- 5：題材平淡，板塊輪動位置不明確
+- 4：題材略顯老化，資金關注度下降
+- 3：題材退燒，資金流出，基本面支撐有限
+- 2：題材幾乎消失，市場已轉移焦點
+- 1：完全被市場拋棄，與當前趨勢脫節
+
+原則：新聞資訊優先於訓練知識；若新聞顯示該股活躍交易，忽略任何已下市/收購的舊知識；禁止自行聯網搜尋。
+
+輸出：僅回傳單一 JSON 物件，繁體中文，欄位：
+- "ticker": 代號（大寫）
+- "rating": 1-10 整數
+- "theme": 所有相關題材（逗號分隔）
+- "feature": 與熱門題材關聯或競爭優勢（20字內）
+- "reason": 評分理由（20字內）
+
+禁止任何 Markdown 或額外說明。"""
+
+    for attempt in range(5):
+        try:
+            response = client.models.generate_content(
+                model=GEMINI_MODEL_PHASE3,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0, max_output_tokens=512),
+            )
+            raw = response.text.strip()
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+                if raw.lower().startswith("json"):
+                    raw = raw[4:]
+            result = json.loads(raw.strip())
+            result["ticker"] = ticker.upper()
+            return result
+        except json.JSONDecodeError:
+            time.sleep(2)
+        except Exception as e:
+            err = str(e)
+            if "429" in err or "quota" in err.lower():
+                time.sleep(60)
+            elif attempt < 4:
+                time.sleep(3)
+            else:
+                return {"ticker": ticker.upper(), "rating": 0, "theme": "", "feature": "", "reason": ""}
+    return {"ticker": ticker.upper(), "rating": 0, "theme": "", "feature": "", "reason": ""}
+
+
+# ── 主流程 ────────────────────────────────────────────────────────────────
+def main():
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    if not gemini_key:
+        raise EnvironmentError("GEMINI_API_KEY 未設定")
+
+    client = genai.Client(api_key=gemini_key)
+
+    with open(INPUT_TXT, "r") as f:
+        tickers = [line.strip().upper() for line in f if line.strip()]
+
+    rs_map = {}
+    if os.path.exists(RS_CSV):
+        with open(RS_CSV, "r", newline="") as f:
+            for row in csv.DictReader(f):
+                t = row["ticker"].upper()
+                rs_map[t] = row.get("RS", 0)
+
+    rs95_tickers = load_rs95_liquid(RS_CSV, STOCK_DATA_CSV)
+
+    industry_text, ticker_to_industry = load_industry_ranking(INDUSTRY_RS_CSV, TICKER_IND_CSV)
+
+    print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
+
+    print("📡 Phase 1：建立今日熱門題材...")
+    hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
+        client, rs95_tickers, industry_text, ticker_to_industry
+    )
+    if not hot_themes:
+        raise RuntimeError("Phase 1 失敗")
+
+    os.makedirs("txt", exist_ok=True)
+    with open(OUTPUT_THEMES, "w", encoding="utf-8") as f:
+        f.write(f"# {TODAY}\n\n{hot_themes}\n")
+    print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
+
+    hot_wl_tickers = build_hot_theme_watchlist(hot_themes_list, rs_lookup)
+    with open(OUTPUT_HOT_WL, "w", encoding="utf-8") as f:
+        f.write("\n".join(hot_wl_tickers) + "\n")
+    print(f"✅ 熱門題材 watchlist 已存至 {OUTPUT_HOT_WL}（{len(hot_wl_tickers)} 檔）\n")
+
+    print(f"🔍 Phase 2+3：逐一處理（共 {len(tickers)} 檔）...\n")
+    final_rows = []
+
+    for i, ticker in enumerate(tickers, 1):
+        print(f"  [{i:3d}/{len(tickers)}] {ticker}", end=" ... ", flush=True)
+        news_text = fetch_stock_news(ticker)
+        result = score_ticker(client, ticker, news_text, hot_themes)
+        final_rows.append({
+            "ticker":  result.get("ticker", ticker),
+            "RS":      rs_map.get(ticker, 0),
+            "rating":  result.get("rating", 0),
+            "theme":   result.get("theme", ""),
+            "feature": result.get("feature", ""),
+            "reason":  result.get("reason", ""),
+        })
+        print(f"rating={result.get('rating', '?')}")
+        time.sleep(4)
+
+    final_rows.sort(
+        key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
+    )
+
+    os.makedirs("csv", exist_ok=True)
+    with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "feature", "reason"])
+        writer.writeheader()
+        writer.writerows(final_rows)
+
+    watchlist = [row["ticker"] for row in final_rows if int(row["rating"]) >= RATING_THRESHOLD]
+    with open(OUTPUT_WATCHLIST, "w", encoding="utf-8") as f:
+        f.write("\n".join(watchlist) + "\n")
+
+    print(f"\n{'='*50}")
+    print(f"✅ 完成！分析 {len(final_rows)} 檔，watchlist {len(watchlist)} 檔")
+    print(f"   {OUTPUT_CSV}")
+    print(f"   {OUTPUT_WATCHLIST}")
+    print(f"   {OUTPUT_THEMES}")
+    print(f"   {OUTPUT_HOT_WL}")
+
+
+if __name__ == "__main__":
+    main()
