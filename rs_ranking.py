@@ -4,10 +4,10 @@ import numpy as np
 import yfinance as yf
 
 DIR = os.path.dirname(os.path.realpath(__file__))
-PRICE_DATA_CSV   = os.path.join(DIR, "stock_data.csv")
-OUTPUT_CSV       = os.path.join(DIR, "stock_rs.csv")
-INDUSTRY_CSV     = os.path.join(DIR, "ticker_industry.csv")
-INDUSTRY_RS_CSV  = os.path.join(DIR, "industry_rs.csv")
+PRICE_DATA_CSV  = os.path.join(DIR, "stock_data.csv")
+OUTPUT_CSV      = os.path.join(DIR, "stock_rs.csv")
+INDUSTRY_CSV    = os.path.join(DIR, "ticker_industry.csv")
+INDUSTRY_RS_CSV = os.path.join(DIR, "industry_rs.csv")
 
 REFERENCE_TICKER = "^GSPC"
 MIN_DATA_POINTS  = 63
@@ -36,7 +36,7 @@ def historical_perf(closes, n):
     return perf_cum.tail(1).item()
 
 def main():
-    df_all = pd.read_csv(PRICE_DATA_CSV, parse_dates=["date"])
+    df_all  = pd.read_csv(PRICE_DATA_CSV, parse_dates=["date"])
     tickers = df_all["ticker"].unique()
 
     df_ref = yf.download(REFERENCE_TICKER, period="1y", progress=False)
@@ -68,14 +68,14 @@ def main():
 
     # industry RS
     if os.path.exists(INDUSTRY_CSV):
-        df_ind = pd.read_csv(INDUSTRY_CSV)
-        df_merged = df.merge(df_ind[["ticker", "sector", "industry", "industryKey"]], on="ticker", how="inner")
+        df_ind    = pd.read_csv(INDUSTRY_CSV)
+        df_merged = df.merge(df_ind[["ticker", "sector", "industry"]], on="ticker", how="inner")
 
         industry_rs = (
-            df_merged.groupby(["industryKey", "industry", "sector"])
+            df_merged.groupby(["industry", "sector"])
             .agg(
-                avg_rs      = ("RS", "mean"),
-                ticker_count= ("ticker", "count"),
+                avg_rs       = ("RS", "mean"),
+                ticker_count = ("ticker", "count"),
             )
             .reset_index()
             .sort_values("avg_rs", ascending=False)
