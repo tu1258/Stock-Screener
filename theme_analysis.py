@@ -212,7 +212,7 @@ News URLs:
             err = str(e)
             print(f"\n  ERROR {ticker}: {err[:200]}")
             if "429" in err or "quota" in err.lower():
-                time.sleep(60)
+                time.sleep(5)
             elif attempt < 2:
                 time.sleep(5)
 
@@ -350,7 +350,7 @@ Requirements:
         except Exception as e:
             err = str(e)
             if "429" in err or "quota" in err.lower():
-                time.sleep(60)
+                time.sleep(5)
             elif attempt < 4:
                 time.sleep(5)
             else:
@@ -447,7 +447,7 @@ No Markdown, no extra explanation."""
         except Exception as e:
             err = str(e)
             if "429" in err or "quota" in err.lower():
-                time.sleep(60)
+                time.sleep(5)
             elif attempt < 2:
                 time.sleep(5)
     return {"ticker": ticker.upper(), "rating": 0, "theme": "", "feature": "", "reason": ""}
