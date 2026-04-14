@@ -3,10 +3,12 @@ import csv
 import json
 import time
 import datetime
+import requests
+import xml.etree.ElementTree as ET
 import pandas as pd
-import yfinance as yf
 from google import genai
 from google.genai import types
+from email.utils import parsedate_to_datetime
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "txt/technical_watchlist.txt"
@@ -17,17 +19,23 @@ OUTPUT_THEMES    = "txt/hot_themes.txt"
 OUTPUT_HOT_WL    = "txt/hot_theme_watchlist.txt"
 RATING_THRESHOLD = 6
 
-GEMINI_MODEL_PHASE1    = "gemini-3-flash-preview"
-GEMINI_MODEL_GROUNDING = "gemini-3.1-flash-lite-preview"
+GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
+GEMINI_MODEL_SCORE  = "gemini-3.1-flash-lite-preview"
 
 STOCK_DATA_CSV    = "stock_data.csv"
 INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 MIN_AVG_VALUE_10M = 100
 
-GROUNDING_SLEEP = 5
+NEWS_SLEEP        = 1    # 每支股票抓完新聞後的間隔（秒）
+SCORING_SLEEP     = 2    # 每支股票評分後的間隔（秒）
+NEWS_MAX_AGE_DAYS = 30   # 只取最近 30 天的新聞
+NEWS_MAX_ITEMS    = 20   # 每支股票最多取 20 篇
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
+
+# ── 新聞摘要快取（避免 Phase1 和 Phase3 重複抓同一支股票） ──────────────
+_summary_cache: dict[str, str] = {}
 
 
 # ── 計算 RS95+ 且成交值 >= 100M 的清單 ──────────────────────────────────
@@ -94,42 +102,107 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
     return "\n".join(lines), ticker_to_industry
 
 
-# ── Search Grounding 個股摘要 ────────────────────────────────────────────
-def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
-    prompt = f"""今天是 {TODAY}。請搜尋 {ticker} 股票的近期資訊，並從投資題材與市場炒作的角度進行分析：
-- 這支股票的主要業務是什麼？
-- 這支股票目前最強的投資題材是什麼？為什麼市場在關注它？
-- 近期有哪些催化劑（財報、產品、合作、法規、產業趨勢）推動股價？
-- 它在哪個板塊或題材中具備炒作潛力或稀缺性？
+# ── Google News RSS：取得最近 N 天內的新聞 URL 清單 ──────────────────────
+def fetch_rss_urls(ticker: str) -> list[str]:
+    """
+    從 Google News RSS 抓取最近 NEWS_MAX_AGE_DAYS 天內的新聞連結。
+    最多回傳 NEWS_MAX_ITEMS 篇。
+    """
+    rss_url = (
+        f"https://news.google.com/rss/search"
+        f"?q={ticker}+stock&hl=en-US&gl=US&ceid=US:en"
+    )
+    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=NEWS_MAX_AGE_DAYS)
+    recent_urls = []
 
-請條列整理，聚焦在題材面與炒作邏輯，不需要列流水帳新聞。"""
+    try:
+        resp = requests.get(rss_url, timeout=10,
+                            headers={"User-Agent": "Mozilla/5.0"})
+        resp.raise_for_status()
+        root = ET.fromstring(resp.content)
+
+        for item in root.findall(".//item"):
+            link = item.findtext("link", "").strip()
+            if not link:
+                continue
+
+            pub_date_str = item.findtext("pubDate", "")
+            try:
+                pub_dt = parsedate_to_datetime(pub_date_str)
+                if pub_dt < cutoff:
+                    continue
+            except Exception:
+                pass  # 解析失敗就不過濾，照收
+
+            recent_urls.append(link)
+            if len(recent_urls) >= NEWS_MAX_ITEMS:
+                break
+
+    except Exception as e:
+        print(f"\n  RSS error ({ticker}): {e}")
+
+    return recent_urls
+
+
+# ── Gemini url_context 摘要（含快取） ────────────────────────────────────
+def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
+    """
+    1. 先查快取，有就直接回傳（Phase3 遇到 Phase1 已抓過的股票不重複請求）
+    2. 用 Google News RSS 拿最近 30 天內最多 20 篇的新聞 URL
+    3. 把 URL 清單丟給 Gemini url_context，讓它讀內文並摘要
+    """
+    if ticker in _summary_cache:
+        return _summary_cache[ticker]
+
+    urls = fetch_rss_urls(ticker)
+    if not urls:
+        _summary_cache[ticker] = ""
+        return ""
+
+    urls_block = "\n".join(urls)
+
+    prompt = f"""Today is {TODAY}. The following are recent news article URLs for the stock {ticker}.
+Please read these articles and summarize from an investment theme and market catalyst perspective:
+- What is the company's core business?
+- What is the strongest current investment theme? Why is the market paying attention?
+- What recent catalysts (earnings, products, partnerships, regulations, industry trends) are driving the stock?
+- In which sector or theme does it have speculative potential or scarcity value?
+
+If any article is inaccessible, skip it silently. Return a concise bullet-point summary focused on themes and catalysts only.
+
+News URLs:
+{urls_block}"""
 
     for attempt in range(3):
         try:
             response = client.models.generate_content(
-                model=GEMINI_MODEL_GROUNDING,
+                model=GEMINI_MODEL_SCORE,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    tools=[types.Tool(google_search=types.GoogleSearch())],
+                    tools=[types.Tool(url_context=types.UrlContext())],
                     temperature=0,
                     max_output_tokens=1024,
                 ),
             )
-            return response.text.strip()
+            result = response.text.strip()
+            _summary_cache[ticker] = result
+            return result
         except Exception as e:
             err = str(e)
-            print(f"\nERROR {ticker}: {err[:200]}")
+            print(f"\n  ERROR {ticker}: {err[:200]}")
             if "429" in err or "quota" in err.lower():
                 time.sleep(60)
             elif attempt < 2:
                 time.sleep(5)
+
+    _summary_cache[ticker] = ""
     return ""
 
 
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict) -> tuple:
-    print(f"  用 search grounding 抓取 {len(rs95_tickers)} 檔個股摘要...")
+    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Google News RSS...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
@@ -137,72 +210,72 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
         summary = fetch_ticker_summary(client, ticker)
         ticker_summaries[ticker] = summary
         print("✓" if summary else "（無）")
-        time.sleep(GROUNDING_SLEEP)
+        time.sleep(NEWS_SLEEP)
 
     ticker_lines = "\n".join(f"  RS{rs:>2}  {t}" for t, rs in rs95_tickers)
 
     ticker_ind_lines = "\n".join(
-        f"  {t}：{ticker_to_industry.get(t, 'N/A')}"
+        f"  {t}: {ticker_to_industry.get(t, 'N/A')}"
         for t, rs in rs95_tickers
     )
 
     summaries_text = "\n\n".join(
-        f"[{t} RS{rs}]\n{ticker_summaries.get(t, '（無資料）')}"
+        f"[{t} RS{rs}]\n{ticker_summaries.get(t, '(no data)')}"
         for t, rs in rs95_tickers
     )
 
     industry_section = ""
     if industry_text:
         industry_section = f"""
-【資料來源 C：各 Industry 平均 RS 排行（依全市場個股 RS 分數計算，降序）】
+[Source C: Industry Average RS Ranking (sorted descending by avg RS across all stocks)]
 {industry_text}
 
-分析說明：
-- 此排行反映整體 industry 的強弱，而非個別股票
-- Industry 平均 RS 高，代表該板塊整體資金動能強，不只是少數個股拉抬
-- 請將此數據與資料來源 A 的個股 RS 交叉比對，避免單一暴漲股扭曲題材判斷
+Notes:
+- This ranking reflects the overall strength of each industry, not individual stocks.
+- A high industry average RS means strong sector-wide capital momentum, not just a few outliers.
+- Cross-reference with Source A to avoid single-stock distortion of theme assessment.
 """
 
-    prompt = f"""今天是 {TODAY}。你是一位資深美股分析師，任務是建立今日市場熱門題材清單。
+    prompt = f"""Today is {TODAY}. You are a senior US equity analyst. Your task is to identify today's hot investment themes.
 
-【資料來源 A：RS>=95 且成交值>=100M 強勢股清單（共 {len(rs95_tickers)} 檔，依 RS 分數降序）】
+[Source A: Stocks with RS>=95 and avg daily value>=100M USD (total {len(rs95_tickers)} stocks, sorted by RS descending)]
 {ticker_lines}
 
-【資料來源 B：RS95+ 個股所屬 Sector（僅供參考，請以你對各公司業務的專業知識為主進行分類）】
+[Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-【資料來源 D：RS95+ 個股近期新聞摘要（來源：Google Search Grounding）】
+[Source D: Recent news summaries for RS95+ stocks (sourced from Google News RSS + article content)]
 {summaries_text}
 
-分析說明：
-- RS 為相對強度分數，RS99 代表全市場前 1% 最強勢，RS95 代表前 5%
-- 請依 RS 分數加權判斷題材熱度：RS越高權重越高
-- 多檔 RS99 股票集中同一板塊，代表該題材資金極度集中，應列為頂級熱門
-- 一檔個股可歸屬多個題材
-- 公司業務分類請優先使用你對各公司的專業知識，資料來源 B 的 industry 分類較粗糙僅供輔助參考
-- 資料來源 D 的摘要用於判斷近期催化劑與市場關注度
-- 請同時參考 Industry 平均 RS，若某題材個股 RS 高但 Industry 整體 RS 偏低，熱度評分應適度保守
+Instructions:
+- RS is a relative strength score. RS99 = top 1% of all stocks; RS95 = top 5%.
+- Weight theme heat by RS score: higher RS = higher weight.
+- Multiple RS99 stocks concentrated in the same sector = extremely hot theme, rank it highest.
+- One stock may belong to multiple themes.
+- Use your own knowledge for sector classification; Source B is only a rough reference.
+- Use Source D to assess recent catalysts and market attention.
+- If a theme has high individual RS but low industry average RS, be conservative in scoring its heat.
 
-【輸出格式：嚴格回傳以下 JSON，禁止任何 Markdown 或額外說明】
+[Output format: return ONLY the following JSON. No Markdown, no explanation.]
 {{
   "hot_themes": [
     {{
-      "name": "題材名稱",
-      "desc": "說明（含代表性個股RS分數）",
+      "name": "主題名稱（繁體中文）",
+      "desc": "說明（含代表性個股RS分數，繁體中文）",
       "tickers": ["TICKER1", "TICKER2"]
     }},
     ...
   ],
   "ticker_themes": {{
-    "TICKER": ["題材A", "題材B"],
+    "TICKER": ["題材A（繁體中文）", "題材B（繁體中文）"],
     ...
   }}
 }}
 
-要求：
-- hot_themes：依加權熱度排序的前 10 大題材，每條附 1-2 句說明，tickers 列出該題材所有相關個股（大寫）
-- ticker_themes：對清單中每一檔股票標注所有相關題材（可多個），分類請基於你對公司業務的專業知識
-- 題材用繁體中文，力求精準"""
+Requirements:
+- hot_themes: top 10 themes sorted by weighted heat. Each entry includes 1-2 sentence description and all related tickers (uppercase). Theme names and descriptions must be in Traditional Chinese.
+- ticker_themes: tag every stock in the list with all relevant themes (multiple allowed). Theme names must be in Traditional Chinese.
+"""
 
     for attempt in range(5):
         try:
@@ -285,45 +358,57 @@ def build_hot_theme_watchlist(
     return result
 
 
-# ── Phase 3：Search Grounding 評分 ───────────────────────────────────────
+# ── Phase 3：評分（RSS fetch + 快取 + 純 Gemini 評分） ───────────────────
 def score_ticker(client: genai.Client, ticker: str, hot_themes: str) -> dict:
-    prompt = f"""你是一位資深美股分析師。今天是 {TODAY}。
+    """
+    1. 呼叫 fetch_ticker_summary（有快取就直接用，否則重新抓 RSS）
+    2. 新聞摘要 + 熱門題材清單一起送給 Gemini 評分
+    """
+    news_summary = fetch_ticker_summary(client, ticker)
+    news_section = (
+        f"\n[Recent news summary for {ticker}]\n{news_summary}"
+        if news_summary else ""
+    )
 
-以下是今日市場熱門題材清單，這是根據全市場 RS 分數與資金流向計算得出的結果：
+    prompt = f"""You are a senior US equity analyst. Today is {TODAY}.
+
+Below is today's hot theme list, derived from RS scores and capital flow across the entire market:
 
 {hot_themes}
+{news_section}
 
-請搜尋 {ticker} 最近的新聞與業務動向，然後判斷它與上述熱門題材清單的契合度，給予 1-10 評分。
-評分依據是 {ticker} 與上述題材清單的實際關聯程度，而非你自行判斷該股是否熱門。
+Based on the above information, evaluate how well {ticker} aligns with the hot themes listed.
+Score it from 1 to 10. Base your score strictly on {ticker}'s actual relevance to the themes above,
+not on your own independent judgment of whether the stock is hot.
 
-評分標準：
-- 10：當前最強主題核心標的，題材爆發性強，資金高度集中
-- 9：強勢主題領頭羊，有明確催化劑，市場關注度極高
-- 8：強勢板塊重要成員，題材清晰且有持續性資金流入
-- 7：熱門板塊成員，但非核心，或題材仍在醞釀
-- 6：題材有支撐，但競爭者多或關注度尚未聚焦
-- 5：題材平淡，板塊輪動位置不明確
-- 4：題材略顯老化，資金關注度下降
-- 3：題材退燒，資金流出，基本面支撐有限
-- 2：題材幾乎消失，市場已轉移焦點
-- 1：完全被市場拋棄，與當前趨勢脫節
+Scoring criteria:
+- 10: Core holding of the current strongest theme; explosive momentum, highly concentrated capital
+- 9: Leader of a strong theme; clear catalyst, extremely high market attention
+- 8: Key member of a strong sector; clear theme with sustained capital inflow
+- 7: Member of a hot sector but not the core, or theme still building
+- 6: Theme has support but many competitors, or attention not yet focused
+- 5: Flat theme, unclear sector rotation position
+- 4: Theme fading, capital attention declining
+- 3: Theme cooling off, capital outflow, limited fundamental support
+- 2: Theme nearly gone, market has moved on
+- 1: Completely abandoned by market, disconnected from current trends
 
-輸出：僅回傳單一 JSON 物件，繁體中文，欄位：
-- "ticker": 代號（大寫）
-- "rating": 1-10 整數
-- "theme": 對應到上述熱門題材清單中的題材名稱（逗號分隔）
-- "feature": 與熱門題材關聯或競爭優勢（20字內）
-- "reason": 評分理由（20字內）
+Output: Return a single JSON object only. All Chinese text fields must be in Traditional Chinese.
+Fields:
+- "ticker": symbol (uppercase)
+- "rating": integer 1-10
+- "theme": matching theme name(s) from the hot theme list above (comma-separated, Traditional Chinese)
+- "feature": relevance to hot themes or competitive edge (max 20 Chinese characters, Traditional Chinese)
+- "reason": scoring rationale (max 20 Chinese characters, Traditional Chinese)
 
-禁止任何 Markdown 或額外說明。"""
+No Markdown, no extra explanation."""
 
     for attempt in range(3):
         try:
             response = client.models.generate_content(
-                model=GEMINI_MODEL_GROUNDING,
+                model=GEMINI_MODEL_SCORE,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    tools=[types.Tool(google_search=types.GoogleSearch())],
                     temperature=0,
                     max_output_tokens=512,
                 ),
@@ -391,7 +476,8 @@ def main():
     final_rows = []
 
     for i, ticker in enumerate(tickers, 1):
-        print(f"  [{i:3d}/{len(tickers)}] {ticker}", end=" ... ", flush=True)
+        cached = ticker in _summary_cache
+        print(f"  [{i:3d}/{len(tickers)}] {ticker}{'（快取）' if cached else ''}", end=" ... ", flush=True)
         result = score_ticker(client, ticker, hot_themes)
         final_rows.append({
             "ticker":  result.get("ticker", ticker),
@@ -402,7 +488,7 @@ def main():
             "reason":  result.get("reason", ""),
         })
         print(f"rating={result.get('rating', '?')}")
-        time.sleep(GROUNDING_SLEEP)
+        time.sleep(SCORING_SLEEP)
 
     final_rows.sort(
         key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
