@@ -18,7 +18,7 @@ OUTPUT_HOT_WL    = "txt/hot_theme_watchlist.txt"
 RATING_THRESHOLD = 6
 
 GEMINI_MODEL_PHASE1    = "gemini-3-flash-preview"
-GEMINI_MODEL_GROUNDING = "gemini-3.1-flash-lite-preview"
+GEMINI_MODEL_GROUNDING = "gemini-2.5-flash"
 
 STOCK_DATA_CSV    = "stock_data.csv"
 INDUSTRY_RS_CSV   = "industry_rs.csv"
