@@ -96,13 +96,13 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
 
 # ── Search Grounding 個股摘要 ────────────────────────────────────────────
 def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
-    prompt = f"""Today is {TODAY}. Search for recent information on {ticker} stock and analyze it from an investment theme and market speculation perspective:
-- What is this company's core business?
-- What is the strongest investment theme driving this stock right now, and why is the market paying attention?
-- What recent catalysts (earnings, products, partnerships, regulations, industry trends) are driving the stock?
-- What speculative potential or scarcity does it have within its sector or theme?
+    prompt = f"""今天是 {TODAY}。請搜尋 {ticker} 股票的近期資訊，並從投資題材與市場炒作的角度進行分析：
+- 這支股票的主要業務是什麼？
+- 這支股票目前最強的投資題材是什麼？為什麼市場在關注它？
+- 近期有哪些催化劑（財報、產品、合作、法規、產業趨勢）推動股價？
+- 它在哪個板塊或題材中具備炒作潛力或稀缺性？
 
-Please provide a concise bullet-point analysis focused on investment themes and market speculation logic."""
+請條列整理，聚焦在題材面與炒作邏輯，不需要列流水帳新聞。"""
 
     for attempt in range(3):
         try:
@@ -200,7 +200,7 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
 
 要求：
 - hot_themes：依加權熱度排序的前 10 大題材，每條附 1-2 句說明，tickers 列出該題材所有相關個股（大寫）
-- ticker_themes：對清單中每一檔股票標注所有相關題材（可多個），題材名稱必須完全來自 hot_themes 的 name 欄位，不得使用其他名稱
+- ticker_themes：對清單中每一檔股票標注所有相關題材（可多個），分類請基於你對公司業務的專業知識
 - 題材用繁體中文，力求精準"""
 
     for attempt in range(5):
