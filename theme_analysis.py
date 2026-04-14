@@ -117,13 +117,12 @@ def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
             )
             return response.text.strip()
         except Exception as e:
-            print(f"\nERROR {ticker}: {err[:200]}")
             err = str(e)
+            print(f"\nERROR {ticker}: {err[:200]}")
             if "429" in err or "quota" in err.lower():
                 time.sleep(60)
             elif attempt < 2:
                 time.sleep(5)
-                except Exception as e:
     return ""
 
 
