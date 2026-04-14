@@ -102,18 +102,37 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
     return "\n".join(lines), ticker_to_industry
 
 
+# ── Google News RSS 轉址解析 ─────────────────────────────────────────────
+def resolve_url(google_url: str) -> str:
+    """
+    Google News RSS 的連結是 Google 自己的轉址 URL，
+    需要 follow redirect 才能拿到真實文章 URL。
+    失敗就回傳原始 URL。
+    """
+    try:
+        resp = requests.get(
+            google_url,
+            headers={"User-Agent": "Mozilla/5.0"},
+            allow_redirects=True,
+            timeout=8,
+        )
+        return resp.url
+    except Exception:
+        return google_url
+
+
 # ── Google News RSS：取得最近 N 天內的新聞 URL 清單 ──────────────────────
 def fetch_rss_urls(ticker: str) -> list[str]:
     """
     從 Google News RSS 抓取最近 NEWS_MAX_AGE_DAYS 天內的新聞連結。
-    最多回傳 NEWS_MAX_ITEMS 篇。
+    resolve 轉址後回傳真實 URL，最多 NEWS_MAX_ITEMS 篇。
     """
     rss_url = (
         f"https://news.google.com/rss/search"
         f"?q={ticker}+stock&hl=en-US&gl=US&ceid=US:en"
     )
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=NEWS_MAX_AGE_DAYS)
-    recent_urls = []
+    resolved_urls = []
 
     try:
         resp = requests.get(rss_url, timeout=10,
@@ -134,14 +153,16 @@ def fetch_rss_urls(ticker: str) -> list[str]:
             except Exception:
                 pass  # 解析失敗就不過濾，照收
 
-            recent_urls.append(link)
-            if len(recent_urls) >= NEWS_MAX_ITEMS:
+            real_url = resolve_url(link)
+            resolved_urls.append(real_url)
+
+            if len(resolved_urls) >= NEWS_MAX_ITEMS:
                 break
 
     except Exception as e:
         print(f"\n  RSS error ({ticker}): {e}")
 
-    return recent_urls
+    return resolved_urls
 
 
 # ── Gemini url_context 摘要（含快取） ────────────────────────────────────
