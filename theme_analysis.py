@@ -270,12 +270,15 @@ Notes:
 
 Instructions:
 - RS is a relative strength score. RS99 = top 1% of all stocks; RS95 = top 5%.
-- Weight theme heat by RS score: higher RS = higher weight.
-- Multiple RS99 stocks concentrated in the same sector = extremely hot theme, rank it highest.
+- RS weighting is LINEAR. Use these exact weights per stock:
+    RS99 = 5,  RS98 = 4,  RS97 = 3,  RS96 = 2,  RS95 = 1
+  A theme's score = sum of weights of all its member stocks.
+  Example: 3x RS99 in a theme = score 15, which outranks 10x RS95-only stocks (score 10).
+- Therefore: RS99 stocks carry significantly more weight than RS95 stocks in theme ranking.
 - One stock may belong to multiple themes.
 - Use your own knowledge for sector classification; Source B is only a rough reference.
 - Use Source D to assess recent catalysts and market attention.
-- If a theme has high individual RS but low industry average RS, be conservative in scoring its heat.
+- Industry average RS (Source C) is a secondary signal only — do not weight it too heavily.
 
 [Output format: return ONLY the following JSON. No Markdown, no explanation.]
 {{
