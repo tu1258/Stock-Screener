@@ -125,14 +125,15 @@ def resolve_url(google_url: str) -> str:
 def fetch_rss_urls(ticker: str) -> list[str]:
     """
     從 Google News RSS 抓取最近 NEWS_MAX_AGE_DAYS 天內的新聞連結。
-    resolve 轉址後回傳真實 URL，最多 NEWS_MAX_ITEMS 篇。
+    明確按發布時間新到舊排序後，取前 NEWS_MAX_ITEMS 篇。
+    resolve 轉址後回傳真實 URL。
     """
     rss_url = (
         f"https://news.google.com/rss/search"
         f"?q={ticker}+stock&hl=en-US&gl=US&ceid=US:en"
     )
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=NEWS_MAX_AGE_DAYS)
-    resolved_urls = []
+    items_with_date = []
 
     try:
         resp = requests.get(rss_url, timeout=10,
@@ -148,19 +149,25 @@ def fetch_rss_urls(ticker: str) -> list[str]:
             pub_date_str = item.findtext("pubDate", "")
             try:
                 pub_dt = parsedate_to_datetime(pub_date_str)
-                if pub_dt < cutoff:
-                    continue
             except Exception:
-                pass  # 解析失敗就不過濾，照收
+                # 解析失敗給最舊時間，排到最後
+                pub_dt = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
 
-            real_url = resolve_url(link)
-            resolved_urls.append(real_url)
+            if pub_dt < cutoff:
+                continue
 
-            if len(resolved_urls) >= NEWS_MAX_ITEMS:
-                break
+            items_with_date.append((pub_dt, link))
 
     except Exception as e:
         print(f"\n  RSS error ({ticker}): {e}")
+        return []
+
+    # 明確按時間新到舊排序，取前 NEWS_MAX_ITEMS 篇
+    items_with_date.sort(key=lambda x: x[0], reverse=True)
+
+    resolved_urls = []
+    for _, link in items_with_date[:NEWS_MAX_ITEMS]:
+        resolved_urls.append(resolve_url(link))
 
     return resolved_urls
 
