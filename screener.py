@@ -18,6 +18,7 @@ def compute_indicators_vectorized(df):
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
     
     # 均線
+    df["ma5"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(5).mean())
     df["ma10"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(10).mean())
     df["ma50"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50).mean())
     df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200).mean())    
@@ -36,7 +37,7 @@ def compute_indicators_vectorized(df):
     df['atr_14'] = df.groupby('ticker')['tr'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
     df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
     df["avg_bar"] = (df['close'] + df['high'] + df['low']) / 3
-    df['distance'] = abs(df["avg_bar"] - df["ma10"]); # Keltner Channel
+    df['distance'] = abs(df["avg_bar"] - df["ma5"]); # Keltner Channel
 
     # 價量
     df["chg"] = df.groupby("ticker")["close"].diff()
@@ -69,7 +70,7 @@ def main():
     )
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
-        (latest_df["avg_value_10"] > 100) &
+        (latest_df["avg_value_10"] > 10) &
         (latest_df["atr_14_pct"] > 2.5) & (latest_df["atr_14_pct"] < 25) &
         (latest_df["avg_bar"] > latest_df["ma50"]) &
         (latest_df["ma50"] > latest_df["ma200"]) &
