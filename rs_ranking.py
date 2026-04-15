@@ -56,11 +56,6 @@ def main():
             continue
         rs_score = relative_strength(closes, closes_ref)
         
-        # 加這幾行
-        if not isinstance(rs_score, (int, float)):
-            print(f"⚠️ {ticker}: rs_score type={type(rs_score)}, value={rs_score}")
-            continue
-        
         if rs_score > 1000:
             continue
 
