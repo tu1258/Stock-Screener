@@ -25,11 +25,12 @@ jobs:
         run: |
           python -m pip install -r requirements.txt
 
-      - name: Run screener pipeline
+      - name: Run pipeline
         run: |
           python stock_data.py
           python rs_ranking.py
           python screener.py
+          python market_monitor.py
 
       - name: Run theme analysis
         env:
@@ -43,6 +44,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add stock_ticker.csv stock_rs.csv industry_rs.csv csv/technical_watchlist.csv txt/technical_watchlist.txt txt/watchlist.txt csv/watchlist_summary.csv txt/hot_themes.txt txt/hot_theme_watchlist.txt
+          git add stock_ticker.csv stock_rs.csv industry_rs.csv csv/technical_watchlist.csv csv/watchlist_summary.csv 
+          git add txt/technical_watchlist.txt txt/watchlist.txt txt/hot_themes.txt txt/hot_theme_watchlist.txt txt/market_monitor.txt
           git commit -m "Daily Update" || echo "No changes to commit"
           git push
