@@ -44,7 +44,7 @@ def main():
     df_ref = yf.download(REFERENCE_TICKER, period="1y", progress=False)
     if df_ref.empty:
         raise RuntimeError("Failed to download SPX from Yahoo Finance")
-    closes_ref = df_ref["Close"].reset_index(drop=True)
+    closes_ref = df_ref["Close"].iloc[:, 0].reset_index(drop=True)
 
     relative_strengths = []
     for ticker in tickers:
