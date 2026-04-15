@@ -21,10 +21,18 @@ def relative_strength(closes, closes_ref):
 def strength(closes):
     try:
         m1  = historical_perf(closes, 1)
+        m2  = historical_perf(closes, 2)
         m3  = historical_perf(closes, 3)
+        m4  = historical_perf(closes, 4)
+        m5  = historical_perf(closes, 5)
         m6  = historical_perf(closes, 6)
-        m12 = historical_perf(closes, 21)
-        return m1/4 + m3/4 + m6/4 + m12/4
+        m7  = historical_perf(closes, 7)
+        m8  = historical_perf(closes, 8)
+        m9  = historical_perf(closes, 9)
+        m10  = historical_perf(closes, 10)
+        m11  = historical_perf(closes, 11)
+        m12 = historical_perf(closes, 12)
+        return m1/1 + m2/2 + m3/3 + m4/4 + m5/5 + m6/6 + m7/7 + m8/8 + m9/9 + m10/10 + m11/11 + m12/12
     except Exception:
         return 0
 
