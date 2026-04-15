@@ -25,7 +25,7 @@ def strength(closes):
         m6  = geo_monthly_return(closes, 6)
         m12 = geo_monthly_return(closes, 12)
 
-        return m1/4 + m3/4 + m6/4 + m12/4
+        return m1 + m3 + m6 + m12
     except Exception:
         return 0
 
