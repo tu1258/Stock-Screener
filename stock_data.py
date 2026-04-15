@@ -65,7 +65,7 @@ def main():
     end   = date.today()
     start = end - timedelta(days=DAYS)
 
-    tickers = get_nasdaq_tickers(1000)
+    tickers = get_nasdaq_tickers(500)
     print(f"Downloading {len(tickers)} tickers")
 
     # OHLCV
