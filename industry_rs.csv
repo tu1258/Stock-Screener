@@ -1,203 +1,158 @@
 industry,sector,avg_rs,ticker_count
-Aluminum,Industrials,95.5,2
-Diversified Commercial Services,Miscellaneous,95.0,1
-Building Materials,Consumer Discretionary,94.0,1
-Electrical Products,Energy,94.0,2
-Wholesale Distributors,Industrials,84.0,1
-Integrated oil Companies,Energy,83.6,17
-Precious Metals,Industrials,82.8,5
-Precious Metals,Basic Materials,82.2,60
-Water Sewer Pipeline Comm & Power Line Construction,Industrials,81.4,7
-Environmental Services,Industrials,80.0,4
-Oil and Gas Field Machinery,Consumer Discretionary,79.6,16
-Homebuilding,Real Estate,79.0,4
-Engineering & Construction,Industrials,78.8,5
-Miscellaneous,Miscellaneous,78.0,1
-Auto Parts:O.E.M.,Industrials,78.0,1
-Electronic Components,Technology,77.4,20
-Oilfield Services/Equipment,Energy,77.0,20
-Radio And Television Broadcasting And Communications Equipment,Technology,76.5,23
-Farming/Seeds/Milling,Industrials,76.2,4
-Pharmaceuticals and Biotechnology,Health Care,76.0,1
-Tools/Hardware,Consumer Discretionary,75.0,1
-Commercial Banks,Finance,74.5,37
-Telecommunications Equipment,Industrials,73.2,4
-Specialty Foods,Consumer Discretionary,73.0,1
-Fluid Controls,Industrials,72.6,8
-Aerospace,Consumer Discretionary,72.0,4
-Natural Gas Distribution,Energy,71.3,7
-Metal Mining,Basic Materials,71.2,34
-Banks,Finance,70.5,24
-Savings Institutions,Finance,70.3,34
-Oil & Gas Production,Energy,70.1,107
-Marine Transportation,Consumer Discretionary,70.1,65
-Major Banks,Finance,70.0,249
-Office Equipment/Supplies/Services,Industrials,70.0,1
-Pollution Control Equipment,Industrials,70.0,4
-Construction/Ag Equipment/Trucks,Industrials,68.9,10
-Containers/Packaging,Industrials,68.8,5
-Semiconductors,Technology,67.9,99
-Mining & Quarrying of Nonmetallic Minerals (No Fuels),Industrials,67.6,22
-Electrical Products,Technology,67.2,23
-Metal Fabrications,Telecommunications,67.0,3
-Natural Gas Distribution,Utilities,66.9,24
-Rental/Leasing Companies,Consumer Discretionary,66.8,5
-Coal Mining,Energy,66.5,11
-Home Furnishings,Industrials,65.5,2
-Garments and Clothing,Industrials,65.2,6
-Hospital/Nursing Management,Health Care,64.3,15
-Steel/Iron Ore,Industrials,64.2,28
-Military/Government/Technical,Industrials,64.0,28
-General Bldg Contractors - Nonresidential Bldgs,Consumer Discretionary,64.0,3
-Other Metals and Minerals,Basic Materials,63.4,10
-Oil/Gas Transmission,Utilities,63.2,13
-Major Chemicals,Basic Materials,62.8,8
-Electrical Products,Industrials,62.2,13
-Trucking Freight/Courier Services,Industrials,62.1,21
-Industrial Machinery/Components,Technology,61.9,35
-Major Chemicals,Industrials,61.9,59
-Railroads,Industrials,61.4,10
-Metal Fabrications,Industrials,61.3,34
-Industrial Specialties,Industrials,60.5,11
-Electric Utilities: Central,Utilities,60.2,64
-Oil & Gas Production,Utilities,59.8,9
-Department/Specialty Retail Stores,Consumer Discretionary,59.1,15
-Industrial Machinery/Components,Consumer Discretionary,58.9,14
-Books,Consumer Discretionary,58.5,4
-Auto Parts:O.E.M.,Consumer Discretionary,58.5,38
-Computer Communications Equipment,Telecommunications,58.4,14
-Clothing/Shoe/Accessory Stores,Consumer Discretionary,57.2,26
-Industrial Machinery/Components,Energy,57.1,9
-Consumer Specialties,Consumer Discretionary,56.9,11
-Industrial Machinery/Components,Industrials,56.5,105
-Hotels/Resorts,Consumer Discretionary,56.3,37
-Electronics Distribution,Consumer Discretionary,56.0,1
-Ordnance And Accessories,Industrials,56.0,6
-Air Freight/Delivery Services,Consumer Discretionary,55.9,18
-Medical Electronics,Health Care,55.8,5
-Building Materials,Industrials,55.1,10
-Diversified Financial Services,Finance,54.8,5
-Accident &Health Insurance,Finance,54.4,5
-Meat/Poultry/Fish,Consumer Staples,54.3,6
-Office Equipment/Supplies/Services,Miscellaneous,54.2,6
-Broadcasting,Industrials,54.1,12
-Telecommunications Equipment,Telecommunications,53.9,57
-Military/Government/Technical,Consumer Discretionary,53.6,9
-Power Generation,Utilities,53.3,24
-Metal Fabrications,Consumer Discretionary,53.3,7
-Auto & Home Supply Stores,Consumer Discretionary,53.0,6
-Telecommunications Equipment,Consumer Discretionary,52.9,14
-Telecommunications Equipment,Utilities,52.9,11
-Specialty Chemicals,Consumer Discretionary,52.8,5
-Biotechnology: Biological Products (No Diagnostic Substances),Health Care,52.6,155
-Newspapers/Magazines,Consumer Discretionary,52.1,8
-Food Distributors,Consumer Discretionary,52.1,11
-Computer Manufacturing,Technology,52.0,9
-Plastic Products,Industrials,51.8,11
-Precision Instruments,Health Care,51.5,2
-Life Insurance,Finance,51.3,28
-Engineering & Construction,Consumer Discretionary,51.2,16
-Retail-Drug Stores and Proprietary Stores,Consumer Staples,50.8,5
-Shoe Manufacturing,Consumer Discretionary,50.8,9
-Specialty Foods,Consumer Staples,50.8,9
-Investment Bankers/Brokers/Service,Finance,50.7,65
-Retail: Computer Software & Peripheral Equipment,Technology,50.6,10
-Professional and commerical equipment,Consumer Discretionary,50.5,2
-Biotechnology: Pharmaceutical Preparations,Health Care,50.4,501
-Tobacco,Consumer Discretionary,50.0,1
-Property-Casualty Insurers,Finance,49.4,75
-Finance Companies,Finance,48.8,65
-Aerospace,Industrials,48.6,25
-Home Furnishings,Consumer Discretionary,48.2,21
-Investment Managers,Finance,48.1,165
-Misc Health and Biotechnology Services,Health Care,48.1,11
-Water Supply,Utilities,48.1,12
-Other Specialty Stores,Industrials,48.0,2
-Blank Checks,Finance,48.0,63
-Catalog/Specialty Distribution,Consumer Discretionary,47.9,31
-Broadcasting,Consumer Discretionary,47.8,9
-Misc Corporate Leasing Services,Industrials,47.7,3
-Building operators,Real Estate,47.6,8
-Real Estate Investment Trusts,Real Estate,47.5,201
-Paints/Coatings,Consumer Discretionary,47.0,3
-Integrated Freight & Logistics,Industrials,46.8,15
-Industrial Specialties,Consumer Discretionary,46.1,17
-Durable Goods,Consumer Discretionary,46.0,3
-Biotechnology: Electromedical & Electrotherapeutic Apparatus,Health Care,45.9,33
-Trusts Except Educational Religious and Charitable,Finance,45.9,103
-Finance/Investors Services,Finance,45.9,88
-Ophthalmic Goods,Health Care,45.6,8
-Biotechnology: Laboratory Analytical Instruments,Industrials,45.4,21
-Consumer Electronics/Appliances,Technology,45.2,6
-Multi-Sector Companies,Miscellaneous,44.2,11
-Transportation Services,Consumer Discretionary,43.9,23
-Apparel,Consumer Discretionary,43.6,27
-Cable & Other Pay Television Services,Telecommunications,43.0,8
-Construction/Ag Equipment/Trucks,Consumer Discretionary,42.8,5
-Homebuilding,Consumer Discretionary,42.5,28
-Publishing,Consumer Discretionary,41.9,14
-Beverages (Production/Distribution),Consumer Staples,41.5,33
-Movies/Entertainment,Consumer Discretionary,41.5,13
-Recreational Games/Products/Toys,Consumer Discretionary,41.3,21
-Marine Transportation,Industrials,41.1,8
-Building Products,Industrials,41.0,6
-Electric Utilities: Central,Energy,41.0,1
-Services-Misc. Amusement & Recreation,Consumer Discretionary,40.9,47
-Computer peripheral equipment,Technology,40.7,15
-Biotechnology: In Vitro & In Vivo Diagnostic Substances,Health Care,40.5,19
-Farming/Seeds/Milling,Consumer Staples,40.5,19
-Other Specialty Stores,Consumer Discretionary,40.4,40
-Medical/Nursing Services,Health Care,40.3,29
-Retail-Auto Dealers and Gas Stations,Consumer Discretionary,39.5,19
-Medical Specialities,Health Care,38.7,43
-Real Estate,Finance,38.4,54
-Oil Refining/Marketing,Energy,38.2,11
-Miscellaneous manufacturing industries,Consumer Discretionary,38.0,14
-Apparel,Consumer Staples,38.0,2
-Consumer Electronics/Appliances,Consumer Staples,38.0,10
-Auto Manufacturing,Industrials,37.2,29
-Restaurants,Consumer Discretionary,36.9,53
-Finance: Consumer Services,Finance,36.9,151
-Other Consumer Services,Consumer Discretionary,36.9,39
-Biotechnology: Commercial Physical & Biological Resarch,Health Care,36.8,13
-Food Chains,Consumer Staples,36.5,11
-Industrial Machinery/Components,Miscellaneous,36.4,36
-Professional Services,Consumer Discretionary,36.2,47
-Containers/Packaging,Consumer Discretionary,35.8,13
-Agricultural Chemicals,Industrials,35.8,12
-Paper,Basic Materials,35.5,8
-Environmental Services,Utilities,35.5,8
-Motor Vehicles,Consumer Discretionary,34.9,9
-Real Estate,Real Estate,34.9,99
-Textiles,Consumer Discretionary,34.8,6
-Diversified Commercial Services,Consumer Discretionary,34.3,27
-Medical/Dental Instruments,Health Care,34.1,117
-Specialty Chemicals,Industrials,34.0,2
-Forest Products,Basic Materials,33.8,8
-Computer Software: Programming Data Processing,Technology,33.3,73
-Other Consumer Services,Real Estate,33.3,45
-Package Goods/Cosmetics,Consumer Discretionary,33.2,24
-EDP Services,Technology,33.0,152
-Office Equipment/Supplies/Services,Consumer Discretionary,32.8,5
-Other Pharmaceuticals,Health Care,32.4,11
-Industrial Specialties,Health Care,32.2,28
-Packaged Foods,Consumer Staples,31.2,43
-Homebuilding,Industrials,30.0,2
-Automotive Aftermarket,Consumer Discretionary,29.4,8
-RETAIL: Building Materials,Consumer Discretionary,29.1,17
- Medicinal Chemicals and Botanical Products ,Health Care,28.4,26
-Advertising,Consumer Discretionary,28.3,26
-Consumer Electronics/Appliances,Consumer Discretionary,28.0,7
-Medical Specialities,Industrials,28.0,1
-Building Products,Consumer Discretionary,27.3,7
-Wholesale Distributors,Consumer Discretionary,27.0,1
-Consumer Electronics/Video Chains,Consumer Discretionary,26.6,5
-Specialty Insurers,Finance,26.5,32
-Computer Software: Prepackaged Software,Technology,25.9,231
-Electronic Components,Consumer Discretionary,23.0,1
-Office Equipment/Supplies/Services,Technology,19.0,1
-Diversified Commercial Services,Industrials,17.5,6
-Diversified Electronic Products,Consumer Staples,15.0,1
-Miscellaneous,Industrials,8.0,2
-Other Transportation,Industrials,6.0,1
-Managed Health Care,Health Care,2.0,1
+Broadcasting,Consumer Discretionary,99.0,1
+Other Metals and Minerals,Basic Materials,99.0,1
+Rental/Leasing Companies,Consumer Discretionary,99.0,1
+Fluid Controls,Industrials,98.0,1
+Aluminum,Industrials,95.0,1
+Medical Electronics,Health Care,95.0,1
+Electrical Products,Industrials,94.5,2
+Industrial Machinery/Components,Energy,92.5,2
+Electronic Components,Technology,90.7,3
+Farming/Seeds/Milling,Industrials,90.0,1
+Misc Health and Biotechnology Services,Health Care,90.0,1
+Trucking Freight/Courier Services,Industrials,90.0,1
+Precious Metals,Industrials,89.0,1
+Construction/Ag Equipment/Trucks,Industrials,88.5,2
+Computer peripheral equipment,Technology,88.0,1
+Construction/Ag Equipment/Trucks,Consumer Discretionary,86.0,1
+Integrated oil Companies,Energy,85.0,1
+Electrical Products,Technology,83.5,2
+Biotechnology: Commercial Physical & Biological Resarch,Health Care,83.0,2
+Oil and Gas Field Machinery,Consumer Discretionary,83.0,1
+Industrial Machinery/Components,Technology,81.0,6
+Metal Fabrications,Consumer Discretionary,80.0,1
+Radio And Television Broadcasting And Communications Equipment,Technology,78.5,4
+Durable Goods,Consumer Discretionary,78.0,1
+Homebuilding,Real Estate,78.0,1
+Natural Gas Distribution,Utilities,76.0,2
+Commercial Banks,Finance,75.5,12
+Oilfield Services/Equipment,Energy,75.0,1
+Telecommunications Equipment,Utilities,74.5,2
+Steel/Iron Ore,Industrials,73.0,3
+Semiconductors,Technology,72.1,18
+Other Pharmaceuticals,Health Care,72.0,1
+Banks,Finance,72.0,4
+Savings Institutions,Finance,69.2,5
+Meat/Poultry/Fish,Consumer Staples,69.0,1
+Precious Metals,Basic Materials,68.1,8
+Military/Government/Technical,Industrials,68.0,2
+Major Banks,Finance,67.9,53
+Engineering & Construction,Consumer Discretionary,66.7,6
+Oil/Gas Transmission,Utilities,66.0,1
+Biotechnology: Electromedical & Electrotherapeutic Apparatus,Health Care,65.3,3
+Aerospace,Consumer Discretionary,65.0,2
+Industrial Specialties,Health Care,64.5,6
+Major Chemicals,Basic Materials,63.0,1
+Industrial Machinery/Components,Consumer Discretionary,63.0,1
+Major Chemicals,Industrials,62.6,11
+Power Generation,Utilities,61.5,2
+Marine Transportation,Consumer Discretionary,61.3,3
+Coal Mining,Energy,60.6,5
+Transportation Services,Consumer Discretionary,60.5,2
+Containers/Packaging,Industrials,58.5,2
+Recreational Games/Products/Toys,Consumer Discretionary,58.0,3
+Oil & Gas Production,Energy,57.9,12
+Hotels/Resorts,Consumer Discretionary,57.8,4
+Computer Communications Equipment,Telecommunications,57.0,4
+Computer Manufacturing,Technology,57.0,1
+Textiles,Consumer Discretionary,57.0,1
+Electric Utilities: Central,Utilities,57.0,12
+Hospital/Nursing Management,Health Care,57.0,2
+Beverages (Production/Distribution),Consumer Staples,56.5,6
+Finance/Investors Services,Finance,55.7,9
+Industrial Machinery/Components,Industrials,55.6,16
+Ophthalmic Goods,Health Care,55.0,2
+Retail-Auto Dealers and Gas Stations,Consumer Discretionary,54.7,3
+Biotechnology: Biological Products (No Diagnostic Substances),Health Care,54.2,32
+Accident &Health Insurance,Finance,53.0,1
+Department/Specialty Retail Stores,Consumer Discretionary,53.0,2
+Specialty Chemicals,Consumer Discretionary,53.0,1
+Telecommunications Equipment,Consumer Discretionary,53.0,4
+Building operators,Real Estate,51.7,3
+Metal Mining,Basic Materials,51.6,5
+Auto & Home Supply Stores,Consumer Discretionary,51.5,2
+Investment Bankers/Brokers/Service,Finance,51.4,7
+Life Insurance,Finance,51.2,5
+Industrial Specialties,Consumer Discretionary,51.0,4
+Restaurants,Consumer Discretionary,50.8,13
+Biotechnology: Pharmaceutical Preparations,Health Care,50.7,103
+Food Chains,Consumer Staples,50.5,2
+Auto Parts:O.E.M.,Consumer Discretionary,50.3,9
+Telecommunications Equipment,Telecommunications,50.3,7
+Catalog/Specialty Distribution,Consumer Discretionary,50.2,5
+Consumer Electronics/Appliances,Consumer Staples,50.0,1
+Industrial Specialties,Industrials,50.0,2
+Investment Managers,Finance,49.7,22
+Farming/Seeds/Milling,Consumer Staples,49.5,4
+Real Estate Investment Trusts,Real Estate,48.5,29
+Shoe Manufacturing,Consumer Discretionary,48.5,2
+Medical Specialities,Health Care,48.1,11
+Blank Checks,Finance,47.1,10
+Trusts Except Educational Religious and Charitable,Finance,46.6,21
+Professional Services,Consumer Discretionary,46.5,10
+Mining & Quarrying of Nonmetallic Minerals (No Fuels),Industrials,46.5,2
+Water Supply,Utilities,46.5,2
+Air Freight/Delivery Services,Consumer Discretionary,46.4,5
+Property-Casualty Insurers,Finance,45.4,18
+Finance Companies,Finance,45.3,6
+Diversified Financial Services,Finance,45.0,1
+Plastic Products,Industrials,45.0,2
+Package Goods/Cosmetics,Consumer Discretionary,44.2,4
+Real Estate,Real Estate,44.2,17
+Medical/Dental Instruments,Health Care,42.7,21
+Telecommunications Equipment,Industrials,42.5,2
+Packaged Foods,Consumer Staples,41.4,11
+Medical/Nursing Services,Health Care,40.8,8
+Services-Misc. Amusement & Recreation,Consumer Discretionary,40.6,5
+Miscellaneous manufacturing industries,Consumer Discretionary,40.0,3
+Specialty Foods,Consumer Staples,40.0,1
+Clothing/Shoe/Accessory Stores,Consumer Discretionary,39.5,6
+Industrial Machinery/Components,Miscellaneous,39.2,6
+Biotechnology: Laboratory Analytical Instruments,Industrials,38.3,7
+Diversified Commercial Services,Consumer Discretionary,38.0,7
+Cable & Other Pay Television Services,Telecommunications,37.0,2
+Aerospace,Industrials,36.7,7
+Oil & Gas Production,Utilities,36.3,3
+Integrated Freight & Logistics,Industrials,36.0,1
+Real Estate,Finance,35.3,10
+Consumer Electronics/Appliances,Consumer Discretionary,35.0,1
+Containers/Packaging,Consumer Discretionary,35.0,1
+Building Products,Industrials,35.0,2
+Other Consumer Services,Real Estate,35.0,7
+Building Materials,Industrials,34.0,2
+Homebuilding,Consumer Discretionary,34.0,1
+Environmental Services,Utilities,34.0,1
+Other Specialty Stores,Consumer Discretionary,33.4,5
+Paints/Coatings,Consumer Discretionary,33.0,1
+Finance: Consumer Services,Finance,33.0,33
+Multi-Sector Companies,Miscellaneous,32.7,3
+Oil Refining/Marketing,Energy,32.0,2
+Building Products,Consumer Discretionary,32.0,1
+Other Consumer Services,Consumer Discretionary,31.9,8
+Publishing,Consumer Discretionary,31.5,2
+Specialty Insurers,Finance,31.4,7
+Military/Government/Technical,Consumer Discretionary,30.0,2
+Consumer Specialties,Consumer Discretionary,29.5,2
+Metal Fabrications,Telecommunications,29.0,1
+Apparel,Consumer Discretionary,28.3,3
+EDP Services,Technology,27.7,18
+Metal Fabrications,Industrials,27.7,3
+Biotechnology: In Vitro & In Vivo Diagnostic Substances,Health Care,27.0,2
+Consumer Electronics/Video Chains,Consumer Discretionary,27.0,1
+Movies/Entertainment,Consumer Discretionary,26.5,2
+RETAIL: Building Materials,Consumer Discretionary,25.8,4
+Home Furnishings,Consumer Discretionary,25.0,3
+Computer Software: Prepackaged Software,Technology,24.2,40
+Office Equipment/Supplies/Services,Technology,24.0,1
+ Medicinal Chemicals and Botanical Products ,Health Care,24.0,5
+Wholesale Distributors,Consumer Discretionary,24.0,1
+Computer Software: Programming Data Processing,Technology,21.3,6
+Forest Products,Basic Materials,19.0,1
+Diversified Commercial Services,Industrials,17.0,1
+Auto Manufacturing,Industrials,16.5,2
+Advertising,Consumer Discretionary,11.0,1
+Agricultural Chemicals,Industrials,9.0,3
+Ordnance And Accessories,Industrials,8.0,1
+Office Equipment/Supplies/Services,Consumer Discretionary,7.0,1
+Managed Health Care,Health Care,4.0,1
+Automotive Aftermarket,Consumer Discretionary,0.0,1
