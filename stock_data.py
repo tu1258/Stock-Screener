@@ -6,10 +6,24 @@ from io import StringIO
 from datetime import date, timedelta
 import time
 
-OUTPUT_FILE  = "stock_data.csv"
-TICKER_FILE  = "stock_ticker.csv"
+OUTPUT_FILE   = "stock_data.csv"
+TICKER_FILE   = "stock_ticker.csv"
 INDUSTRY_FILE = "ticker_industry.csv"
-DAYS = 400
+DAYS          = 400
+MAX_RETRIES   = 3
+
+
+def make_session() -> requests.Session:
+    session = requests.Session()
+    session.headers.update({
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/124.0.0.0 Safari/537.36"
+        )
+    })
+    return session
+
 
 def get_nasdaq_tickers(limit=None):
     ftp = FTP("ftp.nasdaqtrader.com")
@@ -33,13 +47,13 @@ def get_nasdaq_tickers(limit=None):
             raw_tickers.append(ticker)
     return raw_tickers[:limit] if limit else raw_tickers
 
+
 def fetch_industry_meta(tickers: list) -> pd.DataFrame:
     """Nasdaq screener API 一次抓全市場 sector/industry，再 join 到 ticker 清單。"""
     print("  從 Nasdaq screener 抓取 industry 資料...")
     url = "https://api.nasdaq.com/api/screener/stocks"
     params  = {"tableonly": "true", "limit": 25000, "download": "true"}
     headers = {"User-Agent": "Mozilla/5.0"}
-
     try:
         resp = requests.get(url, params=params, headers=headers, timeout=30)
         resp.raise_for_status()
@@ -50,43 +64,54 @@ def fetch_industry_meta(tickers: list) -> pd.DataFrame:
     except Exception as e:
         print(f"  ⚠️ Nasdaq screener 失敗：{e}，回傳空表")
         return pd.DataFrame(columns=["ticker", "sector", "industry"])
-
     df_tickers = pd.DataFrame({"ticker": [t.upper() for t in tickers]})
     df_merged  = df_tickers.merge(df_nasdaq, on="ticker", how="left")
-
     total    = len(df_merged)
     success  = df_merged["industry"].notna().sum()
     print(f"  完成：{success}/{total} 檔有 industry 資料（{success/total*100:.1f}%）")
     return df_merged
 
+
 def main():
     end   = date.today()
     start = end - timedelta(days=DAYS)
+
     tickers = get_nasdaq_tickers(1000)
     print(f"Downloading {len(tickers)} tickers")
+
+    session = make_session()
 
     # OHLCV
     rows = []
     for i, ticker in enumerate(tickers, 1):
-        try:
-            df = yf.download(
-                ticker,
-                start=start,
-                end=end,
-                progress=False,
-                auto_adjust=False,
-            )
-            if df.empty:
-                continue
-            df = df.reset_index()[["Date", "Open", "High", "Low", "Close", "Volume"]]
-            df.columns = ["date", "open", "high", "low", "close", "volume"]
-            df["ticker"] = ticker
-            df["date"] = df["date"].dt.strftime("%Y-%m-%d")
-            rows.append(df)
-            print(f"[{i}/{len(tickers)}] {ticker}")
-            time.sleep(0.1)
-        except Exception as e:
-            print(f"Failed {ticker}: {e}")
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                df = yf.download(
+                    ticker,
+                    start=start,
+                    end=end,
+                    progress=False,
+                    auto_adjust=False,
+                    session=session,
+                    timeout=30,
+                )
+                if df.empty:
+                    break
+                df = df.reset_index()[["Date", "Open", "High", "Low", "Close", "Volume"]]
+                df.columns = ["date", "open", "high", "low", "close", "volume"]
+                df["ticker"] = ticker
+                df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+                rows.append(df)
+                print(f"[{i}/{len(tickers)}] {ticker}")
+                break  # 成功就跳出 retry 迴圈
+            except Exception as e:
+                if attempt < MAX_RETRIES:
+                    wait = 1
+                    print(f"Failed {ticker} (attempt {attempt}), retrying in {wait}s: {e}")
+                    time.sleep(wait)
+                else:
+                    print(f"Failed {ticker} after {MAX_RETRIES} attempts: {e}")
+        time.sleep(0.1)
 
     if not rows:
         raise RuntimeError("No data downloaded")
@@ -102,6 +127,7 @@ def main():
     df_industry = fetch_industry_meta(tickers)
     df_industry.to_csv(INDUSTRY_FILE, index=False)
     print(f"Saved {INDUSTRY_FILE}")
+
 
 if __name__ == "__main__":
     main()
