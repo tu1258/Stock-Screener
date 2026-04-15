@@ -13,18 +13,6 @@ DAYS          = 400
 MAX_RETRIES   = 3
 
 
-def make_session() -> requests.Session:
-    session = requests.Session()
-    session.headers.update({
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/124.0.0.0 Safari/537.36"
-        )
-    })
-    return session
-
-
 def get_nasdaq_tickers(limit=None):
     ftp = FTP("ftp.nasdaqtrader.com")
     ftp.login()
@@ -64,10 +52,11 @@ def fetch_industry_meta(tickers: list) -> pd.DataFrame:
     except Exception as e:
         print(f"  ⚠️ Nasdaq screener 失敗：{e}，回傳空表")
         return pd.DataFrame(columns=["ticker", "sector", "industry"])
+
     df_tickers = pd.DataFrame({"ticker": [t.upper() for t in tickers]})
     df_merged  = df_tickers.merge(df_nasdaq, on="ticker", how="left")
-    total    = len(df_merged)
-    success  = df_merged["industry"].notna().sum()
+    total   = len(df_merged)
+    success = df_merged["industry"].notna().sum()
     print(f"  完成：{success}/{total} 檔有 industry 資料（{success/total*100:.1f}%）")
     return df_merged
 
@@ -78,8 +67,6 @@ def main():
 
     tickers = get_nasdaq_tickers(1000)
     print(f"Downloading {len(tickers)} tickers")
-
-    session = make_session()
 
     # OHLCV
     rows = []
@@ -92,8 +79,6 @@ def main():
                     end=end,
                     progress=False,
                     auto_adjust=False,
-                    session=session,
-                    timeout=30,
                 )
                 if df.empty:
                     break
@@ -103,7 +88,7 @@ def main():
                 df["date"] = df["date"].dt.strftime("%Y-%m-%d")
                 rows.append(df)
                 print(f"[{i}/{len(tickers)}] {ticker}")
-                break  # 成功就跳出 retry 迴圈
+                break
             except Exception as e:
                 if attempt < MAX_RETRIES:
                     wait = 1
