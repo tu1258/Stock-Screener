@@ -2,26 +2,26 @@
 
 ## 題材統計（RS95+ 且成交值>=100M，共 14 檔）
 
-能源轉型與電力基礎設施：BE(RS99), AMPX(RS98), AGX(RS97), AEIS(RS97), ALB(RS96), AA(RS95)　共 6 檔
-半導體設備與先進封裝：AEHR(RS99), AUGO(RS98), AEIS(RS97), AMKR(RS97), ASX(RS96)　共 5 檔
-電子測試與量測：AEHR(RS99), AMKR(RS97), ASX(RS96)　共 3 檔
-高效能電池與儲能：BE(RS99), AMPX(RS98), ALB(RS96)　共 3 檔
+半導體設備與封測：AEHR(RS99), AEIS(RS97), AMKR(RS97), ASX(RS96)　共 4 檔
+新能源與儲能技術：BE(RS99), AMPX(RS98), ALB(RS96), AA(RS95)　共 4 檔
+工業機械與自動化組件：BE(RS99), AMPX(RS98), AEIS(RS97)　共 3 檔
+電力基礎設施與工程：BE(RS99), AGX(RS97), AEIS(RS97)　共 3 檔
+人工智慧與軟體應用：AIXI(RS99), AUGO(RS98)　共 2 檔
 生物技術與製藥：ABVX(RS99), APLS(RS98)　共 2 檔
-工業自動化與電源控制：AEHR(RS99), AEIS(RS97)　共 2 檔
-關鍵金屬與材料：ALB(RS96), AA(RS95)　共 2 檔
-交通租賃服務：CAR(RS99)　共 1 檔
-人工智慧與軟體：AIXI(RS99)　共 1 檔
-電力工程與建設：AGX(RS97)　共 1 檔
+永續能源轉型：BE(RS99), ALB(RS96)　共 2 檔
+先進封裝技術：AMKR(RS97), ASX(RS96)　共 2 檔
+租賃與交通服務：CAR(RS99)　共 1 檔
+半導體測試解決方案：AEHR(RS99)　共 1 檔
 
 ## 今日熱門題材（Gemini 分析）
 
-能源轉型與電力基礎設施 — 涵蓋燃料電池、儲能系統及電力轉換設備，受惠於全球能源轉型與電網升級需求（BE RS99, AMPX RS98, AEIS RS97）。（BE, AMPX, AEIS, AGX, ALB, AA）
-半導體設備與先進封裝 — 專注於功率半導體測試設備與後段封裝測試服務，受惠於車用電子與AI晶片需求（AEHR RS99, AMKR RS97, ASX RS96）。（AEHR, AUGO, AMKR, ASX, AEIS）
-高效能電池與儲能 — 專注於下一代高能量密度電池技術與能源儲存解決方案（AMPX RS98, BE RS99, ALB RS96）。（AMPX, BE, ALB）
-電子測試與量測 — 提供半導體及精密電子元件的高精度測試方案，為供應鏈關鍵環節（AEHR RS99, AMKR RS97, ASX RS96）。（AEHR, AMKR, ASX）
-生物技術與製藥 — 專注於創新藥物研發與生物製藥領域，具備強大的研發管線與市場地位（ABVX RS99, APLS RS98）。（ABVX, APLS）
-工業自動化與電源控制 — 提供工業級精密電源轉換與自動化控制系統，應用於半導體與工業製造（AEIS RS97, AEHR RS99）。（AEIS, AEHR）
-人工智慧與軟體 — 專注於AI驅動的軟體解決方案，受惠於企業數位轉型與AI應用普及（AIXI RS99）。（AIXI）
-交通租賃服務 — 受惠於商務旅遊復甦與車隊管理效率提升（CAR RS99）。（CAR）
-關鍵金屬與材料 — 提供鋰、鋁等能源轉型與電動車產業所需的關鍵原物料（ALB RS96, AA RS95）。（ALB, AA）
-電力工程與建設 — 專注於發電設施及能源基礎設施的設計、採購與施工服務（AGX RS97）。（AGX）
+半導體設備與封測 — 涵蓋測試設備與封裝服務，代表個股 AEHR (RS99) 與 AMKR (RS97) 展現強勁動能。（AEHR, AEIS, AMKR, ASX）
+新能源與儲能技術 — 專注於燃料電池與先進電池材料，BE (RS99) 與 AMPX (RS98) 為核心驅動力。（BE, AMPX, ALB, AA）
+工業機械與自動化組件 — 包含高效能電源與工業組件，BE (RS99) 與 AMPX (RS98) 表現亮眼。（BE, AMPX, AEIS）
+電力基礎設施與工程 — 隨著能源需求增長，AGX (RS97) 與 AEIS (RS97) 在電力工程領域表現突出。（AGX, AEIS, BE）
+人工智慧與軟體應用 — AI 驅動的軟體解決方案，AIXI (RS99) 與 AUGO (RS98) 領跑市場。（AIXI, AUGO）
+生物技術與製藥 — 專注於新藥研發與生物製劑，ABVX (RS99) 與 APLS (RS98) 具備極高相對強度。（ABVX, APLS）
+永續能源轉型 — 結合清潔能源與鋰資源，BE (RS99) 與 ALB (RS96) 受益於全球減碳趨勢。（BE, ALB）
+租賃與交通服務 — 交通需求回升帶動租賃市場，CAR (RS99) 展現頂尖的市場強度。（CAR）
+先進封裝技術 — 半導體後段製程需求旺盛，AMKR (RS97) 與 ASX (RS96) 為主要受益者。（AMKR, ASX）
+半導體測試解決方案 — AEHR (RS99) 在晶圓級測試領域具備絕對領先地位。（AEHR）

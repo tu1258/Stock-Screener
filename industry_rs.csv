@@ -75,9 +75,9 @@ Investment Bankers/Brokers/Service,Finance,51.4,7
 Life Insurance,Finance,51.2,5
 Industrial Specialties,Consumer Discretionary,51.0,4
 Restaurants,Consumer Discretionary,50.8,13
-Biotechnology: Pharmaceutical Preparations,Health Care,50.7,103
 Food Chains,Consumer Staples,50.5,2
 Auto Parts:O.E.M.,Consumer Discretionary,50.3,9
+Biotechnology: Pharmaceutical Preparations,Health Care,50.3,104
 Telecommunications Equipment,Telecommunications,50.3,7
 Catalog/Specialty Distribution,Consumer Discretionary,50.2,5
 Consumer Electronics/Appliances,Consumer Staples,50.0,1
@@ -129,6 +129,7 @@ Multi-Sector Companies,Miscellaneous,32.7,3
 Oil Refining/Marketing,Energy,32.0,2
 Building Products,Consumer Discretionary,32.0,1
 Other Consumer Services,Consumer Discretionary,31.9,8
+RETAIL: Building Materials,Consumer Discretionary,31.7,3
 Publishing,Consumer Discretionary,31.5,2
 Specialty Insurers,Finance,31.4,7
 Military/Government/Technical,Consumer Discretionary,30.0,2
@@ -137,10 +138,9 @@ Metal Fabrications,Telecommunications,29.0,1
 Apparel,Consumer Discretionary,28.3,3
 EDP Services,Technology,27.7,18
 Metal Fabrications,Industrials,27.7,3
-Biotechnology: In Vitro & In Vivo Diagnostic Substances,Health Care,27.0,2
 Consumer Electronics/Video Chains,Consumer Discretionary,27.0,1
+Biotechnology: In Vitro & In Vivo Diagnostic Substances,Health Care,27.0,2
 Movies/Entertainment,Consumer Discretionary,26.5,2
-RETAIL: Building Materials,Consumer Discretionary,25.8,4
 Home Furnishings,Consumer Discretionary,25.0,3
 Computer Software: Prepackaged Software,Technology,24.2,40
 Office Equipment/Supplies/Services,Technology,24.0,1
