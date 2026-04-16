@@ -4,6 +4,7 @@ import json
 import time
 import datetime
 import pandas as pd
+import finnhub
 from google import genai
 from google.genai import types
 
@@ -27,7 +28,8 @@ MIN_AVG_VALUE_10M = 100
 NEWS_SLEEP    = 1
 SCORING_SLEEP = 2
 
-TODAY = datetime.date.today().strftime("%Y-%m-%d")
+TODAY     = datetime.date.today().strftime("%Y-%m-%d")
+DATE_FROM = (datetime.date.today() - datetime.timedelta(days=7)).strftime("%Y-%m-%d")
 
 _summary_cache: dict[str, str] = {}
 
@@ -96,60 +98,54 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
     return "\n".join(lines), ticker_to_industry
 
 
-# ── Gemini url_context 摘要（含快取） ────────────────────────────────────
-def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
+# ── Finnhub 新聞摘要（含快取） ───────────────────────────────────────────
+def fetch_ticker_summary(fh_client: finnhub.Client, ticker: str) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
 
-    url = f"https://www.perplexity.ai/finance/{ticker}"
-    print(f"\n    reading Perplexity Finance for {ticker}: {url}", flush=True)
+    print(f"\n    reading Finnhub for {ticker}", flush=True)
+    lines = []
 
-    prompt = f"""Today is {TODAY}. Please read the following Perplexity Finance page for stock {ticker} and summarize from an investment theme and market catalyst perspective:
-- What is the company's core business?
-- What is the strongest current investment theme? Why is the market paying attention?
-- What recent catalysts (earnings, products, partnerships, regulations, industry trends) are driving the stock?
-- In which sector or theme does it have speculative potential or scarcity value?
+    try:
+        profile = fh_client.company_profile2(symbol=ticker)
+        if profile:
+            name     = profile.get("name", "")
+            industry = profile.get("finnhubIndustry", "")
+            mktcap   = profile.get("marketCapitalization", 0)
+            lines.append(f"Company: {name} | Industry: {industry} | MarketCap: {mktcap:.0f}M USD")
+    except Exception as e:
+        print(f"\n  ERROR {ticker} profile: {str(e)[:200]}")
 
-If the page is inaccessible, return empty. Return a concise bullet-point summary focused on themes and catalysts only.
+    try:
+        news_list = fh_client.company_news(ticker, _from=DATE_FROM, to=TODAY)
+        for item in (news_list or [])[:10]:
+            headline = item.get("headline", "").strip()
+            summary  = item.get("summary", "").strip()
+            source   = item.get("source", "")
+            dt       = datetime.datetime.fromtimestamp(item.get("datetime", 0)).strftime("%Y-%m-%d")
+            if headline:
+                lines.append(f"[{dt}][{source}] {headline}")
+                if summary:
+                    lines.append(f"  → {summary[:100]}")
+    except Exception as e:
+        print(f"\n  ERROR {ticker} news: {str(e)[:200]}")
 
-URL: {url}"""
-
-    for attempt in range(3):
-        try:
-            response = client.models.generate_content(
-                model=GEMINI_MODEL_SCORE,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    tools=[types.Tool(url_context=types.UrlContext())],
-                    temperature=0,
-                    max_output_tokens=2048,
-                ),
-            )
-            result = response.text.strip()
-            print(f"\n    [ {ticker} Gemini url_context 摘要 ]\n{result}\n")
-            _summary_cache[ticker] = result
-            return result
-        except Exception as e:
-            err = str(e)
-            print(f"\n  ERROR {ticker}: {err[:200]}")
-            if "429" in err or "quota" in err.lower():
-                time.sleep(5)
-            elif attempt < 2:
-                time.sleep(5)
-
-    _summary_cache[ticker] = ""
-    return ""
+    result = "\n".join(lines).strip()
+    print(f"\n    [ {ticker} Finnhub 摘要 ]\n{result}\n")
+    _summary_cache[ticker] = result
+    return result
 
 
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
-def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
+def fetch_hot_themes(client: genai.Client, fh_client: finnhub.Client,
+                     rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict) -> tuple:
-    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Perplexity Finance (url_context)...")
+    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Finnhub...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
         print(f"    [{i:3d}/{len(rs95_tickers)}] {ticker} RS{rs}", end=" ... ", flush=True)
-        summary = fetch_ticker_summary(client, ticker)
+        summary = fetch_ticker_summary(fh_client, ticker)
         ticker_summaries[ticker] = summary
         print("✓" if summary else "（無）")
         time.sleep(NEWS_SLEEP)
@@ -186,7 +182,7 @@ Notes:
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news summaries for RS95+ stocks (sourced from Perplexity Finance)]
+[Source D: Recent news summaries for RS95+ stocks (sourced from Finnhub)]
 {summaries_text}
 
 Instructions:
@@ -304,8 +300,9 @@ def build_hot_theme_watchlist(
 
 
 # ── Phase 3：評分 ─────────────────────────────────────────────────────────
-def score_ticker(client: genai.Client, ticker: str, hot_themes: str) -> dict:
-    news_summary = fetch_ticker_summary(client, ticker)
+def score_ticker(client: genai.Client, fh_client: finnhub.Client,
+                 ticker: str, hot_themes: str) -> dict:
+    news_summary = fetch_ticker_summary(fh_client, ticker)
     news_section = (
         f"\n[Recent news summary for {ticker}]\n{news_summary}"
         if news_summary else ""
@@ -379,7 +376,12 @@ def main():
     if not gemini_key:
         raise EnvironmentError("GEMINI_API_KEY 未設定")
 
-    client = genai.Client(api_key=gemini_key)
+    finnhub_key = os.environ.get("FINNHUB_API_KEY")
+    if not finnhub_key:
+        raise EnvironmentError("FINNHUB_API_KEY 未設定")
+
+    client    = genai.Client(api_key=gemini_key)
+    fh_client = finnhub.Client(api_key=finnhub_key)
 
     with open(INPUT_TXT, "r") as f:
         tickers = [line.strip().upper() for line in f if line.strip()]
@@ -398,7 +400,7 @@ def main():
 
     print("📡 Phase 1：建立今日熱門題材...")
     hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
-        client, rs95_tickers, industry_text, ticker_to_industry
+        client, fh_client, rs95_tickers, industry_text, ticker_to_industry
     )
     if not hot_themes:
         raise RuntimeError("Phase 1 失敗")
@@ -428,7 +430,7 @@ def main():
     for i, ticker in enumerate(tickers, 1):
         cached = ticker in _summary_cache
         print(f"  [{i:3d}/{len(tickers)}] {ticker}{'（快取）' if cached else ''}", end=" ... ", flush=True)
-        result = score_ticker(client, ticker, hot_themes)
+        result = score_ticker(client, fh_client, ticker, hot_themes)
         final_rows.append({
             "ticker":  result.get("ticker", ticker),
             "RS":      rs_map.get(ticker, 0),
