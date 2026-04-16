@@ -104,11 +104,6 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
 
 # ── Google News RSS 轉址解析 ─────────────────────────────────────────────
 def resolve_url(google_url: str) -> str:
-    """
-    Google News RSS 的連結是 Google 自己的轉址 URL，
-    需要 follow redirect 才能拿到真實文章 URL。
-    失敗就回傳原始 URL。
-    """
     try:
         resp = requests.get(
             google_url,
@@ -123,11 +118,6 @@ def resolve_url(google_url: str) -> str:
 
 # ── Google News RSS：取得最近 N 天內的新聞 URL 清單 ──────────────────────
 def fetch_rss_urls(ticker: str) -> list[str]:
-    """
-    從 Google News RSS 抓取最近 NEWS_MAX_AGE_DAYS 天內的新聞連結。
-    明確按發布時間新到舊排序後，取前 NEWS_MAX_ITEMS 篇。
-    resolve 轉址後回傳真實 URL。
-    """
     rss_url = (
         f"https://news.google.com/rss/search"
         f"?q={ticker}+stock&hl=en-US&gl=US&ceid=US:en"
@@ -150,7 +140,6 @@ def fetch_rss_urls(ticker: str) -> list[str]:
             try:
                 pub_dt = parsedate_to_datetime(pub_date_str)
             except Exception:
-                # 解析失敗給最舊時間，排到最後
                 pub_dt = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
 
             if pub_dt < cutoff:
@@ -162,7 +151,6 @@ def fetch_rss_urls(ticker: str) -> list[str]:
         print(f"\n  RSS error ({ticker}): {e}")
         return []
 
-    # 明確按時間新到舊排序，取前 NEWS_MAX_ITEMS 篇
     items_with_date.sort(key=lambda x: x[0], reverse=True)
 
     resolved_urls = []
@@ -174,11 +162,6 @@ def fetch_rss_urls(ticker: str) -> list[str]:
 
 # ── Gemini url_context 摘要（含快取） ────────────────────────────────────
 def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
-    """
-    1. 先查快取，有就直接回傳（Phase3 遇到 Phase1 已抓過的股票不重複請求）
-    2. 用 Google News RSS 拿最近 30 天內最多 20 篇的新聞 URL
-    3. 把 URL 清單丟給 Gemini url_context，讓它讀內文並摘要
-    """
     if ticker in _summary_cache:
         return _summary_cache[ticker]
 
@@ -389,12 +372,8 @@ def build_hot_theme_watchlist(
     return result
 
 
-# ── Phase 3：評分（RSS fetch + 快取 + 純 Gemini 評分） ───────────────────
+# ── Phase 3：評分 ─────────────────────────────────────────────────────────
 def score_ticker(client: genai.Client, ticker: str, hot_themes: str) -> dict:
-    """
-    1. 呼叫 fetch_ticker_summary（有快取就直接用，否則重新抓 RSS）
-    2. 新聞摘要 + 熱門題材清單一起送給 Gemini 評分
-    """
     news_summary = fetch_ticker_summary(client, ticker)
     news_section = (
         f"\n[Recent news summary for {ticker}]\n{news_summary}"
@@ -493,9 +472,19 @@ def main():
     if not hot_themes:
         raise RuntimeError("Phase 1 失敗")
 
-    os.makedirs("txt", exist_ok=True)
-    with open(OUTPUT_THEMES, "w", encoding="utf-8") as f:
-        f.write(f"# {TODAY}\n\n{hot_themes}\n")
+    # ── 輸出 hot_themes CSV ───────────────────────────────────────────────
+    os.makedirs("output", exist_ok=True)
+    theme_rows = []
+    for rank, item in enumerate(hot_themes_list, 1):
+        tickers_in_theme = [t.upper() for t in item.get("tickers", [])]
+        theme_rows.append({
+            "rank"        : rank,
+            "theme"       : item.get("name", ""),
+            "desc"        : item.get("desc", ""),
+            "tickers"     : ", ".join(tickers_in_theme),
+            "ticker_count": len(tickers_in_theme),
+        })
+    pd.DataFrame(theme_rows).to_csv(OUTPUT_THEMES, index=False, encoding="utf-8-sig")
     print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
 
     hot_wl_tickers = build_hot_theme_watchlist(hot_themes_list, rs_lookup)
