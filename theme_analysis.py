@@ -125,93 +125,6 @@ def scrape_perplexity_finance(ticker: str) -> str:
         print(f"\n  Perplexity scrape error ({ticker}): {e}")
         return ""
 
-# ── # RSS 相關 code（暫時停用）─────────────────────────────────────────────
-# def resolve_url(google_url: str, max_retries: int = 5) -> str:
-#     headers = {
-#         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-#         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-#         "Accept-Language": "en-US,en;q=0.5",
-#         "Accept-Encoding": "gzip, deflate, br",
-#         "Connection": "keep-alive",
-#     }
-#     for attempt in range(max_retries):
-#         try:
-#             resp = requests.get(
-#                 google_url,
-#                 headers=headers,
-#                 allow_redirects=True,
-#                 timeout=8,
-#             )
-#             if resp.url != google_url and "google.com" not in resp.url:
-#                 return resp.url
-#         except Exception:
-#             pass
-#         time.sleep(1)
-#     return ""
-#
-#
-# def fetch_rss_urls(ticker: str) -> list[str]:
-#     rss_url = (
-#         f"https://news.google.com/rss/search"
-#         f"?q={ticker}+stock&hl=en-US&gl=US&ceid=US:en"
-#     )
-#     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=NEWS_MAX_AGE_DAYS)
-#     items_with_date = []
-#
-#     try:
-#         resp = requests.get(rss_url, timeout=10,
-#                             headers={"User-Agent": "Mozilla/5.0"})
-#         resp.raise_for_status()
-#
-#         if not resp.content:
-#             return []
-#
-#         root = ET.fromstring(resp.content)
-#
-#         for item in root.findall(".//item"):
-#             raw_link = item.findtext("link")
-#             if raw_link is None:
-#                 continue
-#
-#             link = raw_link.strip()
-#             if not link:
-#                 continue
-#
-#             pub_date_str = item.findtext("pubDate", "")
-#             try:
-#                 pub_dt = parsedate_to_datetime(pub_date_str)
-#             except Exception:
-#                 pub_dt = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
-#
-#             if pub_dt < cutoff:
-#                 continue
-#
-#             items_with_date.append((pub_dt, link))
-#
-#     except Exception as e:
-#         print(f"\n  RSS error ({ticker}): {e}")
-#         return []
-#
-#     items_with_date.sort(key=lambda x: x[0], reverse=True)
-#     target_items = items_with_date[:NEWS_MAX_ITEMS]
-#
-#     resolved_urls = []
-#
-#     if target_items:
-#         print(f"\n    [ {ticker} 解析到的新聞來源 ]")
-#         for _, link in target_items:
-#             real_url = resolve_url(link)
-#             if real_url:
-#                 resolved_urls.append(real_url)
-#                 print(f"{link}")
-#                 print(f"{real_url}")
-#                 print()
-#     else:
-#         print(" (無符合條件的新聞)")
-#
-#     return resolved_urls
-
-
 # ── Perplexity 摘要（含快取） ─────────────────────────────────────────────
 def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
     if ticker in _summary_cache:
@@ -234,7 +147,7 @@ Please extract and summarize from an investment theme and market catalyst perspe
 Focus only on themes and catalysts. Return a concise bullet-point summary.
 
 Raw text:
-{raw_text[:8000]}"""
+{raw_text}"""
 
     for attempt in range(3):
         try:
