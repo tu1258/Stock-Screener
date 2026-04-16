@@ -3,12 +3,9 @@ import csv
 import json
 import time
 import datetime
-import requests
-import xml.etree.ElementTree as ET
 import pandas as pd
 from google import genai
 from google.genai import types
-from email.utils import parsedate_to_datetime
 from playwright.sync_api import sync_playwright
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
@@ -28,10 +25,8 @@ INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 MIN_AVG_VALUE_10M = 100
 
-NEWS_SLEEP        = 1
-SCORING_SLEEP     = 2
-NEWS_MAX_AGE_DAYS = 30
-NEWS_MAX_ITEMS    = 20
+NEWS_SLEEP    = 1
+SCORING_SLEEP = 2
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
@@ -102,42 +97,56 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
     return "\n".join(lines), ticker_to_industry
 
 
-# ── Perplexity Finance scrape ────────────────────────────────────────────
-def scrape_perplexity_finance(ticker: str) -> str:
-    url = f"https://www.perplexity.ai/finance/{ticker}"
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(
-                headless=True,
-                args=["--no-sandbox", "--disable-setuid-sandbox"]
-            )
-            context = browser.new_context(
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
-            )
-            page = context.new_page()
-            page.goto(url, wait_until="domcontentloaded", timeout=30000)
-            page.wait_for_timeout(5000)
-            text = page.inner_text("body")
-            browser.close()
-        print(f"\n    [ {ticker} Perplexity 原始文字 ]\n{text}\n")
-        return text.strip()
-    except Exception as e:
-        print(f"\n  Perplexity scrape error ({ticker}): {e}")
-        return ""
+# ── Google Finance scrape ────────────────────────────────────────────────
+def scrape_google_finance(ticker: str) -> str:
+    exchanges = ["NASDAQ", "NYSE", "NYSEARCA", "AMEX"]
+    for exchange in exchanges:
+        url = f"https://www.google.com/finance/beta/quote/{ticker}:{exchange}#research"
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(
+                    headless=True,
+                    args=["--no-sandbox", "--disable-setuid-sandbox"]
+                )
+                context = browser.new_context(
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                )
+                page = context.new_page()
+                try:
+                    page.goto(url, wait_until="domcontentloaded", timeout=30000)
+                except Exception:
+                    pass
+                page.wait_for_timeout(5000)
+                try:
+                    text = page.inner_text("body")
+                except Exception:
+                    text = ""
+                browser.close()
 
-# ── Perplexity 摘要（含快取） ─────────────────────────────────────────────
+            if text.strip() and ticker in text:
+                print(f"\n    [ {ticker} Google Finance 原始文字 ({exchange}) ]\n{text}\n")
+                return text.strip()
+
+        except Exception as e:
+            print(f"\n  Google Finance scrape error ({ticker} {exchange}): {e}")
+            continue
+
+    return ""
+
+
+# ── Google Finance 摘要（含快取） ────────────────────────────────────────
 def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
 
-    print(f"\n    scraping Perplexity Finance for {ticker}...", end=" ", flush=True)
-    raw_text = scrape_perplexity_finance(ticker)
+    print(f"\n    scraping Google Finance for {ticker}...", end=" ", flush=True)
+    raw_text = scrape_google_finance(ticker)
 
     if not raw_text:
         _summary_cache[ticker] = ""
         return ""
 
-    prompt = f"""Today is {TODAY}. The following is raw text scraped from Perplexity Finance for the stock {ticker}.
+    prompt = f"""Today is {TODAY}. The following is raw text scraped from Google Finance for the stock {ticker}.
 Please extract and summarize from an investment theme and market catalyst perspective:
 - What is the company's core business?
 - What is the strongest current investment theme? Why is the market paying attention?
@@ -156,7 +165,7 @@ Raw text:
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     temperature=0,
-                    max_output_tokens=1024,
+                    max_output_tokens=2048,
                 ),
             )
             result = response.text.strip()
@@ -177,7 +186,7 @@ Raw text:
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict) -> tuple:
-    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Perplexity Finance...")
+    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Google Finance...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
@@ -219,7 +228,7 @@ Notes:
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news summaries for RS95+ stocks (sourced from Perplexity Finance)]
+[Source D: Recent news summaries for RS95+ stocks (sourced from Google Finance)]
 {summaries_text}
 
 Instructions:
@@ -477,7 +486,7 @@ def main():
         key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
     )
 
-    os.makedirs("csv", exist_ok=True)
+    os.makedirs("output", exist_ok=True)
     with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "feature", "reason"])
         writer.writeheader()
