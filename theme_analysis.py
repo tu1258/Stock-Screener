@@ -101,7 +101,7 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
 def scrape_google_finance(ticker: str) -> str:
     exchanges = ["NASDAQ", "NYSE", "NYSEARCA", "AMEX"]
     for exchange in exchanges:
-        url = f"https://www.google.com/finance/beta/quote/{ticker}:{exchange}#research"
+        url = f"https://www.google.com/finance/beta/quote/{ticker}:{exchange}"
         try:
             with sync_playwright() as p:
                 browser = p.chromium.launch(
@@ -109,7 +109,7 @@ def scrape_google_finance(ticker: str) -> str:
                     args=["--no-sandbox", "--disable-setuid-sandbox"]
                 )
                 context = browser.new_context(
-                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
                 )
                 page = context.new_page()
                 try:
