@@ -356,13 +356,13 @@ Requirements:
 def build_hot_theme_watchlist(
     hot_themes_list: list[dict],
     rs_lookup: dict[str, int],
-    top_n: int = 5,
+    top_n: int = 10,
 ) -> list[str]:
     result = []
     seen   = set()
     for item in hot_themes_list[:top_n]:
         tickers_in_group = sorted(
-            [t.upper() for t in item.get("tickers", [])],
+            [t.strip().upper() for t in item.get("tickers", []) if t.strip()],
             key=lambda t: -rs_lookup.get(t, 0),
         )
         for t in tickers_in_group:
