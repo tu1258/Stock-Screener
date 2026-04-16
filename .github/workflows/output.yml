@@ -44,7 +44,8 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add stock_ticker.csv stock_rs.csv industry_rs.csv csv/technical_watchlist.csv csv/watchlist_summary.csv 
-          git add txt/technical_watchlist.txt txt/watchlist.txt txt/hot_themes.txt txt/hot_theme_watchlist.txt txt/market_monitor.txt
+          git add stock_ticker.csv stock_rs.csv industry_rs.csv  
+          git add output/technical_watchlist.csv output/watchlist.csv output/hot_themes.csv output/market_monitor.csv 
+          git add output/technical_watchlist.txt output/watchlist.txt output/hot_theme_watchlist.txt 
           git commit -m "Daily Update" || echo "No changes to commit"
           git push
