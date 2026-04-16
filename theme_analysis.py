@@ -62,12 +62,14 @@ def fetch_yahoo_scout(ticker: str) -> str:
     page = _pw_context.new_page()
     try:
         url = f"https://finance.yahoo.com/quote/{ticker}/"
-        page.goto(url, timeout=20000)
+        page.goto(url, timeout=30000, wait_until="networkidle")  # 等網路閒置
 
-        # 等待 Scout 區塊載入
-        page.wait_for_selector("div.animated-markdown-renderer-content", timeout=10000)
+        # debug：先把整個頁面存下來看
+        with open(f"debug_{ticker}.html", "w", encoding="utf-8") as f:
+            f.write(page.content())
 
-        # 抓所有 Scout 區塊（Overview + 其他 section 可能有多個）
+        page.wait_for_selector("div.animated-markdown-renderer-content", timeout=15000)
+
         els = page.locator("div.animated-markdown-renderer-content").all()
         parts = []
         for el in els:
