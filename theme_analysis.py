@@ -11,12 +11,12 @@ from google.genai import types
 from email.utils import parsedate_to_datetime
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
-INPUT_TXT        = "txt/technical_watchlist.txt"
+INPUT_TXT        = "output/technical_watchlist.txt"
 RS_CSV           = "stock_rs.csv"
-OUTPUT_CSV       = "csv/watchlist_summary.csv"
-OUTPUT_WATCHLIST = "txt/watchlist.txt"
-OUTPUT_THEMES    = "txt/hot_themes.txt"
-OUTPUT_HOT_WL    = "txt/hot_theme_watchlist.txt"
+OUTPUT_CSV       = "output/watchlist_summary.csv"
+OUTPUT_WATCHLIST = "output/watchlist.txt"
+OUTPUT_THEMES    = "output/hot_themes.txt"
+OUTPUT_HOT_WL    = "output/hot_theme_watchlist.txt"
 RATING_THRESHOLD = 6
 
 GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
