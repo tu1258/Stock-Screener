@@ -103,20 +103,30 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
 
 
 # ── Google News RSS 轉址解析 ─────────────────────────────────────────────
-def resolve_url(google_url: str) -> str:
-    try:
-        resp = requests.get(
-            google_url,
-            headers={"User-Agent": "Mozilla/5.0"},
-            allow_redirects=True,
-            timeout=8,
-        )
-        return resp.url
-    except Exception:
-        return google_url
+def resolve_url(google_url: str, max_retries: int = 5) -> str:
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+    }
+    for attempt in range(max_retries):
+        try:
+            resp = requests.get(
+                google_url,
+                headers=headers,
+                allow_redirects=True,
+                timeout=8,
+            )
+            if resp.url != google_url:
+                return resp.url
+        except Exception:
+            pass
+        time.sleep(1)
+    return ""
 
 
-# ── Google News RSS：取得最近 N 天內的新聞 URL 清單 ──────────────────────
 def fetch_rss_urls(ticker: str) -> list[str]:
     rss_url = (
         f"https://news.google.com/rss/search"
@@ -129,18 +139,17 @@ def fetch_rss_urls(ticker: str) -> list[str]:
         resp = requests.get(rss_url, timeout=10,
                             headers={"User-Agent": "Mozilla/5.0"})
         resp.raise_for_status()
-        
+
         if not resp.content:
             return []
-            
+
         root = ET.fromstring(resp.content)
 
         for item in root.findall(".//item"):
-            # --- 關鍵修正：防禦 NoneType ---
             raw_link = item.findtext("link")
             if raw_link is None:
                 continue
-                
+
             link = raw_link.strip()
             if not link:
                 continue
@@ -160,27 +169,24 @@ def fetch_rss_urls(ticker: str) -> list[str]:
         print(f"\n  RSS error ({ticker}): {e}")
         return []
 
-    # 依時間排序（新到舊）
     items_with_date.sort(key=lambda x: x[0], reverse=True)
+    target_items = items_with_date[:NEWS_MAX_ITEMS]
 
     resolved_urls = []
-    
-    # 限制取樣數量
-    target_items = items_with_date[:NEWS_MAX_ITEMS]
-    
+
     if target_items:
         print(f"\n    [ {ticker} 解析到的新聞來源 ]")
-        for i, (_, link) in enumerate(target_items, 1):
-            # 這裡執行解析（從 Google Link 轉為原始新聞 Link）
+        for _, link in target_items:
             real_url = resolve_url(link)
-            resolved_urls.append(real_url)
-            # 印出 URL，加上編號方便閱讀
-            print(f"      {i:2d}. {real_url}")
+            if real_url:
+                resolved_urls.append(real_url)
+                print(f"{link}")
+                print(f"{real_url}")
+                print()
     else:
-        print(f" (無符合條件的新聞)")
+        print(" (無符合條件的新聞)")
 
     return resolved_urls
-
 
 # ── Gemini url_context 摘要（含快取） ────────────────────────────────────
 def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
