@@ -3,13 +3,9 @@ import csv
 import json
 import time
 import datetime
-import requests
-import xml.etree.ElementTree as ET
 import pandas as pd
 from google import genai
 from google.genai import types
-from email.utils import parsedate_to_datetime
-from playwright.sync_api import sync_playwright
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
@@ -28,8 +24,8 @@ INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 MIN_AVG_VALUE_10M = 100
 
-NEWS_SLEEP        = 1
-SCORING_SLEEP     = 2
+NEWS_SLEEP    = 1
+SCORING_SLEEP = 2
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
@@ -100,63 +96,23 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
     return "\n".join(lines), ticker_to_industry
 
 
-# ── Perplexity Finance scrape ────────────────────────────────────────────
-def scrape_perplexity_finance(ticker: str) -> str:
-    url = f"https://www.perplexity.ai/finance/{ticker}"
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(
-                headless=True,
-                args=["--no-sandbox", "--disable-setuid-sandbox"]
-            )
-            context = browser.new_context(
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
-            )
-            page = context.new_page()
-            page.goto(url, wait_until="domcontentloaded", timeout=30000)
-            page.wait_for_timeout(5000)
-            #text = page.inner_text("body")
-            try:
-                blocks = []
-                for selector in [".whitespace-pre-wrap", ".line-clamp-none"]:
-                    elements = page.query_selector_all(selector)
-                    for el in elements:
-                        t = el.inner_text().strip()
-                        if t:
-                            blocks.append(t)
-                text = "\n\n".join(blocks)
-            except Exception:
-                text = ""            
-            browser.close()
-        print(f"\n    [ {ticker} Perplexity 原始文字 ]\n{text}\n")
-        return text.strip()
-    except Exception as e:
-        print(f"\n  Perplexity scrape error ({ticker}): {e}")
-        return ""
-
-# ── Perplexity 摘要（含快取） ─────────────────────────────────────────────
+# ── Gemini url_context 摘要（含快取） ────────────────────────────────────
 def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
 
-    print(f"\n    scraping Perplexity Finance for {ticker}...", end=" ", flush=True)
-    raw_text = scrape_perplexity_finance(ticker)
+    url = f"https://www.perplexity.ai/finance/{ticker}"
+    print(f"\n    reading Perplexity Finance for {ticker}: {url}", flush=True)
 
-    if not raw_text:
-        _summary_cache[ticker] = ""
-        return ""
-
-    prompt = f"""Today is {TODAY}. The following is raw text scraped from Perplexity Finance for the stock {ticker}.
-Please extract and summarize from an investment theme and market catalyst perspective:
+    prompt = f"""Today is {TODAY}. Please read the following Perplexity Finance page for stock {ticker} and summarize from an investment theme and market catalyst perspective:
 - What is the company's core business?
 - What is the strongest current investment theme? Why is the market paying attention?
 - What recent catalysts (earnings, products, partnerships, regulations, industry trends) are driving the stock?
 - In which sector or theme does it have speculative potential or scarcity value?
 
-Focus only on themes and catalysts. Return a concise bullet-point summary.
+If the page is inaccessible, return empty. Return a concise bullet-point summary focused on themes and catalysts only.
 
-Raw text:
-{raw_text}"""
+URL: {url}"""
 
     for attempt in range(3):
         try:
@@ -164,11 +120,13 @@ Raw text:
                 model=GEMINI_MODEL_SCORE,
                 contents=prompt,
                 config=types.GenerateContentConfig(
+                    tools=[types.Tool(url_context=types.UrlContext())],
                     temperature=0,
-                    max_output_tokens=1024,
+                    max_output_tokens=2048,
                 ),
             )
             result = response.text.strip()
+            print(f"\n    [ {ticker} Gemini url_context 摘要 ]\n{result}\n")
             _summary_cache[ticker] = result
             return result
         except Exception as e:
@@ -186,7 +144,7 @@ Raw text:
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict) -> tuple:
-    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Perplexity Finance...")
+    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Perplexity Finance (url_context)...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
@@ -486,7 +444,7 @@ def main():
         key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
     )
 
-    os.makedirs("csv", exist_ok=True)
+    os.makedirs("output", exist_ok=True)
     with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "feature", "reason"])
         writer.writeheader()
