@@ -113,6 +113,7 @@ def scrape_perplexity_finance(ticker: str) -> str:
             page.wait_for_timeout(3000)
             text = page.inner_text("body")
             browser.close()
+        print(f"\n    [ {ticker} Perplexity 原始文字 ]\n{text}\n")
         return text.strip()
     except Exception as e:
         print(f"\n  Perplexity scrape error ({ticker}): {e}")
