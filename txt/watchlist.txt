@@ -1,4 +1,0 @@
-ACLS
-AMKR
-AMD
-AMAT
