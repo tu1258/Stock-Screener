@@ -9,6 +9,7 @@ import pandas as pd
 from google import genai
 from google.genai import types
 from email.utils import parsedate_to_datetime
+from playwright.sync_api import sync_playwright
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
@@ -27,14 +28,13 @@ INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 MIN_AVG_VALUE_10M = 100
 
-NEWS_SLEEP        = 1    # 每支股票抓完新聞後的間隔（秒）
-SCORING_SLEEP     = 2    # 每支股票評分後的間隔（秒）
-NEWS_MAX_AGE_DAYS = 30   # 只取最近 30 天的新聞
-NEWS_MAX_ITEMS    = 20   # 每支股票最多取 20 篇
+NEWS_SLEEP        = 1
+SCORING_SLEEP     = 2
+NEWS_MAX_AGE_DAYS = 30
+NEWS_MAX_ITEMS    = 20
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
-# ── 新聞摘要快取（避免 Phase1 和 Phase3 重複抓同一支股票） ──────────────
 _summary_cache: dict[str, str] = {}
 
 
@@ -102,115 +102,133 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
     return "\n".join(lines), ticker_to_industry
 
 
-# ── Google News RSS 轉址解析 ─────────────────────────────────────────────
-def resolve_url(google_url: str, max_retries: int = 5) -> str:
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Connection": "keep-alive",
-    }
-    for attempt in range(max_retries):
-        try:
-            resp = requests.get(
-                google_url,
-                headers=headers,
-                allow_redirects=True,
-                timeout=8,
-            )
-            if resp.url != google_url:
-                return resp.url
-        except Exception:
-            pass
-        time.sleep(1)
-    return ""
-
-
-def fetch_rss_urls(ticker: str) -> list[str]:
-    rss_url = (
-        f"https://news.google.com/rss/search"
-        f"?q={ticker}+stock&hl=en-US&gl=US&ceid=US:en"
-    )
-    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=NEWS_MAX_AGE_DAYS)
-    items_with_date = []
-
+# ── Perplexity Finance scrape ────────────────────────────────────────────
+def scrape_perplexity_finance(ticker: str) -> str:
+    url = f"https://www.perplexity.ai/finance/{ticker}"
     try:
-        resp = requests.get(rss_url, timeout=10,
-                            headers={"User-Agent": "Mozilla/5.0"})
-        resp.raise_for_status()
-
-        if not resp.content:
-            return []
-
-        root = ET.fromstring(resp.content)
-
-        for item in root.findall(".//item"):
-            raw_link = item.findtext("link")
-            if raw_link is None:
-                continue
-
-            link = raw_link.strip()
-            if not link:
-                continue
-
-            pub_date_str = item.findtext("pubDate", "")
-            try:
-                pub_dt = parsedate_to_datetime(pub_date_str)
-            except Exception:
-                pub_dt = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
-
-            if pub_dt < cutoff:
-                continue
-
-            items_with_date.append((pub_dt, link))
-
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(url, wait_until="networkidle", timeout=15000)
+            page.wait_for_timeout(3000)
+            text = page.inner_text("body")
+            browser.close()
+        return text.strip()
     except Exception as e:
-        print(f"\n  RSS error ({ticker}): {e}")
-        return []
+        print(f"\n  Perplexity scrape error ({ticker}): {e}")
+        return ""
 
-    items_with_date.sort(key=lambda x: x[0], reverse=True)
-    target_items = items_with_date[:NEWS_MAX_ITEMS]
 
-    resolved_urls = []
+# ── # RSS 相關 code（暫時停用）─────────────────────────────────────────────
+# def resolve_url(google_url: str, max_retries: int = 5) -> str:
+#     headers = {
+#         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+#         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+#         "Accept-Language": "en-US,en;q=0.5",
+#         "Accept-Encoding": "gzip, deflate, br",
+#         "Connection": "keep-alive",
+#     }
+#     for attempt in range(max_retries):
+#         try:
+#             resp = requests.get(
+#                 google_url,
+#                 headers=headers,
+#                 allow_redirects=True,
+#                 timeout=8,
+#             )
+#             if resp.url != google_url and "google.com" not in resp.url:
+#                 return resp.url
+#         except Exception:
+#             pass
+#         time.sleep(1)
+#     return ""
+#
+#
+# def fetch_rss_urls(ticker: str) -> list[str]:
+#     rss_url = (
+#         f"https://news.google.com/rss/search"
+#         f"?q={ticker}+stock&hl=en-US&gl=US&ceid=US:en"
+#     )
+#     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=NEWS_MAX_AGE_DAYS)
+#     items_with_date = []
+#
+#     try:
+#         resp = requests.get(rss_url, timeout=10,
+#                             headers={"User-Agent": "Mozilla/5.0"})
+#         resp.raise_for_status()
+#
+#         if not resp.content:
+#             return []
+#
+#         root = ET.fromstring(resp.content)
+#
+#         for item in root.findall(".//item"):
+#             raw_link = item.findtext("link")
+#             if raw_link is None:
+#                 continue
+#
+#             link = raw_link.strip()
+#             if not link:
+#                 continue
+#
+#             pub_date_str = item.findtext("pubDate", "")
+#             try:
+#                 pub_dt = parsedate_to_datetime(pub_date_str)
+#             except Exception:
+#                 pub_dt = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
+#
+#             if pub_dt < cutoff:
+#                 continue
+#
+#             items_with_date.append((pub_dt, link))
+#
+#     except Exception as e:
+#         print(f"\n  RSS error ({ticker}): {e}")
+#         return []
+#
+#     items_with_date.sort(key=lambda x: x[0], reverse=True)
+#     target_items = items_with_date[:NEWS_MAX_ITEMS]
+#
+#     resolved_urls = []
+#
+#     if target_items:
+#         print(f"\n    [ {ticker} 解析到的新聞來源 ]")
+#         for _, link in target_items:
+#             real_url = resolve_url(link)
+#             if real_url:
+#                 resolved_urls.append(real_url)
+#                 print(f"{link}")
+#                 print(f"{real_url}")
+#                 print()
+#     else:
+#         print(" (無符合條件的新聞)")
+#
+#     return resolved_urls
 
-    if target_items:
-        print(f"\n    [ {ticker} 解析到的新聞來源 ]")
-        for _, link in target_items:
-            real_url = resolve_url(link)
-            if real_url:
-                resolved_urls.append(real_url)
-                print(f"{link}")
-                print(f"{real_url}")
-                print()
-    else:
-        print(" (無符合條件的新聞)")
 
-    return resolved_urls
-
-# ── Gemini url_context 摘要（含快取） ────────────────────────────────────
+# ── Perplexity 摘要（含快取） ─────────────────────────────────────────────
 def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
 
-    urls = fetch_rss_urls(ticker)
-    if not urls:
+    print(f"\n    scraping Perplexity Finance for {ticker}...", end=" ", flush=True)
+    raw_text = scrape_perplexity_finance(ticker)
+
+    if not raw_text:
         _summary_cache[ticker] = ""
         return ""
 
-    urls_block = "\n".join(urls)
-
-    prompt = f"""Today is {TODAY}. The following are recent news article URLs for the stock {ticker}.
-Please read these articles and summarize from an investment theme and market catalyst perspective:
+    prompt = f"""Today is {TODAY}. The following is raw text scraped from Perplexity Finance for the stock {ticker}.
+Please extract and summarize from an investment theme and market catalyst perspective:
 - What is the company's core business?
 - What is the strongest current investment theme? Why is the market paying attention?
 - What recent catalysts (earnings, products, partnerships, regulations, industry trends) are driving the stock?
 - In which sector or theme does it have speculative potential or scarcity value?
 
-If any article is inaccessible, skip it silently. Return a concise bullet-point summary focused on themes and catalysts only.
+Focus only on themes and catalysts. Return a concise bullet-point summary.
 
-News URLs:
-{urls_block}"""
+Raw text:
+{raw_text[:8000]}"""
 
     for attempt in range(3):
         try:
@@ -218,7 +236,6 @@ News URLs:
                 model=GEMINI_MODEL_SCORE,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    tools=[types.Tool(url_context=types.UrlContext())],
                     temperature=0,
                     max_output_tokens=1024,
                 ),
@@ -241,7 +258,7 @@ News URLs:
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict) -> tuple:
-    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Google News RSS...")
+    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Perplexity Finance...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
@@ -283,7 +300,7 @@ Notes:
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news summaries for RS95+ stocks (sourced from Google News RSS + article content)]
+[Source D: Recent news summaries for RS95+ stocks (sourced from Perplexity Finance)]
 {summaries_text}
 
 Instructions:
@@ -500,7 +517,6 @@ def main():
     if not hot_themes:
         raise RuntimeError("Phase 1 失敗")
 
-    # ── 輸出 hot_themes CSV ───────────────────────────────────────────────
     os.makedirs("output", exist_ok=True)
     theme_rows = []
     for rank, item in enumerate(hot_themes_list, 1):
