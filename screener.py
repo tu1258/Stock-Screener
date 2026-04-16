@@ -7,8 +7,8 @@ os.makedirs("txt", exist_ok=True)
 
 PRICE_CSV = "stock_data.csv"
 RS_CSV = "stock_rs.csv"
-OUTPUT_CSV = "csv/technical_watchlist.csv"
-OUTPUT_TXT = "txt/technical_watchlist.txt"
+OUTPUT_CSV = "output/technical_watchlist.csv"
+OUTPUT_TXT = "output/technical_watchlist.txt"
 # ---------------- 技術指標計算 ---------------- #
 def compute_indicators_vectorized(df):
     # 確保按ticker與日期排序
