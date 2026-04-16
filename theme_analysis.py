@@ -129,10 +129,19 @@ def fetch_rss_urls(ticker: str) -> list[str]:
         resp = requests.get(rss_url, timeout=10,
                             headers={"User-Agent": "Mozilla/5.0"})
         resp.raise_for_status()
+        
+        if not resp.content:
+            return []
+            
         root = ET.fromstring(resp.content)
 
         for item in root.findall(".//item"):
-            link = item.findtext("link", "").strip()
+            # --- 關鍵修正：防禦 NoneType ---
+            raw_link = item.findtext("link")
+            if raw_link is None:
+                continue
+                
+            link = raw_link.strip()
             if not link:
                 continue
 
@@ -151,11 +160,24 @@ def fetch_rss_urls(ticker: str) -> list[str]:
         print(f"\n  RSS error ({ticker}): {e}")
         return []
 
+    # 依時間排序（新到舊）
     items_with_date.sort(key=lambda x: x[0], reverse=True)
 
     resolved_urls = []
-    for _, link in items_with_date[:NEWS_MAX_ITEMS]:
-        resolved_urls.append(resolve_url(link))
+    
+    # 限制取樣數量
+    target_items = items_with_date[:NEWS_MAX_ITEMS]
+    
+    if target_items:
+        print(f"\n    [ {ticker} 解析到的新聞來源 ]")
+        for i, (_, link) in enumerate(target_items, 1):
+            # 這裡執行解析（從 Google Link 轉為原始新聞 Link）
+            real_url = resolve_url(link)
+            resolved_urls.append(real_url)
+            # 印出 URL，加上編號方便閱讀
+            print(f"      {i:2d}. {real_url}")
+    else:
+        print(f" (無符合條件的新聞)")
 
     return resolved_urls
 
