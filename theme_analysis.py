@@ -30,8 +30,6 @@ MIN_AVG_VALUE_10M = 100
 
 NEWS_SLEEP        = 1
 SCORING_SLEEP     = 2
-NEWS_MAX_AGE_DAYS = 30
-NEWS_MAX_ITEMS    = 20
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
