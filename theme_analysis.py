@@ -115,7 +115,13 @@ def scrape_perplexity_finance(ticker: str) -> str:
             page = context.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=30000)
             page.wait_for_timeout(5000)
-            text = page.inner_text("body")
+            try:
+                elements = page.query_selector_all(".whitespace-pre-wrap")
+                blocks = [el.inner_text() for el in elements if el.inner_text().strip()]
+                text = "\n\n".join(blocks)
+            except Exception:
+                text = ""
+            #text = page.inner_text("body")
             browser.close()
         print(f"\n    [ {ticker} Perplexity 原始文字 ]\n{text}\n")
         return text.strip()
