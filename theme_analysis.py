@@ -107,10 +107,16 @@ def scrape_perplexity_finance(ticker: str) -> str:
     url = f"https://www.perplexity.ai/finance/{ticker}"
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(url, wait_until="networkidle", timeout=15000)
-            page.wait_for_timeout(3000)
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-setuid-sandbox"]
+            )
+            context = browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+            )
+            page = context.new_page()
+            page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            page.wait_for_timeout(5000)
             text = page.inner_text("body")
             browser.close()
         print(f"\n    [ {ticker} Perplexity 原始文字 ]\n{text}\n")
@@ -118,7 +124,6 @@ def scrape_perplexity_finance(ticker: str) -> str:
     except Exception as e:
         print(f"\n  Perplexity scrape error ({ticker}): {e}")
         return ""
-
 
 # ── # RSS 相關 code（暫時停用）─────────────────────────────────────────────
 # def resolve_url(google_url: str, max_retries: int = 5) -> str:
