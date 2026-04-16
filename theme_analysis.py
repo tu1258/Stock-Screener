@@ -15,7 +15,7 @@ INPUT_TXT        = "output/technical_watchlist.txt"
 RS_CSV           = "stock_rs.csv"
 OUTPUT_CSV       = "output/watchlist_summary.csv"
 OUTPUT_WATCHLIST = "output/watchlist.txt"
-OUTPUT_THEMES    = "output/hot_themes.txt"
+OUTPUT_THEMES    = "output/hot_themes.csv"
 OUTPUT_HOT_WL    = "output/hot_theme_watchlist.txt"
 RATING_THRESHOLD = 6
 
