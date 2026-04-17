@@ -36,42 +36,6 @@ def get_nasdaq_tickers(limit=None):
     return raw_tickers[:limit] if limit else raw_tickers
 
 
-def fetch_industry_meta(tickers: list) -> pd.DataFrame:
-    """從 yfinance 逐筆抓 sector/industry，結果存入 INDUSTRY_FILE。
-    若檔案已存在則直接讀取，不重複下載。"""
-    if os.path.exists(INDUSTRY_FILE):
-        print(f"  {INDUSTRY_FILE} 已存在，直接讀取（跳過下載）")
-        return pd.read_csv(INDUSTRY_FILE)
-
-    print(f"  開始從 yfinance 抓取 {len(tickers)} 檔的 industry 資料...")
-    rows = []
-    for i, ticker in enumerate(tickers, 1):
-        sector   = ""
-        industry = ""
-        for attempt in range(1, MAX_RETRIES + 1):
-            try:
-                info     = yf.Ticker(ticker).info
-                sector   = info.get("sector",   "") or ""
-                industry = info.get("industry", "") or ""
-                break
-            except Exception as e:
-                if attempt < MAX_RETRIES:
-                    print(f"  info failed {ticker} (attempt {attempt}), retrying: {e}")
-                    time.sleep(1)
-                else:
-                    print(f"  info failed {ticker} after {MAX_RETRIES} attempts: {e}")
-        rows.append({"ticker": ticker, "sector": sector, "industry": industry})
-        if i % 50 == 0 or i == len(tickers):
-            print(f"  [{i}/{len(tickers)}] 進度...")
-        time.sleep(0.1)
-
-    df = pd.DataFrame(rows)
-    total   = len(df)
-    success = (df["industry"] != "").sum()
-    print(f"  完成：{success}/{total} 檔有 industry 資料（{success/total*100:.1f}%）")
-    return df
-
-
 def main():
     end   = date.today()
     start = end - timedelta(days=DAYS)
@@ -79,8 +43,11 @@ def main():
     tickers = get_nasdaq_tickers(500)
     print(f"Downloading {len(tickers)} tickers")
 
-    # OHLCV
-    rows = []
+    need_industry = not os.path.exists(INDUSTRY_FILE)
+
+    rows          = []
+    industry_list = []  # {"ticker", "sector", "industry"}
+
     for i, ticker in enumerate(tickers, 1):
         for attempt in range(1, MAX_RETRIES + 1):
             try:
@@ -98,6 +65,16 @@ def main():
                 df["ticker"] = ticker
                 df["date"]   = df["date"].dt.strftime("%Y-%m-%d")
                 rows.append(df)
+
+                # ── 順便抓 industry（只在第一次執行、尚無快取時）──
+                if need_industry:
+                    info = yf.Ticker(ticker).info
+                    industry_list.append({
+                        "ticker"  : ticker,
+                        "sector"  : info.get("sector",   "") or "",
+                        "industry": info.get("industry", "") or "",
+                    })
+
                 print(f"[{i}/{len(tickers)}] {ticker}")
                 break
             except Exception as e:
@@ -119,10 +96,14 @@ def main():
     print(f"Saved {OUTPUT_FILE}, rows={len(result)}")
 
     # Industry meta
+    df_industry = pd.DataFrame(industry_list)
+    total   = len(df_industry)
+    success = (df_industry["industry"] != "").sum()
     print(f"\n抓取 industry meta（共 {len(tickers)} 檔）...")
-    df_industry = fetch_industry_meta(tickers)
+    print(f"完成：{success}/{total} 檔有 industry 資料（{success/total*100:.1f}%）")
     df_industry.to_csv(INDUSTRY_FILE, index=False)
     print(f"Saved {INDUSTRY_FILE}")
+
 
 
 if __name__ == "__main__":
