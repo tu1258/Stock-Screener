@@ -18,7 +18,7 @@ RATING_THRESHOLD = 6
 
 GEMINI_MODEL_PHASE1  = "gemini-3-flash-preview"
 GEMINI_MODEL_SCORE   = "gemini-3.1-flash-lite-preview"
-GEMINI_MODEL_GROUNDING = "gemini-3.1-flash-lite-preview"  # Google Search Grounding 用
+GEMINI_MODEL_GROUNDING = "gemini-2.0-flash"  # Google Search Grounding 用（需支援 google_search tool）
 
 STOCK_DATA_CSV    = "stock_data.csv"
 INDUSTRY_RS_CSV   = "industry_rs.csv"
@@ -52,7 +52,15 @@ def fetch_grounding_summary(client: genai.Client, ticker: str) -> str:
                     max_output_tokens=512,
                 ),
             )
-            return response.text.strip()
+            text = response.text
+            if not text:
+                # debug：印出完整 response 結構找原因
+                print(f"\n  [grounding debug {ticker}] response.text empty. candidates={response.candidates}")
+                if attempt < 2:
+                    time.sleep(3)
+                    continue
+                return ""
+            return text.strip()
         except Exception as e:
             err = str(e)
             if "429" in err or "quota" in err.lower():
