@@ -18,7 +18,7 @@ RATING_THRESHOLD = 6
 
 GEMINI_MODEL_PHASE1  = "gemini-3-flash-preview"
 GEMINI_MODEL_SCORE   = "gemini-3.1-flash-lite-preview"
-GEMINI_MODEL_GROUNDING = "gemini-2.0-flash"  # Google Search Grounding 用（需支援 google_search tool）
+GEMINI_MODEL_GROUNDING = "gemini-3.1-flash-lite-preview"  # Google Search Grounding 用（需支援 google_search tool）
 
 STOCK_DATA_CSV    = "stock_data.csv"
 INDUSTRY_RS_CSV   = "industry_rs.csv"
@@ -36,6 +36,7 @@ _summary_cache: dict[str, str] = {}
 # ── Google Search Grounding 抓取個股摘要 ─────────────────────────────────
 def fetch_grounding_summary(client: genai.Client, ticker: str) -> str:
     """用 Gemini Google Search Grounding 搜尋個股近期新聞與題材摘要。"""
+    import traceback
     prompt = (
         f"Today is {TODAY}. Search for recent news, earnings, industry themes, and market focus "
         f"for US stock {ticker}. Return a concise summary in English under 150 words. "
@@ -52,23 +53,26 @@ def fetch_grounding_summary(client: genai.Client, ticker: str) -> str:
                     max_output_tokens=512,
                 ),
             )
-            text = response.text
+            # response.text 在 grounding 模式下有時為空，直接從 parts 撈文字
+            text = ""
+            try:
+                for part in response.candidates[0].content.parts:
+                    if hasattr(part, "text") and part.text:
+                        text += part.text
+            except (IndexError, AttributeError):
+                pass
+
             if not text:
-                # debug：印出完整 response 結構找原因
-                print(f"\n  [grounding debug {ticker}] response.text empty. candidates={response.candidates}")
+                print(f"\n  [grounding debug {ticker}] raw response:\n{response}\n")
                 if attempt < 2:
                     time.sleep(3)
                     continue
                 return ""
             return text.strip()
-        except Exception as e:
-            err = str(e)
-            if "429" in err or "quota" in err.lower():
-                time.sleep(5)
-            elif attempt < 2:
+        except Exception:
+            print(f"\n  [grounding exception {ticker} attempt {attempt+1}]\n{traceback.format_exc()}")
+            if attempt < 2:
                 time.sleep(3)
-            else:
-                print(f"\n  [grounding error {ticker}] {err[:200]}")
     return ""
 
 
