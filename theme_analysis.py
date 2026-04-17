@@ -25,7 +25,7 @@ INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 MIN_AVG_VALUE_10M = 100
 
-NEWS_SLEEP    = 2
+NEWS_SLEEP    = 10  # grounding 每筆間隔（避免 429）
 SCORING_SLEEP = 2
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
@@ -42,6 +42,7 @@ def fetch_grounding_summary(client: genai.Client, ticker: str) -> str:
         f"for US stock {ticker}. Return a concise summary in English under 150 words. "
         f"Return only the summary text, no headings or extra explanation."
     )
+    wait_times = [30, 60, 120]  # 429 時的等待秒數（exponential backoff）
     for attempt in range(3):
         try:
             response = client.models.generate_content(
@@ -65,14 +66,20 @@ def fetch_grounding_summary(client: genai.Client, ticker: str) -> str:
             if not text:
                 print(f"\n  [grounding debug {ticker}] raw response:\n{response}\n")
                 if attempt < 2:
-                    time.sleep(3)
+                    time.sleep(5)
                     continue
                 return ""
             return text.strip()
-        except Exception:
-            print(f"\n  [grounding exception {ticker} attempt {attempt+1}]\n{traceback.format_exc()}")
-            if attempt < 2:
-                time.sleep(3)
+        except Exception as e:
+            err = str(e)
+            wait = wait_times[attempt]
+            if "429" in err or "quota" in err.lower() or "RESOURCE_EXHAUSTED" in err:
+                print(f"\n  [429 quota {ticker}] waiting {wait}s before retry (attempt {attempt+1}/3)...")
+                time.sleep(wait)
+            else:
+                print(f"\n  [grounding exception {ticker} attempt {attempt+1}]\n{traceback.format_exc()}")
+                if attempt < 2:
+                    time.sleep(5)
     return ""
 
 
