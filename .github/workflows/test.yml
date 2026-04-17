@@ -1,4 +1,4 @@
-name: Output
+name: test
 
 on:
   schedule:
