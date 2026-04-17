@@ -7,7 +7,6 @@ import pandas as pd
 from google import genai
 from google.genai import types
 from curl_cffi import requests as cffi_requests
-from bs4 import BeautifulSoup
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
@@ -34,33 +33,24 @@ TODAY = datetime.date.today().strftime("%Y-%m-%d")
 _summary_cache: dict[str, str] = {}
 
 
-# ── Seeking Alpha JSON API 抓新聞列表 ─────────────────────────────────────
+# ── Seeking Alpha JSON API 抓新聞標題 ─────────────────────────────────────
 def fetch_sa_news(ticker: str, max_items: int = 5) -> list[dict]:
     url = f"https://seekingalpha.com/api/v3/symbols/{ticker}/news"
     params = {"per_page": max_items}
     try:
-        resp = cffi_requests.get(
-            url,
-            params=params,
-            impersonate="chrome124",
-            timeout=15,
-        )
+        resp = cffi_requests.get(url, params=params, impersonate="chrome124", timeout=15)
         resp.raise_for_status()
         data = resp.json().get("data", [])
         items = []
         for item in data:
             attr         = item.get("attributes", {})
-            links        = item.get("links", {})
             title        = attr.get("title", "").strip()
-            publish_on   = attr.get("publishOn", "")
+            publish_on   = attr.get("publishOn", "")[:10]
             is_paywalled = attr.get("isPaywalled", True)
-            path         = links.get("self", "")
-            article_url  = f"https://seekingalpha.com{path}" if path else ""
             items.append({
                 "title"       : title,
                 "publish_on"  : publish_on,
                 "is_paywalled": is_paywalled,
-                "article_url" : article_url,
             })
         return items
     except Exception as e:
@@ -68,41 +58,7 @@ def fetch_sa_news(ticker: str, max_items: int = 5) -> list[dict]:
         return []
 
 
-# ── Seeking Alpha 文章內文抓取 ────────────────────────────────────────────
-def fetch_sa_article(url: str) -> str:
-    if not url:
-        return ""
-    try:
-        resp = cffi_requests.get(
-            url,
-            impersonate="chrome124",
-            timeout=15,
-        )
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
-
-        for selector in [
-            "[data-test-id='article-content']",
-            ".paywall-full-content",
-            "[class*='articleContent']",
-            "[class*='article_content']",
-            "article",
-        ]:
-            el = soup.select_one(selector)
-            if el:
-                text = el.get_text(separator=" ", strip=True)
-                if len(text) > 100:
-                    return text[:1000]
-
-        # fallback：抓所有夠長的 <p>
-        paras = [p.get_text(strip=True) for p in soup.find_all("p") if len(p.get_text(strip=True)) > 50]
-        return " ".join(paras)[:1000]
-    except Exception as e:
-        print(f"\n  [SA article error {url[:80]}] {e}")
-        return ""
-
-
-# ── 取得個股摘要（JSON API 標題 + 非付費文章內文） ───────────────────────
+# ── 取得個股摘要（標題列表） ─────────────────────────────────────────────
 def fetch_ticker_summary(ticker: str) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
@@ -115,27 +71,13 @@ def fetch_ticker_summary(ticker: str) -> str:
         _summary_cache[ticker] = ""
         return ""
 
-    parts = []
+    lines = []
     for item in news_items:
-        title        = item["title"]
-        publish_on   = item["publish_on"][:10]
-        is_paywalled = item["is_paywalled"]
-        article_url  = item["article_url"]
+        paywall = "[PRO]" if item["is_paywalled"] else ""
+        lines.append(f"[{item['publish_on']}] {paywall} {item['title']}".strip())
 
-        if not is_paywalled and article_url:
-            body = fetch_sa_article(article_url)
-            time.sleep(0.5)
-        else:
-            body = ""
-
-        if body:
-            parts.append(f"[{publish_on}] {title}\n{body}")
-        else:
-            parts.append(f"[{publish_on}] {title}")
-
-    result = "\n\n---\n\n".join(parts)
-
-    print(f"\n    [ {ticker} Seeking Alpha ]\n{result[:800]}{'...' if len(result) > 800 else ''}\n")
+    result = "\n".join(lines)
+    print(f"\n    [ {ticker} headlines ]\n{result}\n")
 
     _summary_cache[ticker] = result
     return result
