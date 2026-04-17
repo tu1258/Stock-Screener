@@ -6,6 +6,8 @@ import datetime
 import pandas as pd
 from google import genai
 from google.genai import types
+from curl_cffi import requests as cffi_requests
+from bs4 import BeautifulSoup
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
@@ -16,16 +18,13 @@ OUTPUT_THEMES    = "output/hot_themes.csv"
 OUTPUT_HOT_WL    = "output/hot_theme_watchlist.txt"
 RATING_THRESHOLD = 6
 
-GEMINI_MODEL_PHASE1  = "gemini-3-flash-preview"
-GEMINI_MODEL_SCORE   = "gemini-3.1-flash-lite-preview"
+GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
+GEMINI_MODEL_SCORE  = "gemini-3.1-flash-lite-preview"
 
 STOCK_DATA_CSV    = "stock_data.csv"
 INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 MIN_AVG_VALUE_10M = 100
-
-import requests
-from bs4 import BeautifulSoup
 
 NEWS_SLEEP    = 1
 SCORING_SLEEP = 2
@@ -34,34 +33,29 @@ TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
 _summary_cache: dict[str, str] = {}
 
-_SA_HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    ),
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-}
-
 
 # ── Seeking Alpha JSON API 抓新聞列表 ─────────────────────────────────────
 def fetch_sa_news(ticker: str, max_items: int = 5) -> list[dict]:
     url = f"https://seekingalpha.com/api/v3/symbols/{ticker}/news"
-    params = {"filter[until]": "", "filter[since]": "", "id": ticker.lower(), "per_page": max_items}
+    params = {"per_page": max_items}
     try:
-        resp = requests.get(url, headers=_SA_HEADERS, params=params, timeout=15)
+        resp = cffi_requests.get(
+            url,
+            params=params,
+            impersonate="chrome124",
+            timeout=15,
+        )
         resp.raise_for_status()
         data = resp.json().get("data", [])
         items = []
         for item in data:
-            attr        = item.get("attributes", {})
-            links       = item.get("links", {})
-            title       = attr.get("title", "").strip()
-            publish_on  = attr.get("publishOn", "")
+            attr         = item.get("attributes", {})
+            links        = item.get("links", {})
+            title        = attr.get("title", "").strip()
+            publish_on   = attr.get("publishOn", "")
             is_paywalled = attr.get("isPaywalled", True)
-            path        = links.get("self", "")
-            article_url = f"https://seekingalpha.com{path}" if path else ""
+            path         = links.get("self", "")
+            article_url  = f"https://seekingalpha.com{path}" if path else ""
             items.append({
                 "title"       : title,
                 "publish_on"  : publish_on,
@@ -79,7 +73,11 @@ def fetch_sa_article(url: str) -> str:
     if not url:
         return ""
     try:
-        resp = requests.get(url, headers=_SA_HEADERS, timeout=15)
+        resp = cffi_requests.get(
+            url,
+            impersonate="chrome124",
+            timeout=15,
+        )
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
 
@@ -120,7 +118,7 @@ def fetch_ticker_summary(ticker: str) -> str:
     parts = []
     for item in news_items:
         title        = item["title"]
-        publish_on   = item["publish_on"][:10]  # 只取日期部分
+        publish_on   = item["publish_on"][:10]
         is_paywalled = item["is_paywalled"]
         article_url  = item["article_url"]
 
@@ -137,7 +135,6 @@ def fetch_ticker_summary(ticker: str) -> str:
 
     result = "\n\n---\n\n".join(parts)
 
-    # debug print
     print(f"\n    [ {ticker} Seeking Alpha ]\n{result[:800]}{'...' if len(result) > 800 else ''}\n")
 
     _summary_cache[ticker] = result
