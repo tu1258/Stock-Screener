@@ -18,79 +18,128 @@ RATING_THRESHOLD = 6
 
 GEMINI_MODEL_PHASE1  = "gemini-3-flash-preview"
 GEMINI_MODEL_SCORE   = "gemini-3.1-flash-lite-preview"
-GEMINI_MODEL_GROUNDING = "gemini-3.1-flash-lite-preview"  # Google Search Grounding 用（需支援 google_search tool）
 
 STOCK_DATA_CSV    = "stock_data.csv"
 INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 MIN_AVG_VALUE_10M = 100
 
-NEWS_SLEEP    = 10  # grounding 每筆間隔（避免 429）
+import requests
+from bs4 import BeautifulSoup
+
+NEWS_SLEEP    = 1
 SCORING_SLEEP = 2
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
 _summary_cache: dict[str, str] = {}
 
-
-# ── Google Search Grounding 抓取個股摘要 ─────────────────────────────────
-def fetch_grounding_summary(client: genai.Client, ticker: str) -> str:
-    """用 Gemini Google Search Grounding 搜尋個股近期新聞與題材摘要。"""
-    import traceback
-    prompt = (
-        f"Today is {TODAY}. Search for recent news, earnings, industry themes, and market focus "
-        f"for US stock {ticker}. Return a concise summary in English under 150 words. "
-        f"Return only the summary text, no headings or extra explanation."
-    )
-    wait_times = [30, 60, 120]  # 429 時的等待秒數（exponential backoff）
-    for attempt in range(3):
-        try:
-            response = client.models.generate_content(
-                model=GEMINI_MODEL_GROUNDING,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    tools=[types.Tool(google_search=types.GoogleSearch())],
-                    temperature=0,
-                    max_output_tokens=512,
-                ),
-            )
-            # response.text 在 grounding 模式下有時為空，直接從 parts 撈文字
-            text = ""
-            try:
-                for part in response.candidates[0].content.parts:
-                    if hasattr(part, "text") and part.text:
-                        text += part.text
-            except (IndexError, AttributeError):
-                pass
-
-            if not text:
-                print(f"\n  [grounding debug {ticker}] raw response:\n{response}\n")
-                if attempt < 2:
-                    time.sleep(5)
-                    continue
-                return ""
-            return text.strip()
-        except Exception as e:
-            err = str(e)
-            wait = wait_times[attempt]
-            if "429" in err or "quota" in err.lower() or "RESOURCE_EXHAUSTED" in err:
-                print(f"\n  [429 quota {ticker}] waiting {wait}s before retry (attempt {attempt+1}/3)...")
-                time.sleep(wait)
-            else:
-                print(f"\n  [grounding exception {ticker} attempt {attempt+1}]\n{traceback.format_exc()}")
-                if attempt < 2:
-                    time.sleep(5)
-    return ""
+_SA_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
 
-# ── 取得個股摘要（含快取） ───────────────────────────────────────────────
-def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
+# ── Seeking Alpha JSON API 抓新聞列表 ─────────────────────────────────────
+def fetch_sa_news(ticker: str, max_items: int = 5) -> list[dict]:
+    url = f"https://seekingalpha.com/api/v3/symbols/{ticker}/news"
+    params = {"filter[until]": "", "filter[since]": "", "id": ticker.lower(), "per_page": max_items}
+    try:
+        resp = requests.get(url, headers=_SA_HEADERS, params=params, timeout=15)
+        resp.raise_for_status()
+        data = resp.json().get("data", [])
+        items = []
+        for item in data:
+            attr        = item.get("attributes", {})
+            links       = item.get("links", {})
+            title       = attr.get("title", "").strip()
+            publish_on  = attr.get("publishOn", "")
+            is_paywalled = attr.get("isPaywalled", True)
+            path        = links.get("self", "")
+            article_url = f"https://seekingalpha.com{path}" if path else ""
+            items.append({
+                "title"       : title,
+                "publish_on"  : publish_on,
+                "is_paywalled": is_paywalled,
+                "article_url" : article_url,
+            })
+        return items
+    except Exception as e:
+        print(f"\n  [SA API error {ticker}] {e}")
+        return []
+
+
+# ── Seeking Alpha 文章內文抓取 ────────────────────────────────────────────
+def fetch_sa_article(url: str) -> str:
+    if not url:
+        return ""
+    try:
+        resp = requests.get(url, headers=_SA_HEADERS, timeout=15)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        for selector in [
+            "[data-test-id='article-content']",
+            ".paywall-full-content",
+            "[class*='articleContent']",
+            "[class*='article_content']",
+            "article",
+        ]:
+            el = soup.select_one(selector)
+            if el:
+                text = el.get_text(separator=" ", strip=True)
+                if len(text) > 100:
+                    return text[:1000]
+
+        # fallback：抓所有夠長的 <p>
+        paras = [p.get_text(strip=True) for p in soup.find_all("p") if len(p.get_text(strip=True)) > 50]
+        return " ".join(paras)[:1000]
+    except Exception as e:
+        print(f"\n  [SA article error {url[:80]}] {e}")
+        return ""
+
+
+# ── 取得個股摘要（JSON API 標題 + 非付費文章內文） ───────────────────────
+def fetch_ticker_summary(ticker: str) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
 
-    print(f"\n    searching Google grounding for {ticker} ...", flush=True)
-    result = fetch_grounding_summary(client, ticker)
-    print(f"\n    [ {ticker} summary ]\n{result}\n")
+    print(f"\n    fetching Seeking Alpha for {ticker} ...", flush=True)
+
+    news_items = fetch_sa_news(ticker)
+    if not news_items:
+        print(f"    [ {ticker} ] no news items")
+        _summary_cache[ticker] = ""
+        return ""
+
+    parts = []
+    for item in news_items:
+        title        = item["title"]
+        publish_on   = item["publish_on"][:10]  # 只取日期部分
+        is_paywalled = item["is_paywalled"]
+        article_url  = item["article_url"]
+
+        if not is_paywalled and article_url:
+            body = fetch_sa_article(article_url)
+            time.sleep(0.5)
+        else:
+            body = ""
+
+        if body:
+            parts.append(f"[{publish_on}] {title}\n{body}")
+        else:
+            parts.append(f"[{publish_on}] {title}")
+
+    result = "\n\n---\n\n".join(parts)
+
+    # debug print
+    print(f"\n    [ {ticker} Seeking Alpha ]\n{result[:800]}{'...' if len(result) > 800 else ''}\n")
+
     _summary_cache[ticker] = result
     return result
 
@@ -162,12 +211,12 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict) -> tuple:
-    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Google Search Grounding...")
+    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Seeking Alpha...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
         print(f"    [{i:3d}/{len(rs95_tickers)}] {ticker} RS{rs}", end=" ... ", flush=True)
-        summary = fetch_ticker_summary(client, ticker)
+        summary = fetch_ticker_summary(ticker)
         ticker_summaries[ticker] = summary
         print("✓" if summary else "（無）")
         time.sleep(NEWS_SLEEP)
@@ -204,7 +253,7 @@ Notes:
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news summaries for RS95+ stocks (sourced from Google Search, in English)]
+[Source D: Recent news from Seeking Alpha for RS95+ stocks (titles + article content where available)]
 {summaries_text}
 
 Instructions:
@@ -323,9 +372,9 @@ def build_hot_theme_watchlist(
 
 # ── Phase 3：評分 ─────────────────────────────────────────────────────────
 def score_ticker(client: genai.Client, ticker: str, hot_themes: str) -> dict:
-    news_summary = fetch_ticker_summary(client, ticker)
+    news_summary = fetch_ticker_summary(ticker)
     news_section = (
-        f"\n[Recent news summary for {ticker} (in English)]\n{news_summary}"
+        f"\n[Recent Seeking Alpha news for {ticker}]\n{news_summary}"
         if news_summary else ""
     )
 
