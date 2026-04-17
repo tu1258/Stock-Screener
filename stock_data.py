@@ -1,5 +1,5 @@
+import os
 import pandas as pd
-import requests
 import yfinance as yf
 from ftplib import FTP
 from io import StringIO
@@ -37,28 +37,39 @@ def get_nasdaq_tickers(limit=None):
 
 
 def fetch_industry_meta(tickers: list) -> pd.DataFrame:
-    """Nasdaq screener API 一次抓全市場 sector/industry，再 join 到 ticker 清單。"""
-    print("  從 Nasdaq screener 抓取 industry 資料...")
-    url = "https://api.nasdaq.com/api/screener/stocks"
-    params  = {"tableonly": "true", "limit": 25000, "download": "true"}
-    headers = {"User-Agent": "Mozilla/5.0"}
-    try:
-        resp = requests.get(url, params=params, headers=headers, timeout=30)
-        resp.raise_for_status()
-        rows = resp.json()["data"]["rows"]
-        df_nasdaq = pd.DataFrame(rows)[["symbol", "sector", "industry"]]
-        df_nasdaq.columns = ["ticker", "sector", "industry"]
-        df_nasdaq["ticker"] = df_nasdaq["ticker"].str.upper().str.strip()
-    except Exception as e:
-        print(f"  ⚠️ Nasdaq screener 失敗：{e}，回傳空表")
-        return pd.DataFrame(columns=["ticker", "sector", "industry"])
+    """從 yfinance 逐筆抓 sector/industry，結果存入 INDUSTRY_FILE。
+    若檔案已存在則直接讀取，不重複下載。"""
+    if os.path.exists(INDUSTRY_FILE):
+        print(f"  {INDUSTRY_FILE} 已存在，直接讀取（跳過下載）")
+        return pd.read_csv(INDUSTRY_FILE)
 
-    df_tickers = pd.DataFrame({"ticker": [t.upper() for t in tickers]})
-    df_merged  = df_tickers.merge(df_nasdaq, on="ticker", how="left")
-    total   = len(df_merged)
-    success = df_merged["industry"].notna().sum()
+    print(f"  開始從 yfinance 抓取 {len(tickers)} 檔的 industry 資料...")
+    rows = []
+    for i, ticker in enumerate(tickers, 1):
+        sector   = ""
+        industry = ""
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                info     = yf.Ticker(ticker).info
+                sector   = info.get("sector",   "") or ""
+                industry = info.get("industry", "") or ""
+                break
+            except Exception as e:
+                if attempt < MAX_RETRIES:
+                    print(f"  info failed {ticker} (attempt {attempt}), retrying: {e}")
+                    time.sleep(1)
+                else:
+                    print(f"  info failed {ticker} after {MAX_RETRIES} attempts: {e}")
+        rows.append({"ticker": ticker, "sector": sector, "industry": industry})
+        if i % 50 == 0 or i == len(tickers):
+            print(f"  [{i}/{len(tickers)}] 進度...")
+        time.sleep(0.1)
+
+    df = pd.DataFrame(rows)
+    total   = len(df)
+    success = (df["industry"] != "").sum()
     print(f"  完成：{success}/{total} 檔有 industry 資料（{success/total*100:.1f}%）")
-    return df_merged
+    return df
 
 
 def main():
@@ -85,7 +96,7 @@ def main():
                 df = df.reset_index()[["Date", "Open", "High", "Low", "Close", "Volume"]]
                 df.columns = ["date", "open", "high", "low", "close", "volume"]
                 df["ticker"] = ticker
-                df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+                df["date"]   = df["date"].dt.strftime("%Y-%m-%d")
                 rows.append(df)
                 print(f"[{i}/{len(tickers)}] {ticker}")
                 break
