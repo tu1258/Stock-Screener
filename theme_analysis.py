@@ -4,7 +4,6 @@ import json
 import time
 import datetime
 import pandas as pd
-from playwright.sync_api import sync_playwright
 from google import genai
 from google.genai import types
 
@@ -17,8 +16,9 @@ OUTPUT_THEMES    = "output/hot_themes.csv"
 OUTPUT_HOT_WL    = "output/hot_theme_watchlist.txt"
 RATING_THRESHOLD = 6
 
-GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
-GEMINI_MODEL_SCORE  = "gemini-3.1-flash-lite-preview"
+GEMINI_MODEL_PHASE1  = "gemini-3-flash-preview"
+GEMINI_MODEL_SCORE   = "gemini-3.1-flash-lite-preview"
+GEMINI_MODEL_GROUNDING = "gemini-3.1-flash-lite-preview"  # Google Search Grounding 用
 
 STOCK_DATA_CSV    = "stock_data.csv"
 INDUSTRY_RS_CSV   = "industry_rs.csv"
@@ -31,72 +31,47 @@ SCORING_SLEEP = 2
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
 _summary_cache: dict[str, str] = {}
-_pw_context   = None
 
 
-# ── 初始化 Playwright ────────────────────────────────────────────────────
-def init_playwright():
-    global _pw_context
-    pw = sync_playwright().start()
-    _pw_context = pw.chromium.launch_persistent_context(
-        user_data_dir="",
-        headless=True,
-        channel="chromium",
+# ── Google Search Grounding 抓取個股摘要 ─────────────────────────────────
+def fetch_grounding_summary(client: genai.Client, ticker: str) -> str:
+    """用 Gemini Google Search Grounding 搜尋個股近期新聞與題材摘要。"""
+    prompt = (
+        f"Today is {TODAY}. Search for recent news, earnings, industry themes, and market focus "
+        f"for US stock {ticker}. Return a concise summary in English under 150 words. "
+        f"Return only the summary text, no headings or extra explanation."
     )
-    return pw
-
-
-def close_playwright(pw):
-    global _pw_context
-    if _pw_context:
-        _pw_context.close()
-    pw.stop()
-
-
-# ── Yahoo Finance Scout 抓取 ─────────────────────────────────────────────
-def fetch_yahoo_scout(ticker: str) -> str:
-    global _pw_context
-    if _pw_context is None:
-        return ""
-
-    page = _pw_context.new_page()
-    try:
-        url = f"https://finance.yahoo.com/quote/{ticker}/"
-        page.goto(url, timeout=30000, wait_until="networkidle")  # 等網路閒置
-
-        # debug：先把整個頁面存下來看
-        with open(f"debug_{ticker}.html", "w", encoding="utf-8") as f:
-            f.write(page.content())
-
-        page.wait_for_selector("div.animated-markdown-renderer-content", timeout=15000)
-
-        els = page.locator("div.animated-markdown-renderer-content").all()
-        parts = []
-        for el in els:
-            text = el.inner_text().strip()
-            if text:
-                parts.append(text)
-
-        return "\n\n".join(parts)
-
-    except Exception as e:
-        print(f"\n  [yahoo scout error {ticker}] {str(e)[:200]}")
-        return ""
-
-    finally:
-        page.close()
+    for attempt in range(3):
+        try:
+            response = client.models.generate_content(
+                model=GEMINI_MODEL_GROUNDING,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    tools=[types.Tool(google_search=types.GoogleSearch())],
+                    temperature=0,
+                    max_output_tokens=512,
+                ),
+            )
+            return response.text.strip()
+        except Exception as e:
+            err = str(e)
+            if "429" in err or "quota" in err.lower():
+                time.sleep(5)
+            elif attempt < 2:
+                time.sleep(3)
+            else:
+                print(f"\n  [grounding error {ticker}] {err[:200]}")
+    return ""
 
 
 # ── 取得個股摘要（含快取） ───────────────────────────────────────────────
-def fetch_ticker_summary(ticker: str) -> str:
+def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
 
-    print(f"\n    reading Yahoo Finance Scout for {ticker}", flush=True)
-
-    result = fetch_yahoo_scout(ticker)
-
-    print(f"\n    [ {ticker} Yahoo Scout 摘要 ]\n{result}\n")
+    print(f"\n    searching Google grounding for {ticker} ...", flush=True)
+    result = fetch_grounding_summary(client, ticker)
+    print(f"\n    [ {ticker} summary ]\n{result}\n")
     _summary_cache[ticker] = result
     return result
 
@@ -143,7 +118,7 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
     if os.path.exists(ticker_ind_csv):
         df_ind = pd.read_csv(ticker_ind_csv)
         for _, row in df_ind.iterrows():
-            t = str(row.get("ticker", "")).upper()
+            t   = str(row.get("ticker", "")).upper()
             ind = str(row.get("industry", ""))
             if t and ind:
                 ticker_to_industry[t] = ind
@@ -168,12 +143,12 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict) -> tuple:
-    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Yahoo Finance Scout...")
+    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Google Search Grounding...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
         print(f"    [{i:3d}/{len(rs95_tickers)}] {ticker} RS{rs}", end=" ... ", flush=True)
-        summary = fetch_ticker_summary(ticker)
+        summary = fetch_ticker_summary(client, ticker)
         ticker_summaries[ticker] = summary
         print("✓" if summary else "（無）")
         time.sleep(NEWS_SLEEP)
@@ -210,7 +185,7 @@ Notes:
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news summaries for RS95+ stocks (sourced from Yahoo Finance Scout)]
+[Source D: Recent news summaries for RS95+ stocks (sourced from Google Search, in English)]
 {summaries_text}
 
 Instructions:
@@ -329,9 +304,9 @@ def build_hot_theme_watchlist(
 
 # ── Phase 3：評分 ─────────────────────────────────────────────────────────
 def score_ticker(client: genai.Client, ticker: str, hot_themes: str) -> dict:
-    news_summary = fetch_ticker_summary(ticker)
+    news_summary = fetch_ticker_summary(client, ticker)
     news_section = (
-        f"\n[Recent news summary for {ticker}]\n{news_summary}"
+        f"\n[Recent news summary for {ticker} (in English)]\n{news_summary}"
         if news_summary else ""
     )
 
@@ -405,91 +380,85 @@ def main():
 
     client = genai.Client(api_key=gemini_key)
 
-    pw = init_playwright()
+    with open(INPUT_TXT, "r") as f:
+        tickers = [line.strip().upper() for line in f if line.strip()]
 
-    try:
-        with open(INPUT_TXT, "r") as f:
-            tickers = [line.strip().upper() for line in f if line.strip()]
+    rs_map = {}
+    if os.path.exists(RS_CSV):
+        with open(RS_CSV, "r", newline="") as f:
+            for row in csv.DictReader(f):
+                t = row["ticker"].upper()
+                rs_map[t] = row.get("RS", 0)
 
-        rs_map = {}
-        if os.path.exists(RS_CSV):
-            with open(RS_CSV, "r", newline="") as f:
-                for row in csv.DictReader(f):
-                    t = row["ticker"].upper()
-                    rs_map[t] = row.get("RS", 0)
+    rs95_tickers = load_rs95_liquid(RS_CSV, STOCK_DATA_CSV)
+    industry_text, ticker_to_industry = load_industry_ranking(INDUSTRY_RS_CSV, TICKER_IND_CSV)
 
-        rs95_tickers = load_rs95_liquid(RS_CSV, STOCK_DATA_CSV)
-        industry_text, ticker_to_industry = load_industry_ranking(INDUSTRY_RS_CSV, TICKER_IND_CSV)
+    print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
 
-        print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
+    print("📡 Phase 1：建立今日熱門題材...")
+    hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
+        client, rs95_tickers, industry_text, ticker_to_industry
+    )
+    if not hot_themes:
+        raise RuntimeError("Phase 1 失敗")
 
-        print("📡 Phase 1：建立今日熱門題材...")
-        hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
-            client, rs95_tickers, industry_text, ticker_to_industry
-        )
-        if not hot_themes:
-            raise RuntimeError("Phase 1 失敗")
+    os.makedirs("output", exist_ok=True)
+    theme_rows = []
+    for rank, item in enumerate(hot_themes_list, 1):
+        tickers_in_theme = [t.upper() for t in item.get("tickers", [])]
+        theme_rows.append({
+            "rank"        : rank,
+            "theme"       : item.get("name", ""),
+            "desc"        : item.get("desc", ""),
+            "tickers"     : ", ".join(tickers_in_theme),
+            "ticker_count": len(tickers_in_theme),
+        })
+    pd.DataFrame(theme_rows).to_csv(OUTPUT_THEMES, index=False, encoding="utf-8-sig")
+    print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
 
-        os.makedirs("output", exist_ok=True)
-        theme_rows = []
-        for rank, item in enumerate(hot_themes_list, 1):
-            tickers_in_theme = [t.upper() for t in item.get("tickers", [])]
-            theme_rows.append({
-                "rank"        : rank,
-                "theme"       : item.get("name", ""),
-                "desc"        : item.get("desc", ""),
-                "tickers"     : ", ".join(tickers_in_theme),
-                "ticker_count": len(tickers_in_theme),
-            })
-        pd.DataFrame(theme_rows).to_csv(OUTPUT_THEMES, index=False, encoding="utf-8-sig")
-        print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
+    hot_wl_tickers = build_hot_theme_watchlist(hot_themes_list, rs_lookup)
+    with open(OUTPUT_HOT_WL, "w", encoding="utf-8") as f:
+        f.write("\n".join(hot_wl_tickers) + "\n")
+    print(f"✅ 熱門題材 watchlist 已存至 {OUTPUT_HOT_WL}（{len(hot_wl_tickers)} 檔）\n")
 
-        hot_wl_tickers = build_hot_theme_watchlist(hot_themes_list, rs_lookup)
-        with open(OUTPUT_HOT_WL, "w", encoding="utf-8") as f:
-            f.write("\n".join(hot_wl_tickers) + "\n")
-        print(f"✅ 熱門題材 watchlist 已存至 {OUTPUT_HOT_WL}（{len(hot_wl_tickers)} 檔）\n")
+    print(f"🔍 Phase 3：逐一評分（共 {len(tickers)} 檔）...\n")
+    final_rows = []
 
-        print(f"🔍 Phase 3：逐一評分（共 {len(tickers)} 檔）...\n")
-        final_rows = []
+    for i, ticker in enumerate(tickers, 1):
+        cached = ticker in _summary_cache
+        print(f"  [{i:3d}/{len(tickers)}] {ticker}{'（快取）' if cached else ''}", end=" ... ", flush=True)
+        result = score_ticker(client, ticker, hot_themes)
+        final_rows.append({
+            "ticker":  result.get("ticker", ticker),
+            "RS":      rs_map.get(ticker, 0),
+            "rating":  result.get("rating", 0),
+            "theme":   result.get("theme", ""),
+            "feature": result.get("feature", ""),
+            "reason":  result.get("reason", ""),
+        })
+        print(f"rating={result.get('rating', '?')}")
+        time.sleep(SCORING_SLEEP)
 
-        for i, ticker in enumerate(tickers, 1):
-            cached = ticker in _summary_cache
-            print(f"  [{i:3d}/{len(tickers)}] {ticker}{'（快取）' if cached else ''}", end=" ... ", flush=True)
-            result = score_ticker(client, ticker, hot_themes)
-            final_rows.append({
-                "ticker":  result.get("ticker", ticker),
-                "RS":      rs_map.get(ticker, 0),
-                "rating":  result.get("rating", 0),
-                "theme":   result.get("theme", ""),
-                "feature": result.get("feature", ""),
-                "reason":  result.get("reason", ""),
-            })
-            print(f"rating={result.get('rating', '?')}")
-            time.sleep(SCORING_SLEEP)
+    final_rows.sort(
+        key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
+    )
 
-        final_rows.sort(
-            key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
-        )
+    os.makedirs("output", exist_ok=True)
+    with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "feature", "reason"])
+        writer.writeheader()
+        writer.writerows(final_rows)
 
-        os.makedirs("output", exist_ok=True)
-        with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
-            writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "feature", "reason"])
-            writer.writeheader()
-            writer.writerows(final_rows)
+    watchlist = [row["ticker"] for row in final_rows if int(row["rating"]) >= RATING_THRESHOLD]
+    with open(OUTPUT_WATCHLIST, "w", encoding="utf-8") as f:
+        f.write("\n".join(watchlist) + "\n")
 
-        watchlist = [row["ticker"] for row in final_rows if int(row["rating"]) >= RATING_THRESHOLD]
-        with open(OUTPUT_WATCHLIST, "w", encoding="utf-8") as f:
-            f.write("\n".join(watchlist) + "\n")
-
-        print(f"\n{'='*50}")
-        print(f"✅ 完成！分析 {len(final_rows)} 檔，watchlist {len(watchlist)} 檔")
-        print(f"   {OUTPUT_CSV}")
-        print(f"   {OUTPUT_WATCHLIST}")
-        print(f"   {OUTPUT_THEMES}")
-        print(f"   {OUTPUT_HOT_WL}")
-
-    finally:
-        close_playwright(pw)
+    print(f"\n{'='*50}")
+    print(f"✅ 完成！分析 {len(final_rows)} 檔，watchlist {len(watchlist)} 檔")
+    print(f"   {OUTPUT_CSV}")
+    print(f"   {OUTPUT_WATCHLIST}")
+    print(f"   {OUTPUT_THEMES}")
+    print(f"   {OUTPUT_HOT_WL}")
 
 
 if __name__ == "__main__":
