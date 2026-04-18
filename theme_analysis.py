@@ -28,91 +28,85 @@ MIN_AVG_VALUE_10M = 100
 NEWS_SLEEP    = 1
 SCORING_SLEEP = 2
 
-TODAY = datetime.date.today().strftime("%Y-%m-%d")
+TODAY      = datetime.date.today().strftime("%Y-%m-%d")
+ONE_MONTH_AGO = (datetime.date.today() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
 
-_news_cache: dict[str, str] = {}  # ticker -> 格式化新聞字串
+_news_cache: dict = {}  # ticker -> 格式化新聞字串
 
 
-# ── Serper API 抓 Google 搜尋結果（含 AI Overview）───────────────────────
-def fetch_serper_news(ticker: str) -> str:
+# ── Finnhub API 抓公司新聞 summary ────────────────────────────────────────
+def fetch_finnhub_news(ticker: str) -> str:
     """
-    用 Serper API 搜尋 ticker，回傳：
-    - answerBox / AI Overview 摘要
-    - 前 10 筆搜尋結果標題 + snippet（當新聞用）
+    用 Finnhub company-news endpoint 抓一個月內新聞，
+    回傳格式：每篇一行「[YYYY-MM-DD] headline: summary」
     """
     if ticker in _news_cache:
         return _news_cache[ticker]
 
-    api_key = os.environ.get("SERPER_API_KEY", "")
+    api_key = os.environ.get("FINNHUB_API_KEY", "")
     if not api_key:
-        print(f"      [Serper] 未設定 SERPER_API_KEY，跳過 {ticker}")
+        print("      [Finnhub] 未設定 FINNHUB_API_KEY，跳過 {}".format(ticker))
         _news_cache[ticker] = ""
         return ""
 
-    print(f"    [Serper] fetching {ticker} ...", flush=True)
+    print("    [Finnhub] fetching {} ...".format(ticker), flush=True)
 
     try:
-        r = requests.post(
-            "https://google.serper.dev/search",
-            headers={
-                "X-API-KEY": api_key,
-                "Content-Type": "application/json",
-            },
-            json={
-                "q": f"{ticker} stock news analysis",
-                "gl": "us",
-                "hl": "en",
-                "num": 10,
+        r = requests.get(
+            "https://finnhub.io/api/v1/company-news",
+            params={
+                "symbol": ticker,
+                "from":   ONE_MONTH_AGO,
+                "to":     TODAY,
+                "token":  api_key,
             },
             timeout=15,
         )
-        data = r.json()
+        articles = r.json()
 
-        parts = []
+        if not isinstance(articles, list):
+            print("      [Finnhub] {} 回傳非預期格式".format(ticker))
+            _news_cache[ticker] = ""
+            return ""
 
-        # AI Overview / Answer Box
-        answer = data.get("answerBox", {})
-        if answer.get("answer"):
-            parts.append(f"[AI Overview] {answer['answer']}")
-        elif answer.get("snippet"):
-            parts.append(f"[AI Overview] {answer['snippet']}")
-        elif answer.get("snippetHighlighted"):
-            parts.append(f"[AI Overview] {' '.join(answer['snippetHighlighted'])}")
+        lines = []
+        for article in articles:
+            # unix timestamp -> YYYY-MM-DD
+            ts = article.get("datetime", 0)
+            try:
+                date_str = datetime.datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d")
+            except Exception:
+                date_str = "unknown"
 
-        # knowledgeGraph
-        kg = data.get("knowledgeGraph", {})
-        if kg.get("description"):
-            parts.append(f"[Company] {kg['description']}")
+            headline = article.get("headline", "").strip()
+            summary  = article.get("summary",  "").strip()
 
-        # organic 搜尋結果（標題 + snippet）
-        for item in data.get("organic", [])[:10]:
-            title   = item.get("title", "").strip()
-            snippet = item.get("snippet", "").strip()
-            if title:
-                line = f"- {title}"
-                if snippet:
-                    line += f": {snippet}"
-                parts.append(line)
+            if not headline:
+                continue
 
-        text = "\n".join(parts)
-        print(f"      [Serper] {ticker} 拿到 {len(parts)} 筆")
-        print(f"      [Serper] 內容預覽:\n{text[:1000]}\n") 
+            if summary and summary != headline:
+                lines.append("[{}] {}: {}".format(date_str, headline, summary))
+            else:
+                lines.append("[{}] {}".format(date_str, headline))
+
+        text = "\n".join(lines)
+        print("      [Finnhub] {} 拿到 {} 篇".format(ticker, len(lines)))
         _news_cache[ticker] = text
         return text
 
     except Exception as e:
-        print(f"      [Serper error {ticker}] {e}")
+        print("      [Finnhub error {}] {}".format(ticker, e))
         _news_cache[ticker] = ""
         return ""
 
 
-# ── Phase 1：Serper 結果 → Gemini 摘要────────────────────────────────────
+# ── Phase 1：Finnhub summary → Gemini 摘要 ───────────────────────────────
 def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
-    news_text = fetch_serper_news(ticker)
+    news_text = fetch_finnhub_news(ticker)
     if not news_text:
         return ""
 
-    prompt = f"""Today is {TODAY}. The following are recent Google search results and news for stock {ticker}.
+    prompt = """Today is {today}. The following are recent news headlines and summaries (past 30 days) for stock {ticker}, sourced from Finnhub.
 Based on this information, summarize from an investment theme and market catalyst perspective:
 - What is the company's core business?
 - What is the strongest current investment theme? Why is the market paying attention?
@@ -121,8 +115,8 @@ Based on this information, summarize from an investment theme and market catalys
 
 Return a concise bullet-point summary focused on themes and catalysts only.
 
-Search results:
-{news_text}"""
+News (format: [YYYY-MM-DD] headline: summary):
+{news}""".format(today=TODAY, ticker=ticker, news=news_text)
 
     for attempt in range(3):
         try:
@@ -135,11 +129,11 @@ Search results:
                 ),
             )
             result = response.text.strip()
-            print(f"      [summary OK] {len(result)} chars")
+            print("      [summary OK] {} chars".format(len(result)))
             return result
         except Exception as e:
             err = str(e)
-            print(f"\n  [summary error {ticker}] {err[:200]}")
+            print("\n  [summary error {}] {}".format(ticker, err[:200]))
             if "429" in err or "quota" in err.lower():
                 time.sleep(5)
             elif attempt < 2:
@@ -149,7 +143,7 @@ Search results:
 
 
 # ── 計算 RS95+ 且成交值 >= 100M 的清單 ──────────────────────────────────
-def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list[tuple]:
+def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list:
     rs_map = {}
     with open(rs_csv, newline="") as f:
         for row in csv.DictReader(f):
@@ -185,7 +179,7 @@ def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list[tuple]:
 
 
 # ── 讀取 industry RS 排行 ────────────────────────────────────────────────
-def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[str, dict, dict]:
+def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple:
     ticker_to_industry = {}
     ticker_to_exchange = {}
 
@@ -213,57 +207,57 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
         sector   = row.get("sector", "")
         avg_rs   = row.get("avg_rs", 0)
         count    = int(row.get("ticker_count", 0))
-        lines.append(f"  {avg_rs:5.1f}  {industry}（{sector}，{count} 檔）")
+        lines.append("  {:5.1f}  {}（{}，{} 檔）".format(avg_rs, industry, sector, count))
 
     return "\n".join(lines), ticker_to_industry, ticker_to_exchange
 
 
 # ── Phase 2：建立今日熱門題材 ─────────────────────────────────────────────
-def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
+def fetch_hot_themes(client: genai.Client, rs95_tickers: list,
                      industry_text: str, ticker_to_industry: dict) -> tuple:
-    print(f"  Fetching news for {len(rs95_tickers)} tickers via Serper...")
+    print("  Fetching news for {} tickers via Finnhub...".format(len(rs95_tickers)))
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
-        print(f"    [{i:3d}/{len(rs95_tickers)}] {ticker} RS{rs}", end=" ... ", flush=True)
+        print("    [{:3d}/{}] {} RS{}".format(i, len(rs95_tickers), ticker, rs), end=" ... ", flush=True)
         summary = fetch_ticker_summary(client, ticker)
         ticker_summaries[ticker] = summary
         print("✓" if summary else "（無）")
         time.sleep(NEWS_SLEEP)
 
-    ticker_lines = "\n".join(f"  RS{rs:>2}  {t}" for t, rs in rs95_tickers)
+    ticker_lines = "\n".join("  RS{:>2}  {}".format(rs, t) for t, rs in rs95_tickers)
 
     ticker_ind_lines = "\n".join(
-        f"  {t}: {ticker_to_industry.get(t, 'N/A')}"
+        "  {}: {}".format(t, ticker_to_industry.get(t, "N/A"))
         for t, rs in rs95_tickers
     )
 
     summaries_text = "\n\n".join(
-        f"[{t} RS{rs}]\n{ticker_summaries.get(t, '(no data)')}"
+        "[{} RS{}]\n{}".format(t, rs, ticker_summaries.get(t, "(no data)"))
         for t, rs in rs95_tickers
     )
 
     industry_section = ""
     if industry_text:
-        industry_section = f"""
+        industry_section = """
 [Source C: Industry Average RS Ranking (sorted descending by avg RS across all stocks)]
-{industry_text}
+{industry}
 
 Notes:
 - This ranking reflects the overall strength of each industry, not individual stocks.
 - A high industry average RS means strong sector-wide capital momentum, not just a few outliers.
 - Cross-reference with Source A to avoid single-stock distortion of theme assessment.
-"""
+""".format(industry=industry_text)
 
-    prompt = f"""Today is {TODAY}. You are a senior US equity analyst. Your task is to identify today's hot investment themes.
+    prompt = """Today is {today}. You are a senior US equity analyst. Your task is to identify today's hot investment themes.
 
-[Source A: Stocks with RS>=95 and avg daily value>=100M USD (total {len(rs95_tickers)} stocks, sorted by RS descending)]
+[Source A: Stocks with RS>=95 and avg daily value>=100M USD (total {total} stocks, sorted by RS descending)]
 {ticker_lines}
 
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news summaries for RS95+ stocks (sourced from Google Search via Serper)]
+[Source D: Recent news summaries for RS95+ stocks (sourced from Finnhub, past 30 days, format: [YYYY-MM-DD] headline: summary)]
 {summaries_text}
 
 Instructions:
@@ -297,7 +291,14 @@ Instructions:
 Requirements:
 - hot_themes: top 10 themes sorted by weighted heat. Each entry includes 1-2 sentence description and all related tickers (uppercase). Theme names and descriptions must be in Traditional Chinese.
 - ticker_themes: tag every stock in the list with all relevant themes (multiple allowed). Theme names must be in Traditional Chinese.
-"""
+""".format(
+        today=TODAY,
+        total=len(rs95_tickers),
+        ticker_lines=ticker_lines,
+        ticker_ind_lines=ticker_ind_lines,
+        industry_section=industry_section,
+        summaries_text=summaries_text,
+    )
 
     for attempt in range(5):
         try:
@@ -316,31 +317,31 @@ Requirements:
                     raw = raw[4:]
             data = json.loads(raw.strip())
 
-            hot_themes_list: list = data.get("hot_themes", [])
-            ticker_themes: dict   = data.get("ticker_themes", {})
+            hot_themes_list = data.get("hot_themes", [])
+            ticker_themes   = data.get("ticker_themes", {})
 
             rs_lookup = {t: rs for t, rs in rs95_tickers}
 
-            theme_count: dict[str, list[str]] = {}
+            theme_count = {}
             for ticker_upper, themes in ticker_themes.items():
                 t = ticker_upper.upper()
                 for theme in themes:
                     theme_count.setdefault(theme, []).append(
-                        f"{t}(RS{rs_lookup.get(t, '?')})"
+                        "{}(RS{})".format(t, rs_lookup.get(t, "?"))
                     )
 
-            lines = [f"## 題材統計（RS95+ 且成交值>=100M，共 {len(rs95_tickers)} 檔）\n"]
+            lines = ["## 題材統計（RS95+ 且成交值>=100M，共 {} 檔）\n".format(len(rs95_tickers))]
             for theme, members in sorted(theme_count.items(), key=lambda x: -len(x[1])):
                 members_str = ", ".join(members[:20])
-                suffix = f"... 等共 {len(members)} 檔" if len(members) > 20 else f"共 {len(members)} 檔"
-                lines.append(f"{theme}：{members_str}　{suffix}")
+                suffix = "... 等共 {} 檔".format(len(members)) if len(members) > 20 else "共 {} 檔".format(len(members))
+                lines.append("{}：{}　{}".format(theme, members_str, suffix))
 
             lines.append("\n## 今日熱門題材（Gemini 分析）\n")
             for item in hot_themes_list:
                 name    = item.get("name", "")
                 desc    = item.get("desc", "")
                 tickers = item.get("tickers", [])
-                lines.append(f"{name} — {desc}（{', '.join(tickers)}）")
+                lines.append("{} — {}（{}）".format(name, desc, ", ".join(tickers)))
 
             themes_text = "\n".join(lines)
             return themes_text, hot_themes_list, rs_lookup
@@ -360,11 +361,7 @@ Requirements:
 
 
 # ── 產生 hot_theme_watchlist ──────────────────────────────────────────────
-def build_hot_theme_watchlist(
-    hot_themes_list: list[dict],
-    rs_lookup: dict[str, int],
-    top_n: int = 10,
-) -> list[str]:
+def build_hot_theme_watchlist(hot_themes_list: list, rs_lookup: dict, top_n: int = 10) -> list:
     result = []
     seen   = set()
     for item in hot_themes_list[:top_n]:
@@ -382,10 +379,10 @@ def build_hot_theme_watchlist(
 # ── Phase 3：評分 ─────────────────────────────────────────────────────────
 def score_ticker(client: genai.Client, ticker: str, hot_themes: str) -> dict:
     # 優先用快取，沒有就重新抓
-    news_text = fetch_serper_news(ticker)
-    news_section = f"\n[Recent news & analysis for {ticker}]\n{news_text}" if news_text else ""
+    news_text = fetch_finnhub_news(ticker)
+    news_section = "\n[Recent Finnhub news for {} (past 30 days)]\n{}".format(ticker, news_text) if news_text else ""
 
-    prompt = f"""You are a senior US equity analyst. Today is {TODAY}.
+    prompt = """You are a senior US equity analyst. Today is {today}.
 
 Below is today's hot theme list, derived from RS scores and capital flow across the entire market:
 
@@ -416,7 +413,12 @@ Fields:
 - "feature": relevance to hot themes or competitive edge (max 20 Chinese characters, Traditional Chinese)
 - "reason": scoring rationale (max 20 Chinese characters, Traditional Chinese)
 
-No Markdown, no extra explanation."""
+No Markdown, no extra explanation.""".format(
+        today=TODAY,
+        hot_themes=hot_themes,
+        news_section=news_section,
+        ticker=ticker,
+    )
 
     for attempt in range(3):
         try:
@@ -471,9 +473,9 @@ def main():
         INDUSTRY_RS_CSV, TICKER_IND_CSV
     )
 
-    print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
+    print("📋 待分析：{} 檔 ／ RS>=95 參考股：{} 檔\n".format(len(tickers), len(rs95_tickers)))
 
-    print("📡 Phase 1+2：抓 Google 新聞（Serper）→ Gemini 摘要 → 建立今日熱門題材...")
+    print("📡 Phase 1+2：抓 Finnhub 新聞 → Gemini 摘要 → 建立今日熱門題材...")
     hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
         client, rs95_tickers, industry_text, ticker_to_industry
     )
@@ -492,19 +494,19 @@ def main():
             "ticker_count": len(tickers_in_theme),
         })
     pd.DataFrame(theme_rows).to_csv(OUTPUT_THEMES, index=False, encoding="utf-8-sig")
-    print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
+    print("✅ 題材清單已存至 {}\n".format(OUTPUT_THEMES))
 
     hot_wl_tickers = build_hot_theme_watchlist(hot_themes_list, rs_lookup)
     with open(OUTPUT_HOT_WL, "w", encoding="utf-8") as f:
         f.write("\n".join(hot_wl_tickers) + "\n")
-    print(f"✅ 熱門題材 watchlist 已存至 {OUTPUT_HOT_WL}（{len(hot_wl_tickers)} 檔）\n")
+    print("✅ 熱門題材 watchlist 已存至 {}（{} 檔）\n".format(OUTPUT_HOT_WL, len(hot_wl_tickers)))
 
-    print(f"🔍 Phase 3：逐一評分（共 {len(tickers)} 檔）...\n")
+    print("🔍 Phase 3：逐一評分（共 {} 檔）...\n".format(len(tickers)))
     final_rows = []
 
     for i, ticker in enumerate(tickers, 1):
         cached = ticker in _news_cache
-        print(f"  [{i:3d}/{len(tickers)}] {ticker}{'（快取）' if cached else ''}", end=" ... ", flush=True)
+        print("  [{:3d}/{}] {}{}".format(i, len(tickers), ticker, "（快取）" if cached else ""), end=" ... ", flush=True)
         result = score_ticker(client, ticker, hot_themes)
         final_rows.append({
             "ticker":  result.get("ticker", ticker),
@@ -514,7 +516,7 @@ def main():
             "feature": result.get("feature", ""),
             "reason":  result.get("reason", ""),
         })
-        print(f"rating={result.get('rating', '?')}")
+        print("rating={}".format(result.get("rating", "?")))
         time.sleep(SCORING_SLEEP)
 
     final_rows.sort(
@@ -531,12 +533,12 @@ def main():
     with open(OUTPUT_WATCHLIST, "w", encoding="utf-8") as f:
         f.write("\n".join(watchlist) + "\n")
 
-    print(f"\n{'='*50}")
-    print(f"✅ 完成！分析 {len(final_rows)} 檔，watchlist {len(watchlist)} 檔")
-    print(f"   {OUTPUT_CSV}")
-    print(f"   {OUTPUT_WATCHLIST}")
-    print(f"   {OUTPUT_THEMES}")
-    print(f"   {OUTPUT_HOT_WL}")
+    print("\n" + "=" * 50)
+    print("✅ 完成！分析 {} 檔，watchlist {} 檔".format(len(final_rows), len(watchlist)))
+    print("   {}".format(OUTPUT_CSV))
+    print("   {}".format(OUTPUT_WATCHLIST))
+    print("   {}".format(OUTPUT_THEMES))
+    print("   {}".format(OUTPUT_HOT_WL))
 
 
 if __name__ == "__main__":
