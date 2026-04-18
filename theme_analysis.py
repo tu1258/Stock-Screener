@@ -96,6 +96,7 @@ def fetch_serper_news(ticker: str) -> str:
 
         text = "\n".join(parts)
         print(f"      [Serper] {ticker} 拿到 {len(parts)} 筆")
+        print(f"      [Serper] 內容預覽:\n{text[:1000]}\n") 
         _news_cache[ticker] = text
         return text
 
