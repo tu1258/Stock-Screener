@@ -3,16 +3,11 @@ import csv
 import json
 import time
 import datetime
-import re
-import requests
+import asyncio
 import pandas as pd
 from google import genai
 from google.genai import types
-from gnews import GNews
-from email.utils import parsedate_to_datetime
-from bs4 import BeautifulSoup
-import asyncio
-from playwright.async_api import async_playwright
+import nodriver as uc
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
@@ -31,129 +26,92 @@ INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 MIN_AVG_VALUE_10M = 100
 
-NEWS_SLEEP        = 1
-SCORING_SLEEP     = 2
-NEWS_MAX_FETCH    = 30   # 最多嘗試幾篇
-NEWS_TARGET       = 20   # 目標成功抓到幾篇 URL
+NEWS_SLEEP    = 1
+SCORING_SLEEP = 2
+SA_PAGE_SIZE  = 20
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
-_summary_cache: dict[str, str] = {}
+_titles_cache: dict[str, str] = {}  # ticker -> 格式化標題字串
 
 
-# ── Playwright 追蹤 Google News 重定向 ───────────────────────────────────
-async def _resolve_url_async(google_url: str) -> str:
+# ── Seeking Alpha 標題抓取（nodriver）────────────────────────────────────
+async def _fetch_sa_titles_async(ticker: str, browser) -> list[str]:
+    """共用同一個 browser instance 抓標題，避免每次重開瀏覽器"""
     try:
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context(
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
-            )
-            page = await context.new_page()
-            try:
-                # 等待網址不再是 news.google.com（JS 重定向完成）
-                async with page.expect_navigation(
-                    url=lambda u: "news.google.com" not in u,
-                    timeout=10000
-                ):
-                    await page.goto(google_url, wait_until="domcontentloaded", timeout=10000)
-                final_url = page.url
-            except Exception:
-                # expect_navigation timeout 時直接取當前 URL
-                final_url = page.url
-            finally:
-                await context.close()
-                await browser.close()
-            return final_url if final_url and not final_url.startswith("about:") and "news.google.com" not in final_url else ""
+        tab = await browser.get(f"https://seekingalpha.com/symbol/{ticker}/news")
+        await asyncio.sleep(6)
+
+        raw = await tab.evaluate("""
+            new Promise((resolve) => {
+                fetch('/api/v3/symbols/%s/news?page[size]=%d&page[number]=1',
+                    { headers: { 'Accept': 'application/json' } }
+                )
+                .then(r => r.text())
+                .then(text => resolve(text))
+                .catch(e => resolve('[]'));
+            })
+        """ % (ticker, SA_PAGE_SIZE), await_promise=True)
+
+        data = json.loads(raw)
+        titles = [
+            a.get("attributes", {}).get("title", "")
+            for a in data.get("data", [])
+            if a.get("attributes", {}).get("title")
+        ]
+        await tab.close()
+        return titles
+
     except Exception as e:
-        print(f"      [playwright error] {e}")
-        return ""
-
-
-def resolve_google_news_url(google_url: str) -> str:
-    try:
-        return asyncio.run(_resolve_url_async(google_url))
-    except Exception as e:
-        print(f"      [asyncio error] {e}")
-        return ""
-
-
-# ── Phase 1：gnews 抓 URL 列表（Playwright resolve）────────────────────
-def fetch_ticker_urls(ticker: str, ticker_to_exchange: dict = {}) -> list[str]:
-    print(f"\n    fetching Google News for {ticker} ...", flush=True)
-
-    exchange = ticker_to_exchange.get(ticker, "")
-    query = f"{ticker}:{exchange} stock" if exchange else f"{ticker} stock"
-
-    gn = GNews(language='en', country='US', max_results=NEWS_MAX_FETCH)
-    try:
-        news_list = gn.get_news(query)
-    except Exception as e:
-        print(f"\n  [GNews error {ticker}] {e}")
+        print(f"      [SA error {ticker}] {e}")
         return []
 
-    if not news_list:
-        print(f"    [ {ticker} ] no news found")
-        return []
 
-    def parse_pub_date(item):
-        try:
-            return parsedate_to_datetime(item.get("published date", ""))
-        except Exception:
-            return datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
+def fetch_sa_titles_text(ticker: str, browser_holder: list) -> str:
+    """
+    回傳格式化標題字串（供 Gemini prompt 使用）。
+    browser_holder 是 [browser] 的 list，讓同步函數可以存取 async browser。
+    結果會快取在 _titles_cache。
+    """
+    if ticker in _titles_cache:
+        return _titles_cache[ticker]
 
-    news_list = sorted(news_list, key=parse_pub_date, reverse=True)
+    print(f"    [SA] fetching {ticker} ...", flush=True)
 
-    urls = []
-    for item in news_list:
-        if len(urls) >= NEWS_TARGET:
-            break
+    async def _run():
+        return await _fetch_sa_titles_async(ticker, browser_holder[0])
 
-        title     = item.get("title", "").strip()
-        url       = item.get("url", "").strip()
-        published = item.get("published date", "").strip()
+    titles = uc.loop().run_until_complete(_run())
 
-        print(f"    → {published} | {title}")
-
-        if not url:
-            continue
-
-        real_url = resolve_google_news_url(url)
-        print(f"      real_url: {real_url}")
-
-        if not real_url:
-            print(f"      [resolve failed, skip]")
-            continue
-
-        print(f"      [OK]")
-        urls.append(real_url)
-
-    print(f"\n    [ {ticker} ] 成功解析 {len(urls)} 篇 URL")
-    return urls
-
-
-# ── Phase 1：url_context 摘要（含快取，供 Phase 2 使用）────────────────
-def fetch_ticker_summary(client: genai.Client, ticker: str, ticker_to_exchange: dict = {}) -> str:
-    if ticker in _summary_cache:
-        return _summary_cache[ticker]
-
-    urls = fetch_ticker_urls(ticker, ticker_to_exchange)
-    if not urls:
-        _summary_cache[ticker] = ""
+    if not titles:
+        print(f"      [SA] {ticker} 無結果")
+        _titles_cache[ticker] = ""
         return ""
 
-    urls_block = "\n".join(urls)
-    prompt = f"""Today is {TODAY}. The following are recent news article URLs for the stock {ticker}.
-Please read these articles and summarize from an investment theme and market catalyst perspective:
+    print(f"      [SA] {ticker} 拿到 {len(titles)} 篇標題")
+    text = "\n".join(f"- {t}" for t in titles)
+    _titles_cache[ticker] = text
+    return text
+
+
+# ── Phase 1：SA 標題 → Gemini 摘要（含快取）─────────────────────────────
+def fetch_ticker_summary(client: genai.Client, ticker: str,
+                         browser_holder: list) -> str:
+    titles_text = fetch_sa_titles_text(ticker, browser_holder)
+    if not titles_text:
+        return ""
+
+    prompt = f"""Today is {TODAY}. The following are recent news headlines for {ticker} from Seeking Alpha.
+Based on these headlines, summarize from an investment theme and market catalyst perspective:
 - What is the company's core business?
 - What is the strongest current investment theme? Why is the market paying attention?
 - What recent catalysts (earnings, products, partnerships, regulations, industry trends) are driving the stock?
 - In which sector or theme does it have speculative potential or scarcity value?
 
-If any article is inaccessible, skip it silently. Return a concise bullet-point summary focused on themes and catalysts only.
+Return a concise bullet-point summary focused on themes and catalysts only.
 
-News URLs:
-{urls_block}"""
+Headlines:
+{titles_text}"""
 
     for attempt in range(3):
         try:
@@ -161,14 +119,12 @@ News URLs:
                 model=GEMINI_MODEL_SCORE,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    tools=[types.Tool(url_context=types.UrlContext())],
                     temperature=0,
                     max_output_tokens=1024,
                 ),
             )
             result = response.text.strip()
             print(f"      [summary OK] {len(result)} chars")
-            _summary_cache[ticker] = result
             return result
         except Exception as e:
             err = str(e)
@@ -178,7 +134,6 @@ News URLs:
             elif attempt < 2:
                 time.sleep(3)
 
-    _summary_cache[ticker] = ""
     return ""
 
 
@@ -255,13 +210,13 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
 # ── Phase 2：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict,
-                     ticker_to_exchange: dict) -> tuple:
-    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Google News...")
+                     browser_holder: list) -> tuple:
+    print(f"  Fetching SA news titles for {len(rs95_tickers)} tickers...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
         print(f"    [{i:3d}/{len(rs95_tickers)}] {ticker} RS{rs}", end=" ... ", flush=True)
-        summary = fetch_ticker_summary(client, ticker, ticker_to_exchange)
+        summary = fetch_ticker_summary(client, ticker, browser_holder)
         ticker_summaries[ticker] = summary
         print("✓" if summary else "（無）")
         time.sleep(NEWS_SLEEP)
@@ -298,7 +253,7 @@ Notes:
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news summaries for RS95+ stocks (sourced from Google News RSS + article content)]
+[Source D: Recent news summaries for RS95+ stocks (sourced from Seeking Alpha headlines)]
 {summaries_text}
 
 Instructions:
@@ -378,7 +333,6 @@ Requirements:
                 lines.append(f"{name} — {desc}（{', '.join(tickers)}）")
 
             themes_text = "\n".join(lines)
-
             return themes_text, hot_themes_list, rs_lookup
 
         except (json.JSONDecodeError, KeyError):
@@ -417,18 +371,11 @@ def build_hot_theme_watchlist(
 
 # ── Phase 3：評分 ─────────────────────────────────────────────────────────
 def score_ticker(client: genai.Client, ticker: str, hot_themes: str,
-                 ticker_to_exchange: dict = {}) -> dict:
-    # Phase 1 跑過的股票直接命中快取（摘要），否則重新抓 URL
-    if ticker in _summary_cache and _summary_cache[ticker]:
-        news_section = f"\n[Recent news summary for {ticker}]\n{_summary_cache[ticker]}"
-        use_url_context = False
-    else:
-        urls = fetch_ticker_urls(ticker, ticker_to_exchange)
-        if urls:
-            news_section = f"\n[Recent news URLs for {ticker} — please read each article before scoring]\n" + "\n".join(urls)
-        else:
-            news_section = ""
-        use_url_context = bool(urls)
+                 browser_holder: list) -> dict:
+    # 優先用快取的標題，沒有的話重新抓
+    titles_text = fetch_sa_titles_text(ticker, browser_holder)
+
+    news_section = f"\n[Recent Seeking Alpha headlines for {ticker}]\n{titles_text}" if titles_text else ""
 
     prompt = f"""You are a senior US equity analyst. Today is {TODAY}.
 
@@ -463,18 +410,15 @@ Fields:
 
 No Markdown, no extra explanation."""
 
-    config = types.GenerateContentConfig(
-        tools=[types.Tool(url_context=types.UrlContext())] if use_url_context else [],
-        temperature=0,
-        max_output_tokens=512,
-    )
-
     for attempt in range(3):
         try:
             response = client.models.generate_content(
                 model=GEMINI_MODEL_SCORE,
                 contents=prompt,
-                config=config,
+                config=types.GenerateContentConfig(
+                    temperature=0,
+                    max_output_tokens=512,
+                ),
             )
             raw = response.text.strip()
             if raw.startswith("```"):
@@ -492,10 +436,15 @@ No Markdown, no extra explanation."""
                 time.sleep(5)
             elif attempt < 2:
                 time.sleep(5)
+
     return {"ticker": ticker.upper(), "rating": 0, "theme": "", "feature": "", "reason": ""}
 
 
 # ── 主流程 ────────────────────────────────────────────────────────────────
+async def _start_browser():
+    return await uc.start(headless=False, browser_args=["--lang=en-US"])
+
+
 def main():
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if not gemini_key:
@@ -514,55 +463,65 @@ def main():
                 rs_map[t] = row.get("RS", 0)
 
     rs95_tickers = load_rs95_liquid(RS_CSV, STOCK_DATA_CSV)
-    industry_text, ticker_to_industry, ticker_to_exchange = load_industry_ranking(
+    industry_text, ticker_to_industry, _ = load_industry_ranking(
         INDUSTRY_RS_CSV, TICKER_IND_CSV
     )
 
     print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
 
-    print("📡 Phase 1+2：抓新聞摘要 → 建立今日熱門題材...")
-    hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
-        client, rs95_tickers, industry_text, ticker_to_industry, ticker_to_exchange
-    )
-    if not hot_themes:
-        raise RuntimeError("Phase 1 失敗")
+    # 啟動一個 browser 共用整個流程，避免每個 ticker 都重開
+    print("🌐 啟動瀏覽器...")
+    browser = uc.loop().run_until_complete(_start_browser())
+    browser_holder = [browser]
 
-    os.makedirs("output", exist_ok=True)
-    theme_rows = []
-    for rank, item in enumerate(hot_themes_list, 1):
-        tickers_in_theme = [t.upper() for t in item.get("tickers", [])]
-        theme_rows.append({
-            "rank"        : rank,
-            "theme"       : item.get("name", ""),
-            "desc"        : item.get("desc", ""),
-            "tickers"     : ", ".join(tickers_in_theme),
-            "ticker_count": len(tickers_in_theme),
-        })
-    pd.DataFrame(theme_rows).to_csv(OUTPUT_THEMES, index=False, encoding="utf-8-sig")
-    print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
+    try:
+        print("📡 Phase 1+2：抓 SA 新聞標題 → Gemini 摘要 → 建立今日熱門題材...")
+        hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
+            client, rs95_tickers, industry_text, ticker_to_industry, browser_holder
+        )
+        if not hot_themes:
+            raise RuntimeError("Phase 2 失敗")
 
-    hot_wl_tickers = build_hot_theme_watchlist(hot_themes_list, rs_lookup)
-    with open(OUTPUT_HOT_WL, "w", encoding="utf-8") as f:
-        f.write("\n".join(hot_wl_tickers) + "\n")
-    print(f"✅ 熱門題材 watchlist 已存至 {OUTPUT_HOT_WL}（{len(hot_wl_tickers)} 檔）\n")
+        os.makedirs("output", exist_ok=True)
+        theme_rows = []
+        for rank, item in enumerate(hot_themes_list, 1):
+            tickers_in_theme = [t.upper() for t in item.get("tickers", [])]
+            theme_rows.append({
+                "rank"        : rank,
+                "theme"       : item.get("name", ""),
+                "desc"        : item.get("desc", ""),
+                "tickers"     : ", ".join(tickers_in_theme),
+                "ticker_count": len(tickers_in_theme),
+            })
+        pd.DataFrame(theme_rows).to_csv(OUTPUT_THEMES, index=False, encoding="utf-8-sig")
+        print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
 
-    print(f"🔍 Phase 3：逐一評分（共 {len(tickers)} 檔）...\n")
-    final_rows = []
+        hot_wl_tickers = build_hot_theme_watchlist(hot_themes_list, rs_lookup)
+        with open(OUTPUT_HOT_WL, "w", encoding="utf-8") as f:
+            f.write("\n".join(hot_wl_tickers) + "\n")
+        print(f"✅ 熱門題材 watchlist 已存至 {OUTPUT_HOT_WL}（{len(hot_wl_tickers)} 檔）\n")
 
-    for i, ticker in enumerate(tickers, 1):
-        cached = ticker in _summary_cache
-        print(f"  [{i:3d}/{len(tickers)}] {ticker}{'（快取）' if cached else ''}", end=" ... ", flush=True)
-        result = score_ticker(client, ticker, hot_themes, ticker_to_exchange)
-        final_rows.append({
-            "ticker":  result.get("ticker", ticker),
-            "RS":      rs_map.get(ticker, 0),
-            "rating":  result.get("rating", 0),
-            "theme":   result.get("theme", ""),
-            "feature": result.get("feature", ""),
-            "reason":  result.get("reason", ""),
-        })
-        print(f"rating={result.get('rating', '?')}")
-        time.sleep(SCORING_SLEEP)
+        print(f"🔍 Phase 3：逐一評分（共 {len(tickers)} 檔）...\n")
+        final_rows = []
+
+        for i, ticker in enumerate(tickers, 1):
+            cached = ticker in _titles_cache
+            print(f"  [{i:3d}/{len(tickers)}] {ticker}{'（快取）' if cached else ''}", end=" ... ", flush=True)
+            result = score_ticker(client, ticker, hot_themes, browser_holder)
+            final_rows.append({
+                "ticker":  result.get("ticker", ticker),
+                "RS":      rs_map.get(ticker, 0),
+                "rating":  result.get("rating", 0),
+                "theme":   result.get("theme", ""),
+                "feature": result.get("feature", ""),
+                "reason":  result.get("reason", ""),
+            })
+            print(f"rating={result.get('rating', '?')}")
+            time.sleep(SCORING_SLEEP)
+
+    finally:
+        browser.stop()
+        print("🌐 瀏覽器已關閉")
 
     final_rows.sort(
         key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
