@@ -9,9 +9,10 @@ import pandas as pd
 from google import genai
 from google.genai import types
 from gnews import GNews
-from newspaper import Article
 from email.utils import parsedate_to_datetime
 from bs4 import BeautifulSoup
+import asyncio
+from playwright.async_api import async_playwright
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
@@ -33,54 +34,43 @@ MIN_AVG_VALUE_10M = 100
 NEWS_SLEEP        = 1
 SCORING_SLEEP     = 2
 NEWS_MAX_FETCH    = 30   # 最多嘗試幾篇
-NEWS_TARGET       = 10   # 目標成功抓到幾篇內文
+NEWS_TARGET       = 20   # 目標成功抓到幾篇 URL
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
 _summary_cache: dict[str, str] = {}
 
 
-# ── Google News URL 解碼 ──────────────────────────────────────────────────
-def decode_google_news_url(google_url: str) -> str:
+# ── Playwright 追蹤 Google News 重定向 ───────────────────────────────────
+async def _resolve_url_async(google_url: str) -> str:
     try:
-        resp = requests.get(
-            google_url,
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"},
-            timeout=10
-        )
-        soup = BeautifulSoup(resp.text, 'html.parser')
-        tag = soup.select_one('c-wiz[data-p]')
-        if not tag:
-            print(f"      [decode] c-wiz tag not found")
-            return ""
-
-        data = tag.get('data-p')
-        obj = json.loads(data.replace('%.@.', '["garturlreq",'))
-
-        payload = {
-            'f.req': json.dumps([[['Fbv4je', json.dumps(obj[:-6] + obj[-2:]), 'null', 'generic']]])
-        }
-        headers = {
-            'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
-        }
-
-        response = requests.post(
-            "https://news.google.com/_/DotsSplashUi/data/batchexecute",
-            headers=headers,
-            data=payload,
-            timeout=10
-        )
-        array_string = json.loads(response.text.replace(")]}'", ""))[0][2]
-        article_url = json.loads(array_string)[1]
-        return article_url
-
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+            )
+            page = await context.new_page()
+            try:
+                await page.goto(google_url, wait_until="domcontentloaded", timeout=10000)
+                final_url = page.url
+            finally:
+                await context.close()
+                await browser.close()
+            return final_url if final_url and not final_url.startswith("about:") else ""
     except Exception as e:
-        print(f"      [decode error] {e}")
+        print(f"      [playwright error] {e}")
         return ""
 
 
-# ── gnews + newspaper3k 抓內文 ───────────────────────────────────────────
+def resolve_google_news_url(google_url: str) -> str:
+    try:
+        return asyncio.run(_resolve_url_async(google_url))
+    except Exception as e:
+        print(f"      [asyncio error] {e}")
+        return ""
+
+
+# ── gnews 抓 URL 列表（改用 Gemini URL context 取代 newspaper3k）─────────
 def fetch_ticker_news(ticker: str, ticker_to_exchange: dict = {}) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
@@ -103,7 +93,6 @@ def fetch_ticker_news(ticker: str, ticker_to_exchange: dict = {}) -> str:
         _summary_cache[ticker] = ""
         return ""
 
-    # 按時間排序新到舊
     def parse_pub_date(item):
         try:
             return parsedate_to_datetime(item.get("published date", ""))
@@ -128,29 +117,20 @@ def fetch_ticker_news(ticker: str, ticker_to_exchange: dict = {}) -> str:
         if not url:
             continue
 
-        real_url = decode_google_news_url(url)
+        real_url = resolve_google_news_url(url)
         print(f"      real_url: {real_url}")
 
         if not real_url:
-            print(f"      [decode failed, skip]")
+            print(f"      [resolve failed, skip]")
             continue
 
-        try:
-            article = Article(real_url)
-            article.download()
-            article.parse()
-            text = article.text.strip()
-            if text:
-                print(f"      [OK] {len(text)} chars")
-                blocks.append(f"[{published}] {title}\n{text[:3000]}")
-            else:
-                print(f"      [empty after parse, skip]")
-        except Exception as e:
-            print(f"      [error: {e}, skip]")
+        print(f"      [OK] URL resolved")
+        # 只存標題 + 真實 URL，讓 Gemini 自己去讀
+        blocks.append(f"[{published}] {title}\n{real_url}")
 
-    print(f"\n    [ {ticker} ] 成功抓到 {len(blocks)} 篇內文")
+    print(f"\n    [ {ticker} ] 成功解析 {len(blocks)} 篇 URL")
     result = "\n\n".join(blocks)
-    print(f"\n    [ {ticker} 內容預覽 ]\n{result[:500]}\n")
+    print(f"\n    [ {ticker} URL 列表預覽 ]\n{result[:500]}\n")
 
     _summary_cache[ticker] = result
     return result
@@ -272,7 +252,7 @@ Notes:
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news articles for RS95+ stocks (sourced from Google News, includes full article text where available)]
+[Source D: Recent news articles for RS95+ stocks (each entry contains publication date, title, and URL — please fetch each URL to read the full article content before analysis)]
 {summaries_text}
 
 Instructions:
@@ -394,7 +374,7 @@ def score_ticker(client: genai.Client, ticker: str, hot_themes: str,
                  ticker_to_exchange: dict = {}) -> dict:
     news_summary = fetch_ticker_news(ticker, ticker_to_exchange)
     news_section = (
-        f"\n[Recent news for {ticker}]\n{news_summary}"
+        f"\n[Recent news for {ticker} — each entry contains publication date, title, and URL; please fetch each URL to read the full article content]\n{news_summary}"
         if news_summary else ""
     )
 
