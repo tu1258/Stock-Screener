@@ -8,3 +8,7 @@ yfinance>=1.2.0
 google-genai>=1.0.0
 anthropic>=0.8.0
 playwright>=1.58.0
+gnews>=0.4.3
+newspaper3k>=0.2.8
+lxml>=5.0.0
+lxml-html-clean>=0.4.4
