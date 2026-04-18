@@ -3,10 +3,13 @@ import csv
 import json
 import time
 import datetime
+import re
+import requests
 import pandas as pd
 from google import genai
 from google.genai import types
 from gnews import GNews
+from newspaper import Article
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
@@ -34,7 +37,49 @@ TODAY = datetime.date.today().strftime("%Y-%m-%d")
 _summary_cache: dict[str, str] = {}
 
 
-# ── gnews + get_full_article 抓內文 ──────────────────────────────────────
+# ── Google News URL 解碼 ──────────────────────────────────────────────────
+def decode_google_news_url(google_url: str) -> str:
+    try:
+        from bs4 import BeautifulSoup
+
+        resp = requests.get(
+            google_url,
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"},
+            timeout=10
+        )
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        tag = soup.select_one('c-wiz[data-p]')
+        if not tag:
+            print(f"      [decode] c-wiz tag not found")
+            return ""
+
+        data = tag.get('data-p')
+        obj = json.loads(data.replace('%.@.', '["garturlreq",'))
+
+        payload = {
+            'f.req': json.dumps([[['Fbv4je', json.dumps(obj[:-6] + obj[-2:]), 'null', 'generic']]])
+        }
+        headers = {
+            'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+        }
+
+        response = requests.post(
+            "https://news.google.com/_/DotsSplashUi/data/batchexecute",
+            headers=headers,
+            data=payload,
+            timeout=10
+        )
+        array_string = json.loads(response.text.replace(")]}'", ""))[0][2]
+        article_url = json.loads(array_string)[1]
+        return article_url
+
+    except Exception as e:
+        print(f"      [decode error] {e}")
+        return ""
+
+
+# ── gnews + newspaper3k 抓內文 ───────────────────────────────────────────
 def fetch_ticker_news(ticker: str) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
@@ -65,15 +110,23 @@ def fetch_ticker_news(ticker: str) -> str:
 
         text = ""
         if url:
-            try:
-                article = gn.get_full_article(url)
-                if article and article.text:
+            real_url = decode_google_news_url(url)
+            print(f"      real_url: {real_url}")
+
+            if real_url:
+                try:
+                    article = Article(real_url)
+                    article.download()
+                    article.parse()
                     text = article.text.strip()
-                    print(f"      [OK] {len(text)} chars")
-                else:
-                    print(f"      [empty]")
-            except Exception as e:
-                print(f"      [error] {e}")
+                    if text:
+                        print(f"      [OK] {len(text)} chars")
+                    else:
+                        print(f"      [empty after parse]")
+                except Exception as e:
+                    print(f"      [newspaper3k error] {e}")
+            else:
+                print(f"      [decode failed]")
 
         if text:
             blocks.append(f"[{published}] {title}\n{text[:3000]}")
