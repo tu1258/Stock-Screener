@@ -10,6 +10,8 @@ from google import genai
 from google.genai import types
 from gnews import GNews
 from newspaper import Article
+from email.utils import parsedate_to_datetime
+from bs4 import BeautifulSoup
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
@@ -28,9 +30,10 @@ INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 MIN_AVG_VALUE_10M = 100
 
-NEWS_SLEEP     = 1
-SCORING_SLEEP  = 2
-NEWS_MAX_ITEMS = 10
+NEWS_SLEEP        = 1
+SCORING_SLEEP     = 2
+NEWS_MAX_FETCH    = 30   # 最多嘗試幾篇
+NEWS_TARGET       = 10   # 目標成功抓到幾篇內文
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
@@ -40,8 +43,6 @@ _summary_cache: dict[str, str] = {}
 # ── Google News URL 解碼 ──────────────────────────────────────────────────
 def decode_google_news_url(google_url: str) -> str:
     try:
-        from bs4 import BeautifulSoup
-
         resp = requests.get(
             google_url,
             headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"},
@@ -80,15 +81,18 @@ def decode_google_news_url(google_url: str) -> str:
 
 
 # ── gnews + newspaper3k 抓內文 ───────────────────────────────────────────
-def fetch_ticker_news(ticker: str) -> str:
+def fetch_ticker_news(ticker: str, ticker_to_exchange: dict = {}) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
 
     print(f"\n    fetching Google News for {ticker} ...", flush=True)
 
-    gn = GNews(language='en', country='US', max_results=NEWS_MAX_ITEMS)
+    exchange = ticker_to_exchange.get(ticker, "")
+    query = f"{ticker}:{exchange} stock" if exchange else f"{ticker} stock"
+
+    gn = GNews(language='en', country='US', max_results=NEWS_MAX_FETCH)
     try:
-        news_list = gn.get_news(f"{ticker} stock")
+        news_list = gn.get_news(query)
     except Exception as e:
         print(f"\n  [GNews error {ticker}] {e}")
         _summary_cache[ticker] = ""
@@ -99,8 +103,21 @@ def fetch_ticker_news(ticker: str) -> str:
         _summary_cache[ticker] = ""
         return ""
 
+    # 按時間排序新到舊
+    def parse_pub_date(item):
+        try:
+            return parsedate_to_datetime(item.get("published date", ""))
+        except Exception:
+            return datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
+
+    news_list = sorted(news_list, key=parse_pub_date, reverse=True)
+
     blocks = []
+
     for item in news_list:
+        if len(blocks) >= NEWS_TARGET:
+            break
+
         title     = item.get("title", "").strip()
         url       = item.get("url", "").strip()
         published = item.get("published date", "").strip()
@@ -108,31 +125,30 @@ def fetch_ticker_news(ticker: str) -> str:
         print(f"    → {published} | {title}")
         print(f"      {url}")
 
-        text = ""
-        if url:
-            real_url = decode_google_news_url(url)
-            print(f"      real_url: {real_url}")
+        if not url:
+            continue
 
-            if real_url:
-                try:
-                    article = Article(real_url)
-                    article.download()
-                    article.parse()
-                    text = article.text.strip()
-                    if text:
-                        print(f"      [OK] {len(text)} chars")
-                    else:
-                        print(f"      [empty after parse]")
-                except Exception as e:
-                    print(f"      [newspaper3k error] {e}")
+        real_url = decode_google_news_url(url)
+        print(f"      real_url: {real_url}")
+
+        if not real_url:
+            print(f"      [decode failed, skip]")
+            continue
+
+        try:
+            article = Article(real_url)
+            article.download()
+            article.parse()
+            text = article.text.strip()
+            if text:
+                print(f"      [OK] {len(text)} chars")
+                blocks.append(f"[{published}] {title}\n{text[:3000]}")
             else:
-                print(f"      [decode failed]")
+                print(f"      [empty after parse, skip]")
+        except Exception as e:
+            print(f"      [error: {e}, skip]")
 
-        if text:
-            blocks.append(f"[{published}] {title}\n{text[:3000]}")
-        elif title:
-            blocks.append(f"[{published}] {title}")
-
+    print(f"\n    [ {ticker} ] 成功抓到 {len(blocks)} 篇內文")
     result = "\n\n".join(blocks)
     print(f"\n    [ {ticker} 內容預覽 ]\n{result[:500]}\n")
 
@@ -177,18 +193,24 @@ def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list[tuple]:
 
 
 # ── 讀取 industry RS 排行 ────────────────────────────────────────────────
-def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[str, dict]:
+def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[str, dict, dict]:
     ticker_to_industry = {}
+    ticker_to_exchange = {}
+
     if os.path.exists(ticker_ind_csv):
         df_ind = pd.read_csv(ticker_ind_csv)
         for _, row in df_ind.iterrows():
-            t   = str(row.get("ticker", "")).upper()
-            ind = str(row.get("industry", ""))
-            if t and ind:
-                ticker_to_industry[t] = ind
+            t    = str(row.get("ticker",   "")).upper()
+            ind  = str(row.get("industry", ""))
+            exch = str(row.get("exchange", ""))
+            if t:
+                if ind and ind != "nan":
+                    ticker_to_industry[t] = ind
+                if exch and exch != "nan":
+                    ticker_to_exchange[t] = exch
 
     if not os.path.exists(industry_rs_csv):
-        return "", ticker_to_industry
+        return "", ticker_to_industry, ticker_to_exchange
 
     df = pd.read_csv(industry_rs_csv)
     df = df.sort_values("avg_rs", ascending=False)
@@ -201,18 +223,19 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
         count    = int(row.get("ticker_count", 0))
         lines.append(f"  {avg_rs:5.1f}  {industry}（{sector}，{count} 檔）")
 
-    return "\n".join(lines), ticker_to_industry
+    return "\n".join(lines), ticker_to_industry, ticker_to_exchange
 
 
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
-                     industry_text: str, ticker_to_industry: dict) -> tuple:
+                     industry_text: str, ticker_to_industry: dict,
+                     ticker_to_exchange: dict) -> tuple:
     print(f"  Fetching news for {len(rs95_tickers)} tickers via Google News...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
         print(f"    [{i:3d}/{len(rs95_tickers)}] {ticker} RS{rs}", end=" ... ", flush=True)
-        summary = fetch_ticker_news(ticker)
+        summary = fetch_ticker_news(ticker, ticker_to_exchange)
         ticker_summaries[ticker] = summary
         print("✓" if summary else "（無）")
         time.sleep(NEWS_SLEEP)
@@ -367,8 +390,9 @@ def build_hot_theme_watchlist(
 
 
 # ── Phase 3：評分 ─────────────────────────────────────────────────────────
-def score_ticker(client: genai.Client, ticker: str, hot_themes: str) -> dict:
-    news_summary = fetch_ticker_news(ticker)
+def score_ticker(client: genai.Client, ticker: str, hot_themes: str,
+                 ticker_to_exchange: dict = {}) -> dict:
+    news_summary = fetch_ticker_news(ticker, ticker_to_exchange)
     news_section = (
         f"\n[Recent news for {ticker}]\n{news_summary}"
         if news_summary else ""
@@ -455,13 +479,15 @@ def main():
                 rs_map[t] = row.get("RS", 0)
 
     rs95_tickers = load_rs95_liquid(RS_CSV, STOCK_DATA_CSV)
-    industry_text, ticker_to_industry = load_industry_ranking(INDUSTRY_RS_CSV, TICKER_IND_CSV)
+    industry_text, ticker_to_industry, ticker_to_exchange = load_industry_ranking(
+        INDUSTRY_RS_CSV, TICKER_IND_CSV
+    )
 
     print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
 
     print("📡 Phase 1：建立今日熱門題材...")
     hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
-        client, rs95_tickers, industry_text, ticker_to_industry
+        client, rs95_tickers, industry_text, ticker_to_industry, ticker_to_exchange
     )
     if not hot_themes:
         raise RuntimeError("Phase 1 失敗")
@@ -491,7 +517,7 @@ def main():
     for i, ticker in enumerate(tickers, 1):
         cached = ticker in _summary_cache
         print(f"  [{i:3d}/{len(tickers)}] {ticker}{'（快取）' if cached else ''}", end=" ... ", flush=True)
-        result = score_ticker(client, ticker, hot_themes)
+        result = score_ticker(client, ticker, hot_themes, ticker_to_exchange)
         final_rows.append({
             "ticker":  result.get("ticker", ticker),
             "RS":      rs_map.get(ticker, 0),
