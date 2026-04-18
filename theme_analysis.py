@@ -3,11 +3,10 @@ import csv
 import json
 import time
 import datetime
-import asyncio
+import requests
 import pandas as pd
 from google import genai
 from google.genai import types
-import nodriver as uc
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
@@ -28,81 +27,92 @@ MIN_AVG_VALUE_10M = 100
 
 NEWS_SLEEP    = 1
 SCORING_SLEEP = 2
-SA_PAGE_SIZE  = 20
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
-_titles_cache: dict[str, str] = {}  # ticker -> 格式化標題字串
+_news_cache: dict[str, str] = {}  # ticker -> 格式化新聞字串
 
 
-# ── Seeking Alpha 標題抓取（nodriver）────────────────────────────────────
-async def _fetch_sa_titles_async(ticker: str, browser) -> list[str]:
-    """共用同一個 browser instance 抓標題，避免每次重開瀏覽器"""
+# ── Serper API 抓 Google 搜尋結果（含 AI Overview）───────────────────────
+def fetch_serper_news(ticker: str) -> str:
+    """
+    用 Serper API 搜尋 ticker，回傳：
+    - answerBox / AI Overview 摘要
+    - 前 10 筆搜尋結果標題 + snippet（當新聞用）
+    """
+    if ticker in _news_cache:
+        return _news_cache[ticker]
+
+    api_key = os.environ.get("SERPER_API_KEY", "")
+    if not api_key:
+        print(f"      [Serper] 未設定 SERPER_API_KEY，跳過 {ticker}")
+        _news_cache[ticker] = ""
+        return ""
+
+    print(f"    [Serper] fetching {ticker} ...", flush=True)
+
     try:
-        tab = await browser.get(f"https://seekingalpha.com/symbol/{ticker}/news")
-        await asyncio.sleep(6)
+        r = requests.post(
+            "https://google.serper.dev/search",
+            headers={
+                "X-API-KEY": api_key,
+                "Content-Type": "application/json",
+            },
+            json={
+                "q": f"{ticker} stock news analysis",
+                "gl": "us",
+                "hl": "en",
+                "num": 10,
+            },
+            timeout=15,
+        )
+        data = r.json()
 
-        raw = await tab.evaluate("""
-            new Promise((resolve) => {
-                fetch('/api/v3/symbols/%s/news?page[size]=%d&page[number]=1',
-                    { headers: { 'Accept': 'application/json' } }
-                )
-                .then(r => r.text())
-                .then(text => resolve(text))
-                .catch(e => resolve('[]'));
-            })
-        """ % (ticker, SA_PAGE_SIZE), await_promise=True)
+        parts = []
 
-        data = json.loads(raw)
-        titles = [
-            a.get("attributes", {}).get("title", "")
-            for a in data.get("data", [])
-            if a.get("attributes", {}).get("title")
-        ]
-        await tab.close()
-        return titles
+        # AI Overview / Answer Box
+        answer = data.get("answerBox", {})
+        if answer.get("answer"):
+            parts.append(f"[AI Overview] {answer['answer']}")
+        elif answer.get("snippet"):
+            parts.append(f"[AI Overview] {answer['snippet']}")
+        elif answer.get("snippetHighlighted"):
+            parts.append(f"[AI Overview] {' '.join(answer['snippetHighlighted'])}")
+
+        # knowledgeGraph
+        kg = data.get("knowledgeGraph", {})
+        if kg.get("description"):
+            parts.append(f"[Company] {kg['description']}")
+
+        # organic 搜尋結果（標題 + snippet）
+        for item in data.get("organic", [])[:10]:
+            title   = item.get("title", "").strip()
+            snippet = item.get("snippet", "").strip()
+            if title:
+                line = f"- {title}"
+                if snippet:
+                    line += f": {snippet}"
+                parts.append(line)
+
+        text = "\n".join(parts)
+        print(f"      [Serper] {ticker} 拿到 {len(parts)} 筆")
+        _news_cache[ticker] = text
+        return text
 
     except Exception as e:
-        print(f"      [SA error {ticker}] {e}")
-        return []
-
-
-def fetch_sa_titles_text(ticker: str, browser_holder: list) -> str:
-    """
-    回傳格式化標題字串（供 Gemini prompt 使用）。
-    browser_holder 是 [browser] 的 list，讓同步函數可以存取 async browser。
-    結果會快取在 _titles_cache。
-    """
-    if ticker in _titles_cache:
-        return _titles_cache[ticker]
-
-    print(f"    [SA] fetching {ticker} ...", flush=True)
-
-    async def _run():
-        return await _fetch_sa_titles_async(ticker, browser_holder[0])
-
-    titles = uc.loop().run_until_complete(_run())
-
-    if not titles:
-        print(f"      [SA] {ticker} 無結果")
-        _titles_cache[ticker] = ""
+        print(f"      [Serper error {ticker}] {e}")
+        _news_cache[ticker] = ""
         return ""
 
-    print(f"      [SA] {ticker} 拿到 {len(titles)} 篇標題")
-    text = "\n".join(f"- {t}" for t in titles)
-    _titles_cache[ticker] = text
-    return text
 
-
-# ── Phase 1：SA 標題 → Gemini 摘要（含快取）─────────────────────────────
-def fetch_ticker_summary(client: genai.Client, ticker: str,
-                         browser_holder: list) -> str:
-    titles_text = fetch_sa_titles_text(ticker, browser_holder)
-    if not titles_text:
+# ── Phase 1：Serper 結果 → Gemini 摘要────────────────────────────────────
+def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
+    news_text = fetch_serper_news(ticker)
+    if not news_text:
         return ""
 
-    prompt = f"""Today is {TODAY}. The following are recent news headlines for {ticker} from Seeking Alpha.
-Based on these headlines, summarize from an investment theme and market catalyst perspective:
+    prompt = f"""Today is {TODAY}. The following are recent Google search results and news for stock {ticker}.
+Based on this information, summarize from an investment theme and market catalyst perspective:
 - What is the company's core business?
 - What is the strongest current investment theme? Why is the market paying attention?
 - What recent catalysts (earnings, products, partnerships, regulations, industry trends) are driving the stock?
@@ -110,8 +120,8 @@ Based on these headlines, summarize from an investment theme and market catalyst
 
 Return a concise bullet-point summary focused on themes and catalysts only.
 
-Headlines:
-{titles_text}"""
+Search results:
+{news_text}"""
 
     for attempt in range(3):
         try:
@@ -209,14 +219,13 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
 
 # ── Phase 2：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
-                     industry_text: str, ticker_to_industry: dict,
-                     browser_holder: list) -> tuple:
-    print(f"  Fetching SA news titles for {len(rs95_tickers)} tickers...")
+                     industry_text: str, ticker_to_industry: dict) -> tuple:
+    print(f"  Fetching news for {len(rs95_tickers)} tickers via Serper...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
         print(f"    [{i:3d}/{len(rs95_tickers)}] {ticker} RS{rs}", end=" ... ", flush=True)
-        summary = fetch_ticker_summary(client, ticker, browser_holder)
+        summary = fetch_ticker_summary(client, ticker)
         ticker_summaries[ticker] = summary
         print("✓" if summary else "（無）")
         time.sleep(NEWS_SLEEP)
@@ -253,7 +262,7 @@ Notes:
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news summaries for RS95+ stocks (sourced from Seeking Alpha headlines)]
+[Source D: Recent news summaries for RS95+ stocks (sourced from Google Search via Serper)]
 {summaries_text}
 
 Instructions:
@@ -370,12 +379,10 @@ def build_hot_theme_watchlist(
 
 
 # ── Phase 3：評分 ─────────────────────────────────────────────────────────
-def score_ticker(client: genai.Client, ticker: str, hot_themes: str,
-                 browser_holder: list) -> dict:
-    # 優先用快取的標題，沒有的話重新抓
-    titles_text = fetch_sa_titles_text(ticker, browser_holder)
-
-    news_section = f"\n[Recent Seeking Alpha headlines for {ticker}]\n{titles_text}" if titles_text else ""
+def score_ticker(client: genai.Client, ticker: str, hot_themes: str) -> dict:
+    # 優先用快取，沒有就重新抓
+    news_text = fetch_serper_news(ticker)
+    news_section = f"\n[Recent news & analysis for {ticker}]\n{news_text}" if news_text else ""
 
     prompt = f"""You are a senior US equity analyst. Today is {TODAY}.
 
@@ -441,21 +448,6 @@ No Markdown, no extra explanation."""
 
 
 # ── 主流程 ────────────────────────────────────────────────────────────────
-
-async def _start_browser():
-    import shutil
-    # 找 chromium 執行檔
-    chrome_path = (
-        shutil.which("chromium-browser")
-        or shutil.which("chromium")
-        or shutil.which("google-chrome")
-    )
-    return await uc.start(
-        headless=False,
-        lang="en-US",
-        browser_executable_path=chrome_path,
-    )
-
 def main():
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if not gemini_key:
@@ -480,59 +472,49 @@ def main():
 
     print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
 
-    # 啟動一個 browser 共用整個流程，避免每個 ticker 都重開
-    print("🌐 啟動瀏覽器...")
-    browser = uc.loop().run_until_complete(_start_browser())
-    browser_holder = [browser]
+    print("📡 Phase 1+2：抓 Google 新聞（Serper）→ Gemini 摘要 → 建立今日熱門題材...")
+    hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
+        client, rs95_tickers, industry_text, ticker_to_industry
+    )
+    if not hot_themes:
+        raise RuntimeError("Phase 2 失敗")
 
-    try:
-        print("📡 Phase 1+2：抓 SA 新聞標題 → Gemini 摘要 → 建立今日熱門題材...")
-        hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
-            client, rs95_tickers, industry_text, ticker_to_industry, browser_holder
-        )
-        if not hot_themes:
-            raise RuntimeError("Phase 2 失敗")
+    os.makedirs("output", exist_ok=True)
+    theme_rows = []
+    for rank, item in enumerate(hot_themes_list, 1):
+        tickers_in_theme = [t.upper() for t in item.get("tickers", [])]
+        theme_rows.append({
+            "rank"        : rank,
+            "theme"       : item.get("name", ""),
+            "desc"        : item.get("desc", ""),
+            "tickers"     : ", ".join(tickers_in_theme),
+            "ticker_count": len(tickers_in_theme),
+        })
+    pd.DataFrame(theme_rows).to_csv(OUTPUT_THEMES, index=False, encoding="utf-8-sig")
+    print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
 
-        os.makedirs("output", exist_ok=True)
-        theme_rows = []
-        for rank, item in enumerate(hot_themes_list, 1):
-            tickers_in_theme = [t.upper() for t in item.get("tickers", [])]
-            theme_rows.append({
-                "rank"        : rank,
-                "theme"       : item.get("name", ""),
-                "desc"        : item.get("desc", ""),
-                "tickers"     : ", ".join(tickers_in_theme),
-                "ticker_count": len(tickers_in_theme),
-            })
-        pd.DataFrame(theme_rows).to_csv(OUTPUT_THEMES, index=False, encoding="utf-8-sig")
-        print(f"✅ 題材清單已存至 {OUTPUT_THEMES}\n")
+    hot_wl_tickers = build_hot_theme_watchlist(hot_themes_list, rs_lookup)
+    with open(OUTPUT_HOT_WL, "w", encoding="utf-8") as f:
+        f.write("\n".join(hot_wl_tickers) + "\n")
+    print(f"✅ 熱門題材 watchlist 已存至 {OUTPUT_HOT_WL}（{len(hot_wl_tickers)} 檔）\n")
 
-        hot_wl_tickers = build_hot_theme_watchlist(hot_themes_list, rs_lookup)
-        with open(OUTPUT_HOT_WL, "w", encoding="utf-8") as f:
-            f.write("\n".join(hot_wl_tickers) + "\n")
-        print(f"✅ 熱門題材 watchlist 已存至 {OUTPUT_HOT_WL}（{len(hot_wl_tickers)} 檔）\n")
+    print(f"🔍 Phase 3：逐一評分（共 {len(tickers)} 檔）...\n")
+    final_rows = []
 
-        print(f"🔍 Phase 3：逐一評分（共 {len(tickers)} 檔）...\n")
-        final_rows = []
-
-        for i, ticker in enumerate(tickers, 1):
-            cached = ticker in _titles_cache
-            print(f"  [{i:3d}/{len(tickers)}] {ticker}{'（快取）' if cached else ''}", end=" ... ", flush=True)
-            result = score_ticker(client, ticker, hot_themes, browser_holder)
-            final_rows.append({
-                "ticker":  result.get("ticker", ticker),
-                "RS":      rs_map.get(ticker, 0),
-                "rating":  result.get("rating", 0),
-                "theme":   result.get("theme", ""),
-                "feature": result.get("feature", ""),
-                "reason":  result.get("reason", ""),
-            })
-            print(f"rating={result.get('rating', '?')}")
-            time.sleep(SCORING_SLEEP)
-
-    finally:
-        browser.stop()
-        print("🌐 瀏覽器已關閉")
+    for i, ticker in enumerate(tickers, 1):
+        cached = ticker in _news_cache
+        print(f"  [{i:3d}/{len(tickers)}] {ticker}{'（快取）' if cached else ''}", end=" ... ", flush=True)
+        result = score_ticker(client, ticker, hot_themes)
+        final_rows.append({
+            "ticker":  result.get("ticker", ticker),
+            "RS":      rs_map.get(ticker, 0),
+            "rating":  result.get("rating", 0),
+            "theme":   result.get("theme", ""),
+            "feature": result.get("feature", ""),
+            "reason":  result.get("reason", ""),
+        })
+        print(f"rating={result.get('rating', '?')}")
+        time.sleep(SCORING_SLEEP)
 
     final_rows.sort(
         key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
