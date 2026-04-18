@@ -24,7 +24,7 @@ INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 MIN_AVG_VALUE_10D = 100
 
-NEWS_SLEEP    = 1
+NEWS_SLEEP    = 4
 SCORING_SLEEP = 1
 
 TODAY         = datetime.date.today().strftime("%Y-%m-%d")
