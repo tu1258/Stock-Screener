@@ -12,7 +12,6 @@ INDUSTRY_FILE = "ticker_industry.csv"
 DAYS          = 400
 MAX_RETRIES   = 3
 
-
 def get_nasdaq_tickers(limit=None):
     ftp = FTP("ftp.nasdaqtrader.com")
     ftp.login()
@@ -35,18 +34,15 @@ def get_nasdaq_tickers(limit=None):
             raw_tickers.append(ticker)
     return raw_tickers[:limit] if limit else raw_tickers
 
-
 def main():
     end   = date.today()
     start = end - timedelta(days=DAYS)
-
     tickers = get_nasdaq_tickers(500)
     print(f"Downloading {len(tickers)} tickers")
 
     need_industry = not os.path.exists(INDUSTRY_FILE)
-
     rows          = []
-    industry_list = []  # {"ticker", "sector", "industry"}
+    industry_list = []
 
     for i, ticker in enumerate(tickers, 1):
         for attempt in range(1, MAX_RETRIES + 1):
@@ -66,13 +62,24 @@ def main():
                 df["date"]   = df["date"].dt.strftime("%Y-%m-%d")
                 rows.append(df)
 
-                # ── 順便抓 industry（只在第一次執行、尚無快取時）──
                 if need_industry:
                     info = yf.Ticker(ticker).info
+                    exchange = info.get("exchange", "") or ""
+                    # 統一交易所名稱
+                    exchange_map = {
+                        "NMS": "NASDAQ",
+                        "NGM": "NASDAQ",
+                        "NCM": "NASDAQ",
+                        "NYQ": "NYSE",
+                        "ASE": "AMEX",
+                        "PCX": "NYSEARCA",
+                    }
+                    exchange = exchange_map.get(exchange, exchange)
                     industry_list.append({
                         "ticker"  : ticker,
                         "sector"  : info.get("sector",   "") or "",
                         "industry": info.get("industry", "") or "",
+                        "exchange": exchange,
                     })
 
                 print(f"[{i}/{len(tickers)}] {ticker}")
@@ -95,16 +102,16 @@ def main():
     pd.DataFrame(tickers, columns=["ticker"]).to_csv(TICKER_FILE, index=False)
     print(f"Saved {OUTPUT_FILE}, rows={len(result)}")
 
-    # Industry meta
-    df_industry = pd.DataFrame(industry_list)
-    total   = len(df_industry)
-    success = (df_industry["industry"] != "").sum()
-    print(f"\n抓取 industry meta（共 {len(tickers)} 檔）...")
-    print(f"完成：{success}/{total} 檔有 industry 資料（{success/total*100:.1f}%）")
-    df_industry.to_csv(INDUSTRY_FILE, index=False)
-    print(f"Saved {INDUSTRY_FILE}")
-
-
+    if need_industry and industry_list:
+        df_industry = pd.DataFrame(industry_list)
+        total        = len(df_industry)
+        ind_success  = (df_industry["industry"] != "").sum()
+        exch_success = (df_industry["exchange"] != "").sum()
+        print(f"\n抓取 industry + exchange meta（共 {len(tickers)} 檔）...")
+        print(f"industry：{ind_success}/{total} 檔（{ind_success/total*100:.1f}%）")
+        print(f"exchange：{exch_success}/{total} 檔（{exch_success/total*100:.1f}%）")
+        df_industry.to_csv(INDUSTRY_FILE, index=False)
+        print(f"Saved {INDUSTRY_FILE}")
 
 if __name__ == "__main__":
     main()
