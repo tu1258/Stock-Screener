@@ -27,8 +27,9 @@ jobs:
           python -m playwright install chromium
           
       - name: Install xvfb
-        run: sudo apt-get install -y xvfb
-             sudo apt-get install -y google-chrome-stable xvfb
+        run: |
+          sudo apt-get install -y xvfb
+          sudo apt-get install -y chromium-browser
 
       - name: Run pipeline
         run: |
