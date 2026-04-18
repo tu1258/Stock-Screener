@@ -37,7 +37,7 @@ def get_nasdaq_tickers(limit=None):
 def main():
     end   = date.today()
     start = end - timedelta(days=DAYS)
-    tickers = get_nasdaq_tickers(500)
+    tickers = get_nasdaq_tickers()
     print(f"Downloading {len(tickers)} tickers")
 
     need_industry = not os.path.exists(INDUSTRY_FILE)
