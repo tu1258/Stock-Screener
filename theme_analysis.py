@@ -446,8 +446,7 @@ async def _start_browser():
     is_linux = platform.system() == "Linux"
     return await uc.start(
         headless=False,
-        sandbox=not is_linux,   # Linux root 環境設 False
-        browser_args=["--lang=en-US", "--disable-dev-shm-usage"],
+        lang="en-US",
     )
 
 
