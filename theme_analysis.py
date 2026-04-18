@@ -6,7 +6,8 @@ import datetime
 import pandas as pd
 from google import genai
 from google.genai import types
-from curl_cffi import requests as cffi_requests
+from gnews import GNews
+from newspaper import Article
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
@@ -27,57 +28,59 @@ MIN_AVG_VALUE_10M = 100
 
 NEWS_SLEEP    = 1
 SCORING_SLEEP = 2
+NEWS_MAX_ITEMS = 10
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
 _summary_cache: dict[str, str] = {}
 
 
-# ── Seeking Alpha JSON API 抓新聞標題 ─────────────────────────────────────
-def fetch_sa_news(ticker: str, max_items: int = 5) -> list[dict]:
-    url = f"https://seekingalpha.com/api/v3/symbols/{ticker}/news"
-    params = {"per_page": max_items}
-    try:
-        resp = cffi_requests.get(url, params=params, impersonate="chrome124", timeout=15)
-        resp.raise_for_status()
-        data = resp.json().get("data", [])
-        items = []
-        for item in data:
-            attr         = item.get("attributes", {})
-            title        = attr.get("title", "").strip()
-            publish_on   = attr.get("publishOn", "")[:10]
-            is_paywalled = attr.get("isPaywalled", True)
-            items.append({
-                "title"       : title,
-                "publish_on"  : publish_on,
-                "is_paywalled": is_paywalled,
-            })
-        return items
-    except Exception as e:
-        print(f"\n  [SA API error {ticker}] {e}")
-        return []
-
-
-# ── 取得個股摘要（標題列表） ─────────────────────────────────────────────
-def fetch_ticker_summary(ticker: str) -> str:
+# ── gnews + newspaper3k 抓文章 ───────────────────────────────────────────
+def fetch_ticker_news(ticker: str) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
 
-    print(f"\n    fetching Seeking Alpha for {ticker} ...", flush=True)
+    print(f"\n    fetching Google News for {ticker} ...", flush=True)
 
-    news_items = fetch_sa_news(ticker)
-    if not news_items:
-        print(f"    [ {ticker} ] no news items")
+    gn = GNews(language='en', country='US', max_results=NEWS_MAX_ITEMS)
+    try:
+        news_list = gn.get_news(f"{ticker} stock")
+    except Exception as e:
+        print(f"\n  [GNews error {ticker}] {e}")
         _summary_cache[ticker] = ""
         return ""
 
-    lines = []
-    for item in news_items:
-        paywall = "[PRO]" if item["is_paywalled"] else ""
-        lines.append(f"[{item['publish_on']}] {paywall} {item['title']}".strip())
+    if not news_list:
+        print(f"    [ {ticker} ] no news found")
+        _summary_cache[ticker] = ""
+        return ""
 
-    result = "\n".join(lines)
-    print(f"\n    [ {ticker} headlines ]\n{result}\n")
+    blocks = []
+    for item in news_list:
+        title     = item.get("title", "").strip()
+        url       = item.get("url", "").strip()
+        published = item.get("published date", "").strip()
+
+        print(f"    → {published} | {title}")
+        print(f"      {url}")
+
+        text = ""
+        if url:
+            try:
+                article = Article(url)
+                article.download()
+                article.parse()
+                text = article.text.strip()
+            except Exception as e:
+                print(f"      [newspaper3k error] {e}")
+
+        if text:
+            blocks.append(f"[{published}] {title}\n{text[:2000]}")
+        elif title:
+            blocks.append(f"[{published}] {title}")
+
+    result = "\n\n".join(blocks)
+    print(f"\n    [ {ticker} 全文內容（前段）]\n{result[:500]}\n")
 
     _summary_cache[ticker] = result
     return result
@@ -150,12 +153,12 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict) -> tuple:
-    print(f"  Fetching news summaries for {len(rs95_tickers)} tickers via Seeking Alpha...")
+    print(f"  Fetching news for {len(rs95_tickers)} tickers via Google News + newspaper3k...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
         print(f"    [{i:3d}/{len(rs95_tickers)}] {ticker} RS{rs}", end=" ... ", flush=True)
-        summary = fetch_ticker_summary(ticker)
+        summary = fetch_ticker_news(ticker)
         ticker_summaries[ticker] = summary
         print("✓" if summary else "（無）")
         time.sleep(NEWS_SLEEP)
@@ -192,7 +195,7 @@ Notes:
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news from Seeking Alpha for RS95+ stocks (titles + article content where available)]
+[Source D: Recent news articles for RS95+ stocks (sourced from Google News)]
 {summaries_text}
 
 Instructions:
@@ -311,9 +314,9 @@ def build_hot_theme_watchlist(
 
 # ── Phase 3：評分 ─────────────────────────────────────────────────────────
 def score_ticker(client: genai.Client, ticker: str, hot_themes: str) -> dict:
-    news_summary = fetch_ticker_summary(ticker)
+    news_summary = fetch_ticker_news(ticker)
     news_section = (
-        f"\n[Recent Seeking Alpha news for {ticker}]\n{news_summary}"
+        f"\n[Recent news for {ticker}]\n{news_summary}"
         if news_summary else ""
     )
 
