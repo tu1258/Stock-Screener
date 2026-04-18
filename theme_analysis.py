@@ -22,10 +22,10 @@ GEMINI_MODEL_SCORE  = "gemini-3.1-flash-lite-preview"
 STOCK_DATA_CSV    = "stock_data.csv"
 INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
-MIN_AVG_VALUE_10M = 100
+MIN_AVG_VALUE_10D = 100
 
 NEWS_SLEEP    = 1
-SCORING_SLEEP = 2
+SCORING_SLEEP = 1
 
 TODAY         = datetime.date.today().strftime("%Y-%m-%d")
 ONE_MONTH_AGO = (datetime.date.today() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
@@ -54,7 +54,7 @@ def fetch_finnhub_news(ticker):
                 "to":     TODAY,
                 "token":  api_key,
             },
-            timeout=15,
+            timeout=10,
         )
         articles = r.json()
 
@@ -157,7 +157,7 @@ def load_rs95_liquid(rs_csv, stock_data_csv):
     )
     avg_val["ticker"] = avg_val["ticker"].str.upper()
 
-    liquid_set = set(avg_val[avg_val["avg_value_10"] >= MIN_AVG_VALUE_10M]["ticker"].tolist())
+    liquid_set = set(avg_val[avg_val["avg_value_10"] >= MIN_AVG_VALUE_10D]["ticker"].tolist())
     return sorted([(t, rs) for t, rs in rs_map.items() if t in liquid_set], key=lambda x: -x[1])
 
 
@@ -337,19 +337,22 @@ def build_hot_theme_watchlist(hot_themes_list, rs_lookup, top_n=10):
 
 
 def score_ticker(client, ticker, hot_themes):
-    news_text    = fetch_finnhub_news(ticker)
-    news_section = "\n[Recent Finnhub news for {} (past 30 days)]\n{}".format(ticker, news_text) if news_text else ""
+    news_text = fetch_finnhub_news(ticker)
+    news_section = "[Recent Finnhub news for {} (past 30 days)]\n{}".format(ticker, news_text) if news_text else ""
 
     prompt = """You are a senior US equity analyst. Today is {today}.
 
-Below is today's hot theme list, derived from RS scores and capital flow across the entire market:
+Your task: score how well {ticker} belongs to today's hot investment themes.
 
+Scoring framework — use the hot theme list below to define what a high score means.
+A stock scores high if it clearly belongs to one or more of the top-ranked themes.
+A stock scores low if it has no meaningful connection to any of the themes.
+
+[Today's hot theme list — use this as your scoring framework]
 {hot_themes}
-{news_section}
 
-Based on the above information, evaluate how well {ticker} aligns with the hot themes listed.
-Score it from 1 to 10. Base your score strictly on {ticker}'s actual relevance to the themes above,
-not on your own independent judgment of whether the stock is hot.
+[Recent Finnhub news for {ticker} — use this together with your own knowledge to judge whether {ticker} fits the themes above]
+{news_section}
 
 Scoring criteria:
 - 10: Core holding of the current strongest theme; explosive momentum, highly concentrated capital
