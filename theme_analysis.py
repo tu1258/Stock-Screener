@@ -520,7 +520,7 @@ def main():
 
     print(f"📋 待分析：{len(tickers)} 檔 ／ RS>=95 參考股：{len(rs95_tickers)} 檔\n")
 
-    print("📡 Phase 1+2：抓新聞摘要 → 建立今日熱門題材...")")
+    print("📡 Phase 1+2：抓新聞摘要 → 建立今日熱門題材...")
     hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
         client, rs95_tickers, industry_text, ticker_to_industry, ticker_to_exchange
     )
