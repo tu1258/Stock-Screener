@@ -441,14 +441,20 @@ No Markdown, no extra explanation."""
 
 
 # ── 主流程 ────────────────────────────────────────────────────────────────
+
 async def _start_browser():
-    import platform
-    is_linux = platform.system() == "Linux"
+    import shutil
+    # 找 chromium 執行檔
+    chrome_path = (
+        shutil.which("chromium-browser")
+        or shutil.which("chromium")
+        or shutil.which("google-chrome")
+    )
     return await uc.start(
         headless=False,
         lang="en-US",
+        browser_executable_path=chrome_path,
     )
-
 
 def main():
     gemini_key = os.environ.get("GEMINI_API_KEY")
