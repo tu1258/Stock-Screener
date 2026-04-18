@@ -16,8 +16,9 @@ OUTPUT_THEMES    = "output/hot_themes.csv"
 OUTPUT_HOT_WL    = "output/hot_theme_watchlist.txt"
 RATING_THRESHOLD = 6
 
-GEMINI_MODEL_PHASE1 = "gemini-3-flash-preview"
-GEMINI_MODEL_SCORE  = "gemini-3.1-flash-lite-preview"
+GEMINI_MODEL_SUMMARY = "gemini-3.1-flash-lite-preview"   # phase1 摘要，量大用 lite
+GEMINI_MODEL_THEMES  = "gemini-3-flash-preview"          # phase2 hot themes，需要全局歸納
+GEMINI_MODEL_SCORE   = "gemini-3.1-flash-lite-preview"   # phase3 評分，量大用 lite
 
 STOCK_DATA_CSV    = "stock_data.csv"
 INDUSTRY_RS_CSV   = "industry_rs.csv"
@@ -30,7 +31,8 @@ SCORING_SLEEP = 1
 TODAY         = datetime.date.today().strftime("%Y-%m-%d")
 ONE_MONTH_AGO = (datetime.date.today() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
 
-_news_cache = {}
+_news_cache    = {}  # ticker -> raw news text
+_summary_cache = {}  # ticker -> summarized text
 
 
 def fetch_finnhub_news(ticker):
@@ -89,8 +91,13 @@ def fetch_finnhub_news(ticker):
 
 
 def fetch_ticker_summary(client, ticker):
+    """抓新聞並生成摘要，結果存入 _summary_cache。"""
+    if ticker in _summary_cache:
+        return _summary_cache[ticker]
+
     news_text = fetch_finnhub_news(ticker)
     if not news_text:
+        _summary_cache[ticker] = ""
         return ""
 
     prompt = """Today is {today}. The following are recent news headlines (past 30 days) for stock {ticker}, sourced from Finnhub.
@@ -108,7 +115,7 @@ News (format: [YYYY-MM-DD] summary):
     for attempt in range(3):
         try:
             response = client.models.generate_content(
-                model=GEMINI_MODEL_SCORE,
+                model=GEMINI_MODEL_SUMMARY,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     temperature=0,
@@ -117,6 +124,7 @@ News (format: [YYYY-MM-DD] summary):
             )
             result = response.text.strip()
             print("      [summary OK] {} chars".format(len(result)))
+            _summary_cache[ticker] = result
             return result
         except Exception as e:
             err = str(e)
@@ -126,6 +134,7 @@ News (format: [YYYY-MM-DD] summary):
             elif attempt < 2:
                 time.sleep(3)
 
+    _summary_cache[ticker] = ""
     return ""
 
 
@@ -188,20 +197,37 @@ def load_industry_ranking(industry_rs_csv, ticker_ind_csv):
     return "\n".join(lines), ticker_to_industry
 
 
-def fetch_hot_themes(client, rs95_tickers, industry_text, ticker_to_industry):
-    print("  Fetching news for {} tickers via Finnhub...".format(len(rs95_tickers)))
+def build_all_summaries(client, rs95_tickers, technical_tickers):
+    """
+    Phase 1：統一對 rs95 + technical 去重後全部做摘要。
+    結果存入 _summary_cache，供 phase2 和 phase3 使用。
+    """
+    # 去重，保留順序：rs95 優先，technical 補充
+    rs95_set = {t for t, _ in rs95_tickers}
+    extra_tickers = [t for t in technical_tickers if t not in rs95_set]
+    all_tickers = [(t, rs) for t, rs in rs95_tickers] + [(t, None) for t in extra_tickers]
 
-    ticker_summaries = {}
-    for i, (ticker, rs) in enumerate(rs95_tickers, 1):
-        print("    [{:3d}/{}] {} RS{}".format(i, len(rs95_tickers), ticker, rs), end=" ... ", flush=True)
+    total = len(all_tickers)
+    print("  Phase 1：共 {} 檔需摘要（RS95: {}，technical 補充: {}）".format(
+        total, len(rs95_tickers), len(extra_tickers)))
+
+    for i, (ticker, rs) in enumerate(all_tickers, 1):
+        label = "RS{}".format(rs) if rs is not None else "technical"
+        print("    [{:3d}/{}] {} ({})".format(i, total, ticker, label), end=" ... ", flush=True)
         summary = fetch_ticker_summary(client, ticker)
-        ticker_summaries[ticker] = summary
         print("✓" if summary else "（無）")
         time.sleep(NEWS_SLEEP)
 
+
+def fetch_hot_themes(client, rs95_tickers, industry_text, ticker_to_industry):
+    """Phase 2：用 rs95 的摘要（已在 _summary_cache）建立 hot themes。"""
+
     ticker_lines     = "\n".join("  RS{:>2}  {}".format(rs, t) for t, rs in rs95_tickers)
     ticker_ind_lines = "\n".join("  {}: {}".format(t, ticker_to_industry.get(t, "N/A")) for t, rs in rs95_tickers)
-    summaries_text   = "\n\n".join("[{} RS{}]\n{}".format(t, rs, ticker_summaries.get(t, "(no data)")) for t, rs in rs95_tickers)
+    summaries_text   = "\n\n".join(
+        "[{} RS{}]\n{}".format(t, rs, _summary_cache.get(t, "(no data)"))
+        for t, rs in rs95_tickers
+    )
 
     industry_section = ""
     if industry_text:
@@ -269,7 +295,7 @@ Requirements:
     for attempt in range(5):
         try:
             response = client.models.generate_content(
-                model=GEMINI_MODEL_PHASE1,
+                model=GEMINI_MODEL_THEMES,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     temperature=0,
@@ -337,8 +363,9 @@ def build_hot_theme_watchlist(hot_themes_list, rs_lookup, top_n=10):
 
 
 def score_ticker(client, ticker, hot_themes):
-    news_text = fetch_finnhub_news(ticker)
-    news_section = "[Recent Finnhub news for {} (past 30 days)]\n{}".format(ticker, news_text) if news_text else ""
+    """Phase 3：單檔評分，摘要直接從 _summary_cache 讀取。"""
+    summary = _summary_cache.get(ticker, "")
+    summary_section = "[Investment theme summary for {}]\n{}".format(ticker, summary) if summary else ""
 
     prompt = """You are a senior US equity analyst. Today is {today}.
 
@@ -351,8 +378,8 @@ A stock scores low if it has no meaningful connection to any of the themes.
 [Today's hot theme list — use this as your scoring framework]
 {hot_themes}
 
-[Recent Finnhub news for {ticker} — use this together with your own knowledge to judge whether {ticker} fits the themes above]
-{news_section}
+[Investment theme summary for {ticker} — use this together with your own knowledge to judge whether {ticker} fits the themes above]
+{summary_section}
 
 Scoring criteria:
 - 10: Core holding of the current strongest theme; explosive momentum, highly concentrated capital
@@ -377,7 +404,7 @@ Fields:
 No Markdown, no extra explanation.""".format(
         today=TODAY,
         hot_themes=hot_themes,
-        news_section=news_section,
+        summary_section=summary_section,
         ticker=ticker,
     )
 
@@ -431,8 +458,14 @@ def main():
     industry_text, ticker_to_industry = load_industry_ranking(INDUSTRY_RS_CSV, TICKER_IND_CSV)
 
     print("📋 待分析：{} 檔 ／ RS>=95 參考股：{} 檔\n".format(len(tickers), len(rs95_tickers)))
-    print("📡 Phase 1+2：抓 Finnhub 新聞 → Gemini 摘要 → 建立今日熱門題材...")
 
+    # Phase 1：統一摘要（rs95 + technical 去重）
+    print("📡 Phase 1：抓 Finnhub 新聞 → 統一生成摘要...")
+    build_all_summaries(client, rs95_tickers, tickers)
+    print()
+
+    # Phase 2：建立 hot themes
+    print("🧠 Phase 2：Gemini 歸納今日熱門題材...")
     hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
         client, rs95_tickers, industry_text, ticker_to_industry
     )
@@ -459,12 +492,13 @@ def main():
         f.write("\n".join(hot_wl_tickers) + "\n")
     print("✅ 熱門題材 watchlist 已存至 {}（{} 檔）\n".format(OUTPUT_HOT_WL, len(hot_wl_tickers)))
 
+    # Phase 3：逐一評分
     print("🔍 Phase 3：逐一評分（共 {} 檔）...\n".format(len(tickers)))
     final_rows = []
 
     for i, ticker in enumerate(tickers, 1):
-        cached = ticker in _news_cache
-        print("  [{:3d}/{}] {}{}".format(i, len(tickers), ticker, "（快取）" if cached else ""), end=" ... ", flush=True)
+        cached = ticker in _summary_cache and _summary_cache[ticker]
+        print("  [{:3d}/{}] {}{}".format(i, len(tickers), ticker, "（摘要已備）" if cached else "（無摘要）"), end=" ... ", flush=True)
         result = score_ticker(client, ticker, hot_themes)
         final_rows.append({
             "ticker":  result.get("ticker", ticker),
