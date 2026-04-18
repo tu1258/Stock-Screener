@@ -444,10 +444,12 @@ No Markdown, no extra explanation."""
 async def _start_browser():
     import platform
     is_linux = platform.system() == "Linux"
+    args = ["--lang=en-US"]
+    if is_linux:
+        args += ["--no-sandbox", "--disable-setuid-sandbox"]
     return await uc.start(
-        headless=False,        # xvfb-run 提供虛擬螢幕，維持 headed 以最佳 bypass 效果
-        no_sandbox=is_linux,   # GitHub Actions 跑在 root，需要 no_sandbox
-        browser_args=["--lang=en-US"],
+        headless=False,
+        browser_args=args,
     )
 
 
