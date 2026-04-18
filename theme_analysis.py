@@ -442,7 +442,13 @@ No Markdown, no extra explanation."""
 
 # ── 主流程 ────────────────────────────────────────────────────────────────
 async def _start_browser():
-    return await uc.start(headless=False, browser_args=["--lang=en-US"])
+    import platform
+    is_linux = platform.system() == "Linux"
+    return await uc.start(
+        headless=False,        # xvfb-run 提供虛擬螢幕，維持 headed 以最佳 bypass 效果
+        no_sandbox=is_linux,   # GitHub Actions 跑在 root，需要 no_sandbox
+        browser_args=["--lang=en-US"],
+    )
 
 
 def main():
