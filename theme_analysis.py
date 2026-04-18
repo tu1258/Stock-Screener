@@ -7,7 +7,6 @@ import pandas as pd
 from google import genai
 from google.genai import types
 from gnews import GNews
-from newspaper import Article
 
 # ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
@@ -26,8 +25,8 @@ INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 MIN_AVG_VALUE_10M = 100
 
-NEWS_SLEEP    = 1
-SCORING_SLEEP = 2
+NEWS_SLEEP     = 1
+SCORING_SLEEP  = 2
 NEWS_MAX_ITEMS = 10
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
@@ -35,7 +34,7 @@ TODAY = datetime.date.today().strftime("%Y-%m-%d")
 _summary_cache: dict[str, str] = {}
 
 
-# ── gnews + newspaper3k 抓文章 ───────────────────────────────────────────
+# ── gnews + get_full_article 抓內文 ──────────────────────────────────────
 def fetch_ticker_news(ticker: str) -> str:
     if ticker in _summary_cache:
         return _summary_cache[ticker]
@@ -67,20 +66,22 @@ def fetch_ticker_news(ticker: str) -> str:
         text = ""
         if url:
             try:
-                article = Article(url)
-                article.download()
-                article.parse()
-                text = article.text.strip()
+                article = gn.get_full_article(url)
+                if article and article.text:
+                    text = article.text.strip()
+                    print(f"      [OK] {len(text)} chars")
+                else:
+                    print(f"      [empty]")
             except Exception as e:
-                print(f"      [newspaper3k error] {e}")
+                print(f"      [error] {e}")
 
         if text:
-            blocks.append(f"[{published}] {title}\n{text[:2000]}")
+            blocks.append(f"[{published}] {title}\n{text[:3000]}")
         elif title:
             blocks.append(f"[{published}] {title}")
 
     result = "\n\n".join(blocks)
-    print(f"\n    [ {ticker} 全文內容（前段）]\n{result[:500]}\n")
+    print(f"\n    [ {ticker} 內容預覽 ]\n{result[:500]}\n")
 
     _summary_cache[ticker] = result
     return result
@@ -153,7 +154,7 @@ def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple[st
 # ── Phase 1：建立今日熱門題材 ─────────────────────────────────────────────
 def fetch_hot_themes(client: genai.Client, rs95_tickers: list[tuple],
                      industry_text: str, ticker_to_industry: dict) -> tuple:
-    print(f"  Fetching news for {len(rs95_tickers)} tickers via Google News + newspaper3k...")
+    print(f"  Fetching news for {len(rs95_tickers)} tickers via Google News...")
 
     ticker_summaries = {}
     for i, (ticker, rs) in enumerate(rs95_tickers, 1):
@@ -195,7 +196,7 @@ Notes:
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news articles for RS95+ stocks (sourced from Google News)]
+[Source D: Recent news articles for RS95+ stocks (sourced from Google News, includes full article text where available)]
 {summaries_text}
 
 Instructions:
