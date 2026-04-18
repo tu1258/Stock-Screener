@@ -8,7 +8,6 @@ import pandas as pd
 from google import genai
 from google.genai import types
 
-# ── 設定 ──────────────────────────────────────────────────────────────────
 INPUT_TXT        = "output/technical_watchlist.txt"
 RS_CSV           = "stock_rs.csv"
 OUTPUT_CSV       = "output/watchlist.csv"
@@ -28,18 +27,13 @@ MIN_AVG_VALUE_10M = 100
 NEWS_SLEEP    = 1
 SCORING_SLEEP = 2
 
-TODAY      = datetime.date.today().strftime("%Y-%m-%d")
+TODAY         = datetime.date.today().strftime("%Y-%m-%d")
 ONE_MONTH_AGO = (datetime.date.today() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
 
-_news_cache: dict = {}  # ticker -> 格式化新聞字串
+_news_cache = {}
 
 
-# ── Finnhub API 抓公司新聞 summary ────────────────────────────────────────
-def fetch_finnhub_news(ticker: str) -> str:
-    """
-    用 Finnhub company-news endpoint 抓一個月內新聞，
-    回傳格式：每篇一行「[YYYY-MM-DD] headline: summary」
-    """
+def fetch_finnhub_news(ticker):
     if ticker in _news_cache:
         return _news_cache[ticker]
 
@@ -71,23 +65,17 @@ def fetch_finnhub_news(ticker: str) -> str:
 
         lines = []
         for article in articles:
-            # unix timestamp -> YYYY-MM-DD
             ts = article.get("datetime", 0)
             try:
                 date_str = datetime.datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d")
             except Exception:
                 date_str = "unknown"
 
-            headline = article.get("headline", "").strip()
-            summary  = article.get("summary",  "").strip()
-
-            if not headline:
+            summary = article.get("summary", "").strip()
+            if not summary:
                 continue
 
-            if summary and summary != headline:
-                lines.append("[{}] {}: {}".format(date_str, headline, summary))
-            else:
-                lines.append("[{}] {}".format(date_str, headline))
+            lines.append("[{}] {}".format(date_str, summary))
 
         text = "\n".join(lines)
         print("      [Finnhub] {} 拿到 {} 篇".format(ticker, len(lines)))
@@ -100,13 +88,12 @@ def fetch_finnhub_news(ticker: str) -> str:
         return ""
 
 
-# ── Phase 1：Finnhub summary → Gemini 摘要 ───────────────────────────────
-def fetch_ticker_summary(client: genai.Client, ticker: str) -> str:
+def fetch_ticker_summary(client, ticker):
     news_text = fetch_finnhub_news(ticker)
     if not news_text:
         return ""
 
-    prompt = """Today is {today}. The following are recent news headlines and summaries (past 30 days) for stock {ticker}, sourced from Finnhub.
+    prompt = """Today is {today}. The following are recent news headlines (past 30 days) for stock {ticker}, sourced from Finnhub.
 Based on this information, summarize from an investment theme and market catalyst perspective:
 - What is the company's core business?
 - What is the strongest current investment theme? Why is the market paying attention?
@@ -115,7 +102,7 @@ Based on this information, summarize from an investment theme and market catalys
 
 Return a concise bullet-point summary focused on themes and catalysts only.
 
-News (format: [YYYY-MM-DD] headline: summary):
+News (format: [YYYY-MM-DD] summary):
 {news}""".format(today=TODAY, ticker=ticker, news=news_text)
 
     for attempt in range(3):
@@ -142,8 +129,7 @@ News (format: [YYYY-MM-DD] headline: summary):
     return ""
 
 
-# ── 計算 RS95+ 且成交值 >= 100M 的清單 ──────────────────────────────────
-def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list:
+def load_rs95_liquid(rs_csv, stock_data_csv):
     rs_map = {}
     with open(rs_csv, newline="") as f:
         for row in csv.DictReader(f):
@@ -171,50 +157,38 @@ def load_rs95_liquid(rs_csv: str, stock_data_csv: str) -> list:
     )
     avg_val["ticker"] = avg_val["ticker"].str.upper()
 
-    liquid = avg_val[avg_val["avg_value_10"] >= MIN_AVG_VALUE_10M]["ticker"].tolist()
-    liquid_set = set(liquid)
-
-    result = [(t, rs) for t, rs in rs_map.items() if t in liquid_set]
-    return sorted(result, key=lambda x: -x[1])
+    liquid_set = set(avg_val[avg_val["avg_value_10"] >= MIN_AVG_VALUE_10M]["ticker"].tolist())
+    return sorted([(t, rs) for t, rs in rs_map.items() if t in liquid_set], key=lambda x: -x[1])
 
 
-# ── 讀取 industry RS 排行 ────────────────────────────────────────────────
-def load_industry_ranking(industry_rs_csv: str, ticker_ind_csv: str) -> tuple:
+def load_industry_ranking(industry_rs_csv, ticker_ind_csv):
     ticker_to_industry = {}
-    ticker_to_exchange = {}
 
     if os.path.exists(ticker_ind_csv):
         df_ind = pd.read_csv(ticker_ind_csv)
         for _, row in df_ind.iterrows():
-            t    = str(row.get("ticker",   "")).upper()
-            ind  = str(row.get("industry", ""))
-            exch = str(row.get("exchange", ""))
-            if t:
-                if ind and ind != "nan":
-                    ticker_to_industry[t] = ind
-                if exch and exch != "nan":
-                    ticker_to_exchange[t] = exch
+            t   = str(row.get("ticker",   "")).upper()
+            ind = str(row.get("industry", ""))
+            if t and ind and ind != "nan":
+                ticker_to_industry[t] = ind
 
     if not os.path.exists(industry_rs_csv):
-        return "", ticker_to_industry, ticker_to_exchange
+        return "", ticker_to_industry
 
-    df = pd.read_csv(industry_rs_csv)
-    df = df.sort_values("avg_rs", ascending=False)
-
+    df = pd.read_csv(industry_rs_csv).sort_values("avg_rs", ascending=False)
     lines = []
     for _, row in df.iterrows():
-        industry = row.get("industry", "")
-        sector   = row.get("sector", "")
-        avg_rs   = row.get("avg_rs", 0)
-        count    = int(row.get("ticker_count", 0))
-        lines.append("  {:5.1f}  {}（{}，{} 檔）".format(avg_rs, industry, sector, count))
+        lines.append("  {:5.1f}  {}（{}，{} 檔）".format(
+            row.get("avg_rs", 0),
+            row.get("industry", ""),
+            row.get("sector", ""),
+            int(row.get("ticker_count", 0)),
+        ))
 
-    return "\n".join(lines), ticker_to_industry, ticker_to_exchange
+    return "\n".join(lines), ticker_to_industry
 
 
-# ── Phase 2：建立今日熱門題材 ─────────────────────────────────────────────
-def fetch_hot_themes(client: genai.Client, rs95_tickers: list,
-                     industry_text: str, ticker_to_industry: dict) -> tuple:
+def fetch_hot_themes(client, rs95_tickers, industry_text, ticker_to_industry):
     print("  Fetching news for {} tickers via Finnhub...".format(len(rs95_tickers)))
 
     ticker_summaries = {}
@@ -225,17 +199,9 @@ def fetch_hot_themes(client: genai.Client, rs95_tickers: list,
         print("✓" if summary else "（無）")
         time.sleep(NEWS_SLEEP)
 
-    ticker_lines = "\n".join("  RS{:>2}  {}".format(rs, t) for t, rs in rs95_tickers)
-
-    ticker_ind_lines = "\n".join(
-        "  {}: {}".format(t, ticker_to_industry.get(t, "N/A"))
-        for t, rs in rs95_tickers
-    )
-
-    summaries_text = "\n\n".join(
-        "[{} RS{}]\n{}".format(t, rs, ticker_summaries.get(t, "(no data)"))
-        for t, rs in rs95_tickers
-    )
+    ticker_lines     = "\n".join("  RS{:>2}  {}".format(rs, t) for t, rs in rs95_tickers)
+    ticker_ind_lines = "\n".join("  {}: {}".format(t, ticker_to_industry.get(t, "N/A")) for t, rs in rs95_tickers)
+    summaries_text   = "\n\n".join("[{} RS{}]\n{}".format(t, rs, ticker_summaries.get(t, "(no data)")) for t, rs in rs95_tickers)
 
     industry_section = ""
     if industry_text:
@@ -257,7 +223,7 @@ Notes:
 [Source B: Sector classification of RS95+ stocks (use your own knowledge as primary reference; this data is coarse)]
 {ticker_ind_lines}
 {industry_section}
-[Source D: Recent news summaries for RS95+ stocks (sourced from Finnhub, past 30 days, format: [YYYY-MM-DD] headline: summary)]
+[Source D: Recent news summaries for RS95+ stocks (sourced from Finnhub, past 30 days, format: [YYYY-MM-DD] summary)]
 {summaries_text}
 
 Instructions:
@@ -319,16 +285,13 @@ Requirements:
 
             hot_themes_list = data.get("hot_themes", [])
             ticker_themes   = data.get("ticker_themes", {})
-
-            rs_lookup = {t: rs for t, rs in rs95_tickers}
+            rs_lookup       = {t: rs for t, rs in rs95_tickers}
 
             theme_count = {}
             for ticker_upper, themes in ticker_themes.items():
                 t = ticker_upper.upper()
                 for theme in themes:
-                    theme_count.setdefault(theme, []).append(
-                        "{}(RS{})".format(t, rs_lookup.get(t, "?"))
-                    )
+                    theme_count.setdefault(theme, []).append("{}(RS{})".format(t, rs_lookup.get(t, "?")))
 
             lines = ["## 題材統計（RS95+ 且成交值>=100M，共 {} 檔）\n".format(len(rs95_tickers))]
             for theme, members in sorted(theme_count.items(), key=lambda x: -len(x[1])):
@@ -338,13 +301,13 @@ Requirements:
 
             lines.append("\n## 今日熱門題材（Gemini 分析）\n")
             for item in hot_themes_list:
-                name    = item.get("name", "")
-                desc    = item.get("desc", "")
-                tickers = item.get("tickers", [])
-                lines.append("{} — {}（{}）".format(name, desc, ", ".join(tickers)))
+                lines.append("{} — {}（{}）".format(
+                    item.get("name", ""),
+                    item.get("desc", ""),
+                    ", ".join(item.get("tickers", [])),
+                ))
 
-            themes_text = "\n".join(lines)
-            return themes_text, hot_themes_list, rs_lookup
+            return "\n".join(lines), hot_themes_list, rs_lookup
 
         except (json.JSONDecodeError, KeyError):
             time.sleep(2)
@@ -360,26 +323,21 @@ Requirements:
     return "", [], {}
 
 
-# ── 產生 hot_theme_watchlist ──────────────────────────────────────────────
-def build_hot_theme_watchlist(hot_themes_list: list, rs_lookup: dict, top_n: int = 10) -> list:
-    result = []
-    seen   = set()
+def build_hot_theme_watchlist(hot_themes_list, rs_lookup, top_n=10):
+    result, seen = [], set()
     for item in hot_themes_list[:top_n]:
-        tickers_in_group = sorted(
+        for t in sorted(
             [t.strip().upper() for t in item.get("tickers", []) if t.strip()],
             key=lambda t: -rs_lookup.get(t, 0),
-        )
-        for t in tickers_in_group:
+        ):
             if t not in seen:
                 seen.add(t)
                 result.append(t)
     return result
 
 
-# ── Phase 3：評分 ─────────────────────────────────────────────────────────
-def score_ticker(client: genai.Client, ticker: str, hot_themes: str) -> dict:
-    # 優先用快取，沒有就重新抓
-    news_text = fetch_finnhub_news(ticker)
+def score_ticker(client, ticker, hot_themes):
+    news_text    = fetch_finnhub_news(ticker)
     news_section = "\n[Recent Finnhub news for {} (past 30 days)]\n{}".format(ticker, news_text) if news_text else ""
 
     prompt = """You are a senior US equity analyst. Today is {today}.
@@ -450,7 +408,6 @@ No Markdown, no extra explanation.""".format(
     return {"ticker": ticker.upper(), "rating": 0, "theme": "", "feature": "", "reason": ""}
 
 
-# ── 主流程 ────────────────────────────────────────────────────────────────
 def main():
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if not gemini_key:
@@ -465,17 +422,14 @@ def main():
     if os.path.exists(RS_CSV):
         with open(RS_CSV, "r", newline="") as f:
             for row in csv.DictReader(f):
-                t = row["ticker"].upper()
-                rs_map[t] = row.get("RS", 0)
+                rs_map[row["ticker"].upper()] = row.get("RS", 0)
 
     rs95_tickers = load_rs95_liquid(RS_CSV, STOCK_DATA_CSV)
-    industry_text, ticker_to_industry, _ = load_industry_ranking(
-        INDUSTRY_RS_CSV, TICKER_IND_CSV
-    )
+    industry_text, ticker_to_industry = load_industry_ranking(INDUSTRY_RS_CSV, TICKER_IND_CSV)
 
     print("📋 待分析：{} 檔 ／ RS>=95 參考股：{} 檔\n".format(len(tickers), len(rs95_tickers)))
-
     print("📡 Phase 1+2：抓 Finnhub 新聞 → Gemini 摘要 → 建立今日熱門題材...")
+
     hot_themes, hot_themes_list, rs_lookup = fetch_hot_themes(
         client, rs95_tickers, industry_text, ticker_to_industry
     )
@@ -483,14 +437,15 @@ def main():
         raise RuntimeError("Phase 2 失敗")
 
     os.makedirs("output", exist_ok=True)
+
     theme_rows = []
     for rank, item in enumerate(hot_themes_list, 1):
         tickers_in_theme = [t.upper() for t in item.get("tickers", [])]
         theme_rows.append({
-            "rank"        : rank,
-            "theme"       : item.get("name", ""),
-            "desc"        : item.get("desc", ""),
-            "tickers"     : ", ".join(tickers_in_theme),
+            "rank":         rank,
+            "theme":        item.get("name", ""),
+            "desc":         item.get("desc", ""),
+            "tickers":      ", ".join(tickers_in_theme),
             "ticker_count": len(tickers_in_theme),
         })
     pd.DataFrame(theme_rows).to_csv(OUTPUT_THEMES, index=False, encoding="utf-8-sig")
@@ -519,11 +474,8 @@ def main():
         print("rating={}".format(result.get("rating", "?")))
         time.sleep(SCORING_SLEEP)
 
-    final_rows.sort(
-        key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0))
-    )
+    final_rows.sort(key=lambda x: (-int(x["rating"]), -float(str(x["RS"]).replace(",", "") or 0)))
 
-    os.makedirs("output", exist_ok=True)
     with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=["ticker", "RS", "rating", "theme", "feature", "reason"])
         writer.writeheader()
