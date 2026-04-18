@@ -444,12 +444,10 @@ No Markdown, no extra explanation."""
 async def _start_browser():
     import platform
     is_linux = platform.system() == "Linux"
-    args = ["--lang=en-US"]
-    if is_linux:
-        args += ["--no-sandbox", "--disable-setuid-sandbox"]
     return await uc.start(
         headless=False,
-        browser_args=args,
+        sandbox=not is_linux,   # Linux root 環境設 False
+        browser_args=["--lang=en-US", "--disable-dev-shm-usage"],
     )
 
 
