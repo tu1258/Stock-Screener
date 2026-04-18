@@ -51,12 +51,20 @@ async def _resolve_url_async(google_url: str) -> str:
             )
             page = await context.new_page()
             try:
-                await page.goto(google_url, wait_until="domcontentloaded", timeout=10000)
+                # 等待網址不再是 news.google.com（JS 重定向完成）
+                async with page.expect_navigation(
+                    url=lambda u: "news.google.com" not in u,
+                    timeout=10000
+                ):
+                    await page.goto(google_url, wait_until="domcontentloaded", timeout=10000)
+                final_url = page.url
+            except Exception:
+                # expect_navigation timeout 時直接取當前 URL
                 final_url = page.url
             finally:
                 await context.close()
                 await browser.close()
-            return final_url if final_url and not final_url.startswith("about:") else ""
+            return final_url if final_url and not final_url.startswith("about:") and "news.google.com" not in final_url else ""
     except Exception as e:
         print(f"      [playwright error] {e}")
         return ""
