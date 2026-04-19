@@ -4,13 +4,15 @@ import yfinance as yf
 from ftplib import FTP
 from io import StringIO
 from datetime import date, timedelta
+from concurrent.futures import ThreadPoolExecutor
 import time
 
 OUTPUT_FILE   = "stock_data.csv"
 TICKER_FILE   = "stock_ticker.csv"
 INDUSTRY_FILE = "ticker_industry.csv"
 DAYS          = 400
-MAX_RETRIES   = 3
+BATCH_SIZE    = 100
+INFO_WORKERS  = 10
 
 def get_nasdaq_tickers(limit=None):
     ftp = FTP("ftp.nasdaqtrader.com")
@@ -34,6 +36,21 @@ def get_nasdaq_tickers(limit=None):
             raw_tickers.append(ticker)
     return raw_tickers[:limit] if limit else raw_tickers
 
+def chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i+n]
+
+def fetch_one_industry(ticker):
+    try:
+        info = yf.Ticker(ticker).info
+        return {
+            "ticker":   ticker,
+            "sector":   info.get("sector",   "") or "",
+            "industry": info.get("industry", "") or "",
+        }
+    except:
+        return {"ticker": ticker, "sector": "", "industry": ""}
+
 def main():
     end   = date.today()
     start = end - timedelta(days=DAYS)
@@ -41,57 +58,31 @@ def main():
     print(f"Downloading {len(tickers)} tickers")
 
     need_industry = not os.path.exists(INDUSTRY_FILE)
-    rows          = []
-    industry_list = []
+    rows = []
 
-    for i, ticker in enumerate(tickers, 1):
-        for attempt in range(1, MAX_RETRIES + 1):
-            try:
-                df = yf.download(
-                    ticker,
-                    start=start,
-                    end=end,
-                    progress=False,
-                    auto_adjust=False,
-                )
-                if df.empty:
-                    break
-                df = df.reset_index()[["Date", "Open", "High", "Low", "Close", "Volume"]]
-                df.columns = ["date", "open", "high", "low", "close", "volume"]
-                df["ticker"] = ticker
-                df["date"]   = df["date"].dt.strftime("%Y-%m-%d")
-                rows.append(df)
-
-                if need_industry:
-                    info = yf.Ticker(ticker).info
-                    exchange = info.get("exchange", "") or ""
-                    # 統一交易所名稱
-                    exchange_map = {
-                        "NMS": "NASDAQ",
-                        "NGM": "NASDAQ",
-                        "NCM": "NASDAQ",
-                        "NYQ": "NYSE",
-                        "ASE": "AMEX",
-                        "PCX": "NYSEARCA",
-                    }
-                    exchange = exchange_map.get(exchange, exchange)
-                    industry_list.append({
-                        "ticker"  : ticker,
-                        "sector"  : info.get("sector",   "") or "",
-                        "industry": info.get("industry", "") or "",
-                        "exchange": exchange,
-                    })
-
-                print(f"[{i}/{len(tickers)}] {ticker}")
-                break
-            except Exception as e:
-                if attempt < MAX_RETRIES:
-                    wait = 1
-                    print(f"Failed {ticker} (attempt {attempt}), retrying in {wait}s: {e}")
-                    time.sleep(wait)
-                else:
-                    print(f"Failed {ticker} after {MAX_RETRIES} attempts: {e}")
-        time.sleep(0.1)
+    batches = list(chunks(tickers, BATCH_SIZE))
+    for i, batch in enumerate(batches, 1):
+        try:
+            df_batch = yf.download(
+                batch,
+                start=start,
+                end=end,
+                progress=False,
+                auto_adjust=True,
+                group_by="ticker",
+            )
+            for ticker in batch:
+                try:
+                    t_df = df_batch[ticker][["Open", "High", "Low", "Close", "Volume"]].dropna(how="all").reset_index()
+                    t_df.columns = ["date", "open", "high", "low", "close", "volume"]
+                    t_df["ticker"] = ticker
+                    t_df["date"] = t_df["date"].dt.strftime("%Y-%m-%d")
+                    rows.append(t_df)
+                except:
+                    pass
+        except Exception as e:
+            print(f"batch {i} 失敗：{e}")
+        print(f"[{i}/{len(batches)}] batch 完成")
 
     if not rows:
         raise RuntimeError("No data downloaded")
@@ -102,14 +93,14 @@ def main():
     pd.DataFrame(tickers, columns=["ticker"]).to_csv(TICKER_FILE, index=False)
     print(f"Saved {OUTPUT_FILE}, rows={len(result)}")
 
-    if need_industry and industry_list:
+    if need_industry:
+        print(f"\n抓取 industry meta（共 {len(tickers)} 檔，{INFO_WORKERS} 線程）...")
+        with ThreadPoolExecutor(max_workers=INFO_WORKERS) as executor:
+            industry_list = list(executor.map(fetch_one_industry, tickers))
         df_industry = pd.DataFrame(industry_list)
         total        = len(df_industry)
         ind_success  = (df_industry["industry"] != "").sum()
-        exch_success = (df_industry["exchange"] != "").sum()
-        print(f"\n抓取 industry + exchange meta（共 {len(tickers)} 檔）...")
         print(f"industry：{ind_success}/{total} 檔（{ind_success/total*100:.1f}%）")
-        print(f"exchange：{exch_success}/{total} 檔（{exch_success/total*100:.1f}%）")
         df_industry.to_csv(INDUSTRY_FILE, index=False)
         print(f"Saved {INDUSTRY_FILE}")
 
