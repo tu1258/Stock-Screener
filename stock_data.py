@@ -65,6 +65,19 @@ def main():
     result.to_csv(OUTPUT_FILE, index=False)
     print(f"      Saved {OUTPUT_FILE}，rows={len(result)}（{time.time()-t0:.1f}s）")
 
+    print(f"\n[3/3] 下載 SPX 基準...")
+    try:
+        df_spx = yf.download("^GSPC", start=start, end=end, progress=False, auto_adjust=True)
+        if df_spx.empty:
+            raise RuntimeError("SPX 資料為空")
+        df_spx = df_spx.reset_index()[["Date", "Close"]]
+        df_spx.columns = ["date", "close"]
+        df_spx["date"] = df_spx["date"].dt.strftime("%Y-%m-%d")
+        df_spx.to_csv("spx_data.csv", index=False)
+        print(f"      Saved spx_data.csv，rows={len(df_spx)}")
+    except Exception as e:
+        raise RuntimeError(f"Failed to download SPX: {e}")
+    
     print(f"\n完成，總耗時 {time.time()-t_total:.1f}s")
 
 if __name__ == "__main__":
