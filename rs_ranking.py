@@ -8,6 +8,7 @@ PRICE_DATA_CSV  = os.path.join(DIR, "stock_data.csv")
 OUTPUT_CSV      = os.path.join(DIR, "stock_rs.csv")
 INDUSTRY_CSV    = os.path.join(DIR, "ticker_industry.csv")
 INDUSTRY_RS_CSV = os.path.join(DIR, "industry_rs.csv")
+SPX_CSV = os.path.join(DIR, "spx_data.csv")
 
 REFERENCE_TICKER = "^GSPC"
 MIN_DATA_POINTS  = 63
@@ -38,10 +39,12 @@ def geo_monthly_return(closes, n):
     return (1 + cumret) ** (1 / n) - 1
 
 def main():
-    df_all  = pd.read_csv(PRICE_DATA_CSV, parse_dates=["date"])
-    tickers = df_all["ticker"].unique()
 
-    df_ref = yf.download(REFERENCE_TICKER, period="1y", progress=False)
+    if not os.path.exists(SPX_CSV):
+        raise FileNotFoundError(f"找不到 {SPX_CSV}，請先執行 stock_data.py")
+    df_ref = pd.read_csv(SPX_CSV)
+    closes_ref = df_ref["close"].reset_index(drop=True)
+    
     if df_ref.empty:
         raise RuntimeError("Failed to download SPX from Yahoo Finance")
     closes_ref = df_ref["Close"].iloc[:, 0].reset_index(drop=True)
