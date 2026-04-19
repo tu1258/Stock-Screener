@@ -11,37 +11,50 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
-
       - name: Run stock_data.py
         run: python stock_data.py
-
       - name: Run rs_ranking.py
         run: python rs_ranking.py
-
+      - name: Commit RS data
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add stock_ticker.csv stock_rs.csv industry_rs.csv
+          git commit -m "Daily Update (RS)" || echo "No changes to commit"
+          git push
       - name: Run screener.py
         run: python screener.py
-
+      - name: Commit screener output
+        run: |
+          git add output/technical_watchlist.csv output/technical_watchlist.txt
+          git commit -m "Daily Update (screener)" || echo "No changes to commit"
+          git push
       - name: Run market_monitor.py
         run: python market_monitor.py
-
+      - name: Commit market monitor output
+        run: |
+          git add output/market_monitor.csv
+          git commit -m "Daily Update (market monitor)" || echo "No changes to commit"
+          git push
       - name: Run fetch_news.py
         env:
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
         run: python fetch_news.py
-
       - name: Run hot_themes.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python hot_theme.py
-
+        run: python hot_themes.py
+      - name: Commit hot theme output
+        run: |
+          git add output/hot_themes.csv output/hot_theme_watchlist.txt
+          git commit -m "Daily Update (hot theme)" || echo "No changes to commit"
+          git push
       - name: Run theme_analysis.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -50,13 +63,8 @@ jobs:
             echo "⚠️ theme_analysis.py 未完成，30 秒後重試..."
             sleep 30
           done
-
-      - name: Commit output files
+      - name: Commit final output
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add stock_ticker.csv stock_rs.csv industry_rs.csv
-          git add output/technical_watchlist.csv output/watchlist.csv output/hot_themes.csv output/market_monitor.csv
-          git add output/technical_watchlist.txt output/watchlist.txt output/hot_theme_watchlist.txt
-          git commit -m "Daily Update" || echo "No changes to commit"
+          git add output/watchlist.csv output/watchlist.txt
+          git commit -m "Daily Update (final)" || echo "No changes to commit"
           git push
