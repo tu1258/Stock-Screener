@@ -9,15 +9,17 @@ TICKER_FILE   = "stock_ticker.csv"
 INDUSTRY_FILE = "ticker_industry.csv"
 DAYS          = 400
 
-def fetch_finviz_data():
+def fetch_finviz_data(limit=None):
     print("  從 Finviz 取得所有股票資料...")
     foverview = Overview()
     foverview.set_filter(filters_dict={"Industry": "Stocks only (ex-Funds)"})
     df = foverview.screener_view(verbose=1)
     df = df[df["Industry"] != "Shell Companies"].reset_index(drop=True)
+    if limit:
+        df = df.head(limit)
     print(f"\n  完成，共 {len(df)} 筆")
     return df[["Ticker", "Sector", "Industry"]]
-
+    
 def main():
     t_total = time.time()
     end     = date.today()
@@ -25,7 +27,7 @@ def main():
 
     print("[1/3] 從 Finviz 取得 ticker 與 industry...")
     t0         = time.time()
-    df_finviz  = fetch_finviz_data()
+    df_finviz  = fetch_finviz_data(1000) # SIZE
     tickers    = df_finviz["Ticker"].tolist()
     print(f"      取得 {len(tickers)} 個 ticker（{time.time()-t0:.1f}s）")
 
