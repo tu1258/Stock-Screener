@@ -32,12 +32,24 @@ jobs:
       - name: Run market_monitor.py
         run: python market_monitor.py
 
+      - name: Run fetch_news.py
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+        run: python fetch_news.py
+
+      - name: Run hot_themes.py
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python hot_theme.py
+
       - name: Run theme_analysis.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
-        run: python theme_analysis.py
+        run: |
+          until python theme_analysis.py; do
+            echo "⚠️ theme_analysis.py 未完成，30 秒後重試..."
+            sleep 30
+          done
 
       - name: Commit output files
         run: |
