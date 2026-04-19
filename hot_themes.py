@@ -18,10 +18,8 @@ OUTPUT_THEMES_JSON= "output/hot_themes.json"
 OUTPUT_HOT_WL     = "output/hot_theme_watchlist.txt"
 MIN_AVG_VALUE_10D = 100
 
-#GEMINI_MODEL_SUMMARY = "gemini-3.1-flash-lite-preview"
-#GEMINI_MODEL_THEMES  = "gemini-3-flash-preview"
-GEMINI_MODEL_SUMMARY = "gemini-2.5-flash-lite"
-GEMINI_MODEL_THEMES  = "gemini-2.5-flash-lite"
+GEMINI_MODEL_SUMMARY = "gemini-3.1-flash-lite-preview"
+GEMINI_MODEL_THEMES  = "gemini-3-flash-preview"
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
