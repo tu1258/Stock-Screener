@@ -1,17 +1,13 @@
 name: Output
-
 on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
   rs-data:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,23 +18,21 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: |
-          python -m pip install -r requirements.txt
-          python -m playwright install chromium
-          
-      - name: Install xvfb
-        run: |
-          sudo apt-get install -y xvfb
-          sudo apt-get install -y chromium-browser
+        run: python -m pip install -r requirements.txt
 
-      - name: Run pipeline
-        run: |
-          python stock_data.py
-          python rs_ranking.py
-          python screener.py
-          python market_monitor.py
+      - name: Run stock_data.py
+        run: python stock_data.py
 
-      - name: Run theme analysis
+      - name: Run rs_ranking.py
+        run: python rs_ranking.py
+
+      - name: Run screener.py
+        run: python screener.py
+
+      - name: Run market_monitor.py
+        run: python market_monitor.py
+
+      - name: Run theme_analysis.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -49,8 +43,8 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add stock_ticker.csv stock_rs.csv industry_rs.csv  
-          git add output/technical_watchlist.csv output/watchlist.csv output/hot_themes.csv output/market_monitor.csv 
-          git add output/technical_watchlist.txt output/watchlist.txt output/hot_theme_watchlist.txt 
+          git add stock_ticker.csv stock_rs.csv industry_rs.csv
+          git add output/technical_watchlist.csv output/watchlist.csv output/hot_themes.csv output/market_monitor.csv
+          git add output/technical_watchlist.txt output/watchlist.txt output/hot_theme_watchlist.txt
           git commit -m "Daily Update" || echo "No changes to commit"
           git push
