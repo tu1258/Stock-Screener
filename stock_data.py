@@ -35,15 +35,12 @@ def get_nasdaq_tickers(limit=None):
     return raw_tickers[:limit] if limit else raw_tickers
 
 def fetch_industry_map():
-    # 先從 finviz group 頁面取得所有 industry 名稱
     print("  取得 finviz industry 清單...")
-    goverview = GroupOverview()
-    goverview.set_filter(group="Industry")
-    df_groups = goverview.screener_view(verbose=0)
+    g          = GroupOverview()
+    df_groups  = g.screener_view(group="Industry", order="Name")
     industries = df_groups["Name"].tolist()
     print(f"  共 {len(industries)} 個 industry")
 
-    # 對每個 industry 查詢所有 ticker
     foverview  = Overview()
     ticker_map = {}
     for i, industry in enumerate(industries, 1):
