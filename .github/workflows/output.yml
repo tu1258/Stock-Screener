@@ -49,7 +49,11 @@ jobs:
       - name: Run hot_themes.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python hot_themes.py
+        run: |
+          until python hot_themes.py; do
+            echo "⚠️ hot_themes.py 未完成，30 秒後重試..."
+            sleep 30
+          done
       - name: Commit hot theme output
         run: |
           git add output/hot_themes.csv output/hot_theme_watchlist.txt
