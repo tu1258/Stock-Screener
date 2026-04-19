@@ -16,31 +16,25 @@ def relative_strength(closes, closes_ref):
     rs_ref   = strength(closes_ref)
     return round((1 + rs_stock) / (1 + rs_ref) * 100, 2)
 
+def geo_monthly_return(closes, n):
+    required = n * 21
+    if len(closes) < required:
+        return None
+    prices = closes.tail(required)
+    cumret = prices.iloc[-1] / prices.iloc[0] - 1
+    return (1 + cumret) ** (1 / n) - 1
+
 
 def strength(closes):
     try:
-        m1  = geo_monthly_return(closes, 1)
-        m2  = geo_monthly_return(closes, 2)
-        m3  = geo_monthly_return(closes, 3)
-        m4  = geo_monthly_return(closes, 4)
-        m5  = geo_monthly_return(closes, 5)
-        m6  = geo_monthly_return(closes, 6)
-        m7  = geo_monthly_return(closes, 7)
-        m8  = geo_monthly_return(closes, 8)
-        m9  = geo_monthly_return(closes, 9)
-        m10 = geo_monthly_return(closes, 10)
-        m11 = geo_monthly_return(closes, 11)
-        m12 = geo_monthly_return(closes, 12)
-        return (m1 + m2 + m3 + m4 + m5 + m6 + m7 + m8 + m9 + m10 + m11 + m12) / 12
+        months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        values = [geo_monthly_return(closes, n) for n in months]
+        valid  = [v for v in values if v is not None]
+        if not valid:
+            return 0
+        return sum(valid) / len(valid)
     except Exception:
         return 0
-
-
-def geo_monthly_return(closes, n):
-    length = min(len(closes), n * 21)
-    prices = closes.tail(length)
-    cumret = prices.iloc[-1] / prices.iloc[0] - 1
-    return (1 + cumret) ** (1 / n) - 1
 
 
 def main():
