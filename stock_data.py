@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 import yfinance as yf
 from ftplib import FTP
@@ -52,14 +51,18 @@ def fetch_one_industry(ticker):
         return {"ticker": ticker, "sector": "", "industry": ""}
 
 def main():
+    t_total = time.time()
     end   = date.today()
     start = end - timedelta(days=DAYS)
+
+    print(f"[1/3] 從 NASDAQ FTP 取得 ticker 清單...")
+    t0 = time.time()
     tickers = get_nasdaq_tickers()
-    print(f"Downloading {len(tickers)} tickers")
+    print(f"      取得 {len(tickers)} 個 ticker（{time.time()-t0:.1f}s）")
 
-    need_industry = not os.path.exists(INDUSTRY_FILE)
+    print(f"\n[2/3] OHLCV 下載（batch={BATCH_SIZE}，共 {len(list(chunks(tickers, BATCH_SIZE)))} 批）...")
+    t0 = time.time()
     rows = []
-
     batches = list(chunks(tickers, BATCH_SIZE))
     for i, batch in enumerate(batches, 1):
         try:
@@ -81,8 +84,8 @@ def main():
                 except:
                     pass
         except Exception as e:
-            print(f"batch {i} 失敗：{e}")
-        print(f"[{i}/{len(batches)}] batch 完成")
+            print(f"      batch {i} 失敗：{e}")
+        print(f"      [{i}/{len(batches)}] 完成", flush=True)
 
     if not rows:
         raise RuntimeError("No data downloaded")
@@ -91,18 +94,20 @@ def main():
     result = result[["ticker", "date", "open", "high", "low", "close", "volume"]]
     result.to_csv(OUTPUT_FILE, index=False)
     pd.DataFrame(tickers, columns=["ticker"]).to_csv(TICKER_FILE, index=False)
-    print(f"Saved {OUTPUT_FILE}, rows={len(result)}")
+    print(f"      Saved {OUTPUT_FILE}，rows={len(result)}（{time.time()-t0:.1f}s）")
 
-    if need_industry:
-        print(f"\n抓取 industry meta（共 {len(tickers)} 檔，{INFO_WORKERS} 線程）...")
-        with ThreadPoolExecutor(max_workers=INFO_WORKERS) as executor:
-            industry_list = list(executor.map(fetch_one_industry, tickers))
-        df_industry = pd.DataFrame(industry_list)
-        total        = len(df_industry)
-        ind_success  = (df_industry["industry"] != "").sum()
-        print(f"industry：{ind_success}/{total} 檔（{ind_success/total*100:.1f}%）")
-        df_industry.to_csv(INDUSTRY_FILE, index=False)
-        print(f"Saved {INDUSTRY_FILE}")
+    print(f"\n[3/3] Industry 下載（{INFO_WORKERS} 線程並行，共 {len(tickers)} 檔）...")
+    t0 = time.time()
+    with ThreadPoolExecutor(max_workers=INFO_WORKERS) as executor:
+        industry_list = list(executor.map(fetch_one_industry, tickers))
+    df_industry = pd.DataFrame(industry_list)
+    total       = len(df_industry)
+    ind_success = (df_industry["industry"] != "").sum()
+    df_industry.to_csv(INDUSTRY_FILE, index=False)
+    print(f"      {ind_success}/{total} 檔有 industry（{ind_success/total*100:.1f}%）（{time.time()-t0:.1f}s）")
+    print(f"      Saved {INDUSTRY_FILE}")
+
+    print(f"\n完成，總耗時 {time.time()-t_total:.1f}s")
 
 if __name__ == "__main__":
     main()
