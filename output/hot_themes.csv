@@ -1,11 +1,11 @@
 ﻿rank,theme,desc,tickers,ticker_count
-1,AI 基礎設施與硬體,市場核心焦點在於支撐 AI 運算的硬體供應鏈，包含 GPU 算力服務、測試設備及關鍵材料。代表個股包括 AIXI (RS99)、BIRD (RS99)、AEHR (RS99)、AXTI (RS99)、AAOI (RS99)、AMKR (RS96) 及 ASX (RS95)。,"AIXI, BIRD, AEHR, AXTI, AAOI, AMKR, ASX",7
-2,光通訊與高速傳輸,隨著 AI 數據中心對頻寬需求激增，800G/1.6T 高速光收發器與磷化銦 (InP) 等關鍵材料成為瓶頸。代表個股為 AXTI (RS99)、AAOI (RS99) 及 AEHR (RS99)。,"AXTI, AAOI, AEHR",3
-3,空頭擠壓與迷因動能,高空頭佔比與散戶投機情緒驅動的劇烈波動，部分公司透過轉型 AI 敘事吸引資金。代表個股為 CAR (RS99)、BIRD (RS99) 及 AAOI (RS99)。,"CAR, BIRD, AAOI",3
-4,先進封裝與測試,AI 晶片效能提升受限於物理極限，先進封裝 (OSAT) 與燒入測試成為解決產能瓶頸的關鍵。代表個股為 AEHR (RS99)、AMKR (RS96) 及 ASX (RS95)。,"AEHR, AMKR, ASX",3
-5,半導體本土製造與政策受益,受美國晶片法案 (CHIPS Act) 補貼與供應鏈去風險化驅動，本土封裝與生產能力受重視。代表個股為 AAOI (RS99) 與 AMKR (RS96)。,"AAOI, AMKR",2
-6,AI 智慧財產權與法律訴訟,聚焦於 AI 專利權的法律驗證與授權價值，特別是針對科技巨頭的侵權訴訟勝訴預期。代表個股為 AIXI (RS99)。,AIXI,1
-7,生物技術併購與套利,大型藥廠透過併購補充稀有疾病管線，股價受收購溢價支撐。代表個股為 APLS (RS99)。,APLS,1
-8,旅遊復甦與租賃服務,受惠於機場擁堵與旅遊模式改變，租車需求強勁，並結合高空頭回補動能。代表個股為 CAR (RS99)。,CAR,1
-9,戰略資源與關鍵礦產,地緣政治緊張下，國防與高科技所需的關鍵金屬（如鎢）供應鏈安全成為投資主題。代表個股為 ALM (RS98)。,ALM,1
-10,AI 電力需求與能源基礎設施,AI 數據中心耗電量巨大，帶動燃料電池與電力工程建設 (EPC) 的急迫需求。代表個股為 BE (RS95) 與 AGX (RS95)。,"BE, AGX",2
+1,AI 基礎設施與資料中心,"當前市場最強主流，涵蓋伺服器、雲端運算與 AI 算力工廠。代表個股：AIXI (RS99), AAOI (RS99), MRVL (RS98)。","AIXI, EFOI, AEHR, AXTI, AAOI, LWLG, SNDK, LITE, FORM, TSEM, MRVL, CIEN, POWL, INTC, COHR, HUT, STX, LGN, AMKR, WDC, TER, SITM, WULF, ASX, ONTO, BE, SMTC, TTMI, CRDO, GLW, CLS, STM, ON, VICR, AGX, NBIS, SNX, MPWR, MOD, FN",40
+2,光學網路與高速傳輸,"解決 AI 運算頻寬瓶頸，光學收發器與矽光子技術需求進入爆發期。代表個股：AAOI (RS99), LITE (RS98), CIEN (RS97)。","AAOI, LWLG, LITE, VIAV, TSEM, MRVL, CIEN, COHR, SMTC, CRDO, GLW, FN",12
+3,半導體設備與先進封裝,"AI 晶片複雜度提升帶動測試設備與先進封裝（OSAT）需求。代表個股：AEHR (RS99), FORM (RS98), AMKR (RS97)。","AEHR, AXTI, FORM, INTC, AMKR, TER, SITM, ASX, ONTO",9
+4,生技醫療併購與臨床突破,"大藥廠積極併購具備臨床數據突破的生技公司以填補專利懸崖。代表個股：APLS (RS99), SYRE (RS99), TERN (RS97)。","APLS, SYRE, RVMD, TERN, CNTA, TVTX",6
+5,太空經濟與衛星通訊,"衛星通訊商業化與月球基礎設施建設加速，併購活動推升估值。代表個股：SIDU (RS99), FLY (RS98), LUNR (RS97)。","SIDU, IRDM, FLY, VIAV, PL, LUNR, TTMI, GSAT",8
+6,軟體應用與 AI 轉型,"傳統軟體或零售商透過轉型 AI 基礎設施或應用吸引投機資金。代表個股：AIXI (RS99), BIRD (RS99), RMSG (RS99)。","AIXI, RMSG, BIRD, FSLY, NBIS",5
+7,電力管理與資料中心散熱,"AI 資料中心對電力密度與散熱系統的嚴苛要求帶動基礎設施升級。代表個股：EFOI (RS99), POWL (RS97), BE (RS96)。","EFOI, POWL, HUT, LGN, WULF, BE, VICR, AGX, MPWR, MOD",10
+8,記憶體與大容量儲存,"AI 模型訓練與推論帶動企業級 SSD 與 HDD 需求進入超級週期。代表個股：SNDK (RS99), STX (RS97), WDC (RS96)。","SNDK, STX, WDC",3
+9,能源安全與關鍵礦產,"地緣政治緊張與電氣化趨勢推升關鍵礦產（如鎢、銅）與能源安全價值。代表個股：SKYQ (RS99), ALM (RS98), HBM (RS95)。","SKYQ, ALM, HBM",3
+10,租賃服務與空頭擠壓,"高券資比個股在資產價值重估與利多消息下引發強勢軋空。代表個股：CAR (RS99), HTZ (RS98)。","CAR, HTZ",2
