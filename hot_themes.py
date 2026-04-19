@@ -96,8 +96,6 @@ def build_summaries(client, rs95_tickers, news_cache):
         if not news_text:
             print("  [{:3d}/{}] {} RS{} （無新聞）".format(i, total, ticker, rs))
             summaries[ticker] = ""
-            with open(OUTPUT_SUMMARIES, "w", encoding="utf-8") as f:
-                json.dump(summaries, f, ensure_ascii=False, indent=2)
             continue
 
         print("  [{:3d}/{}] {} RS{} ...".format(i, total, ticker, rs), end=" ", flush=True)
@@ -128,16 +126,20 @@ News (format: [YYYY-MM-DD] summary):
             except Exception as e:
                 err = str(e)
                 print("\n  [summary error {}] {}".format(ticker, err[:200]))
-                wait = 30 if ("429" in err or "503" in err or "quota" in err.lower()) else 5
+                wait = 60 if ("429" in err or "503" in err or "quota" in err.lower()) else 5
                 time.sleep(wait)
-                if attempt == 2:
-                    summaries[ticker] = ""
+                if attempt == 4:
                     print("  [summary failed] {}".format(ticker))
 
-        with open(OUTPUT_SUMMARIES, "w", encoding="utf-8") as f:
-            json.dump(summaries, f, ensure_ascii=False, indent=2)
-
         time.sleep(1)
+
+    with open(OUTPUT_SUMMARIES, "w", encoding="utf-8") as f:
+        json.dump(summaries, f, ensure_ascii=False, indent=2)
+
+    failed = [t for t, rs in rs95_tickers if news_cache.get(t) and t not in summaries]
+    if failed:
+        print("\n⚠️ 摘要未完成 {} 檔：{}".format(len(failed), ", ".join(failed)))
+        raise SystemExit(1)
 
     return summaries
 
@@ -249,11 +251,13 @@ Requirements:
 
             return "\n".join(lines), hot_themes_list, rs_lookup
 
-        except (json.JSONDecodeError, KeyError):
+        except json.JSONDecodeError as e:
+            print("  [themes parse error attempt {}] {}".format(attempt + 1, e))
             time.sleep(5)
         except Exception as e:
             err = str(e)
-            wait = 30 if ("429" in err or "503" in err or "quota" in err.lower()) else 5
+            print("  [themes error attempt {}] {}".format(attempt + 1, err[:200]))
+            wait = 60 if ("429" in err or "503" in err or "quota" in err.lower()) else 5
             time.sleep(wait)
 
     return "", [], {}
