@@ -80,9 +80,9 @@ def main():
     final_tickers = (
         tech_filtered.merge(rs_filtered[["ticker", "score", "RS"]], on="ticker", how="left")
         .sort_values("score", ascending=False)[[
-            "ticker", "RS", "close", "volume",
-            "atr_10", "distance",
-            "atr_14", "atr_14_pct", "avg_value_10"
+            "ticker", "RS", "close", "volume", 
+            "distance", "atr_14",
+            "atr_14_pct", "avg_value_10"
         ]]
     )
 
