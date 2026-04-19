@@ -20,10 +20,18 @@ def relative_strength(closes, closes_ref):
 def strength(closes):
     try:
         m1  = geo_monthly_return(closes, 1)
+        m2  = geo_monthly_return(closes, 2)
         m3  = geo_monthly_return(closes, 3)
+        m4  = geo_monthly_return(closes, 4)
+        m5  = geo_monthly_return(closes, 5)
         m6  = geo_monthly_return(closes, 6)
+        m7  = geo_monthly_return(closes, 7)
+        m8  = geo_monthly_return(closes, 8)
+        m9  = geo_monthly_return(closes, 9)
+        m10 = geo_monthly_return(closes, 10)
+        m11 = geo_monthly_return(closes, 11)
         m12 = geo_monthly_return(closes, 12)
-        return m1 + m3 + m6 + m12
+        return m1 + m2 + m3 + m4 + m5 + m6 + m7 + m8 + m9 + m10 + m11 + m12
     except Exception:
         return 0
 
