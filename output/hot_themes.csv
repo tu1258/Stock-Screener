@@ -1,11 +1,11 @@
 ﻿rank,theme,desc,tickers,ticker_count
-1,AI 基礎設施與資料中心建置,當前市場最強核心題材，涵蓋從 AI 晶片、伺服器機架到資料中心冷卻系統的全產業鏈。代表個股包括 AXTI (RS99)、AAOI (RS99)、LITE (RS99) 與 VRT (RS95)，受惠於超大規模雲端業者（Hyperscalers）龐大的資本支出週期。,"AXTI, EFOI, AAOI, AEHR, LWLG, SNDK, LITE, CIEN, FORM, TSEM, LGN, WDC, BE, COHR, VICR, POWL, TER, STX, INTC, AMKR, MRVL, TTMI, ONTO, NBIS, AGX, ASX, GLW, Q, MU, FIX, VRT, SITM, MKSI, AEIS, FN, CLS, BIRD, HUT, WULF, CIFR",40
-2,光學通訊與矽光子技術,隨著 AI 算力需求爆發，傳統銅纜面臨頻寬與功耗瓶頸，光學互連成為解決方案。AAOI (RS99)、LITE (RS99) 與 COHR (RS98) 等公司受惠於 800G/1.6T 高速光收發器與矽光子技術的加速採用。,"AXTI, AAOI, AEHR, LWLG, LITE, CIEN, TSEM, COHR, MRVL, GLW, FN",11
-3,太空經濟與衛星通訊情報,受亞馬遜併購 Globalstar (GSAT) 及 SpaceX IPO 預期帶動，太空基礎設施價值重估。SIDU (RS99)、PL (RS99) 與 LUNR (RS98) 展現強勁動能，市場關注點從硬體製造轉向高毛利的衛星數據服務與月球物流。,"SIDU, PL, FLY, IRDM, LUNR, SATS, GSAT",7
-4,生技併購與臨床數據突破,大藥廠為應對專利到期壓力積極收購具潛力的管線。TERN (RS98) 與 CNTA (RS97) 分別受 Merck 與 Eli Lilly 併購帶動；SYRE (RS99) 與 RVMD (RS98) 則因優異的臨床試驗數據成為市場焦點。,"SYRE, TERN, APLS, RVMD, PRAX, CNTA, TVTX, IBRX",8
-5,半導體測試與先進封裝瓶頸,AI 晶片複雜度提升使測試與封裝成為供應鏈新瓶頸。AEHR (RS99)、FORM (RS98) 與 ONTO (RS97) 提供關鍵的晶圓測試與計量設備，是 HBM 記憶體與 3D 封裝產能擴張的直接受益者。,"AEHR, FORM, TER, AMKR, ONTO, ASX, SITM, MKSI, AEIS",9
-6,電力基礎設施與能源轉型,AI 資料中心對電力的極端需求引發電力設備荒。BE (RS98) 的燃料電池與 POWL (RS97) 的配電系統訂單爆滿；同時，HUT (RS97) 與 WULF (RS97) 等礦商正轉型為具備電力優勢的 AI 資料中心業者。,"BE, POWL, LGN, AGX, VRT, FIX, HUT, WULF, CIFR, VIAV",10
-7,邊緣運算與軟體定義基礎設施,低延遲 AI 應用推動算力向邊緣移動。FSLY (RS97) 與 NBIS (RS96) 提供高效能邊緣雲平台，而 AIXI (RS99) 則透過 AI 智慧財產權授權在軟體層面展現強勢地位。,"RMSG, AIXI, FSLY, NBIS, FLY",5
-8,AI 存儲與記憶體超級週期,HBM 記憶體與企業級 SSD 供不應求。SNDK (RS99) 加入納斯達克100指數成為催化劑，WDC (RS98) 與 MU (RS95) 受惠於 AI 數據存儲需求的結構性增長與報價上漲。,"SNDK, WDC, STX, MU",4
-9,關鍵礦產與戰略資源安全,地緣政治緊張推升資源主權意識。SKYQ (RS99) 掌握區域煉油產能，ALM (RS99) 與 CRML (RS95) 提供國防與綠能所需的關鍵礦產（如鎢、稀土），受惠於供應鏈去風險化趨勢。,"SKYQ, ALM, CENX, CRML, AMPX",5
-10,軋空動能與資產價值重估,高空單比例個股在利多刺激下出現劇烈反彈。CAR (RS99) 與 HTZ (RS95) 受惠於二手車價回升與空頭回補；BIRD (RS99) 則透過轉型 AI 算力租賃實現「殼公司」價值重估。,"CAR, BIRD, HTZ",3
+1,AI 基礎設施與資料中心,當前市場最強主線，涵蓋從光通訊、伺服器組裝到資料中心建設的全產業鏈。代表個股包括 AXTI (RS99)、AAOI (RS99)、LITE (RS99) 及 VRT (RS95)。,"AXTI, EFOI, AAOI, AEHR, LWLG, SNDK, LITE, CIEN, FORM, TSEM, LGN, WDC, BE, COHR, VICR, POWL, TER, STX, HUT, INTC, AMKR, FSLY, MRVL, WULF, TTMI, ONTO, NBIS, AGX, GLW, ASX, Q, MU, FIX, VRT, SITM, MKSI, AEIS, FN, CLS, CIFR",40
+2,半導體設備與先進封裝,隨著 AI 晶片複雜度提升，先進封裝與測試成為產能瓶頸，帶動相關設備商需求。代表個股為 AXTI (RS99)、AEHR (99) 及 FORM (98)。,"AXTI, AEHR, FORM, TSEM, TER, AMKR, ONTO, ASX, Q, SITM, MKSI, AEIS",12
+3,光通訊與高速傳輸,AI 運算集群對頻寬要求極高，矽光子與高速光收發器成為核心組件。代表個股為 AAOI (RS99)、LWLG (99) 及 LITE (99)。,"AAOI, LWLG, LITE, CIEN, TSEM, COHR, MRVL, GLW, FN, CLS",10
+4,太空經濟與衛星通訊,受惠於 SpaceX 估值提升及低軌衛星需求，太空基礎設施與數據服務受關注。代表個股為 SIDU (RS99)、PL (99) 及 LUNR (98)。,"SIDU, PL, FLY, IRDM, LUNR, SATS, GSAT",7
+5,生物技術與醫藥併購,大型藥廠為應對專利到期，積極收購具備潛力管線的中小生技公司。代表個股為 SYRE (RS99)、TERN (98) 及 APLS (98)。,"SYRE, TERN, APLS, RVMD, PRAX, CNTA, IBRX, TVTX",8
+6,AI 能源與電力基礎設施,資料中心耗電量激增使電力供應成為稀缺資源，電力設備與能源轉型服務商走強。代表個股為 BE (RS98)、LGN (98) 及 POWL (97)。,"BE, LGN, POWL, HUT, WULF, AGX, FIX, VRT, CIFR",9
+7,記憶體與資料儲存,AI 訓練與推理帶動 HBM 及高容量 SSD 需求進入超級週期。代表個股為 SNDK (RS99)、WDC (98) 及 STX (97)。,"SNDK, WDC, STX, MU",4
+8,軋空與迷因動能,高空單比例個股在利多刺激下引發技術性軋空，或藉由 AI 敘事轉型吸引散戶資金。代表個股為 CAR (RS99)、BIRD (99) 及 HTZ (95)。,"CAR, BIRD, HTZ",3
+9,關鍵礦產與資源安全,地緣政治緊張推升對鎢、鋁及稀土等戰略物資的本土供應鏈重視。代表個股為 ALM (RS99)、CENX (96) 及 CRML (95)。,"ALM, CENX, CRML",3
+10,邊緣運算與雲端基礎設施,為降低延遲，AI 運算需求從雲端延伸至邊緣節點。代表個股為 FSLY (RS97)、NBIS (96) 及 CLS (95)。,"FSLY, NBIS, CLS",3
