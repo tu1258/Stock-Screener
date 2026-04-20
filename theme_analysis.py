@@ -64,31 +64,27 @@ No Markdown, no extra explanation.""".format(
         news_section=news_section,
     )
 
-    for attempt in range(5):
-        try:
-            response = client.models.generate_content(
-                model=GEMINI_MODEL_SCORE,
-                contents=prompt,
-                config=types.GenerateContentConfig(temperature=0, max_output_tokens=512),
-            )
-            raw = response.text.strip()
-            if raw.startswith("```"):
-                raw = raw.split("```")[1]
-                if raw.lower().startswith("json"):
-                    raw = raw[4:]
-            result = json.loads(raw.strip())
-            result["ticker"] = ticker.upper()
-            return result
-        except json.JSONDecodeError:
-            time.sleep(3)
-        except Exception as e:
-            err = str(e)
-            print("\n  [score error {}] {}".format(ticker, err[:200]))
-            wait = 60 if ("429" in err or "503" in err or "quota" in err.lower()) else 10
-            time.sleep(wait)
-
-    # 5 次都失敗，回傳 None 讓外層知道這檔沒跑成功
-    return None
+    try:
+        response = client.models.generate_content(
+            model=GEMINI_MODEL_SCORE,
+            contents=prompt,
+            config=types.GenerateContentConfig(temperature=0, max_output_tokens=512),
+        )
+        raw = response.text.strip()
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.lower().startswith("json"):
+                raw = raw[4:]
+        result = json.loads(raw.strip())
+        result["ticker"] = ticker.upper()
+        return result
+    except json.JSONDecodeError:
+        print("❌ JSON parse error")
+        return None
+    except Exception as e:
+        err = str(e)
+        print("❌ {}".format(err[:100]))
+        return None
 
 
 def main():
