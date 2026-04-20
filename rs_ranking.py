@@ -7,14 +7,7 @@ PRICE_DATA_CSV  = os.path.join(DIR, "stock_data.csv")
 OUTPUT_CSV      = os.path.join(DIR, "stock_rs.csv")
 INDUSTRY_CSV    = os.path.join(DIR, "ticker_industry.csv")
 INDUSTRY_RS_CSV = os.path.join(DIR, "industry_rs.csv")
-SPX_CSV         = os.path.join(DIR, "spx_data.csv")
 MIN_DATA_POINTS = 63
-
-
-def relative_strength(closes, closes_ref):
-    rs_stock = strength(closes)
-    rs_ref   = strength(closes_ref)
-    return round((1 + rs_stock) / (1 + rs_ref) * 100, 2)
 
 def geo_monthly_return(closes, n):
     required = n * 21
@@ -23,7 +16,6 @@ def geo_monthly_return(closes, n):
     prices = closes.tail(required)
     cumret = prices.iloc[-1] / prices.iloc[0] - 1
     return (1 + cumret) ** (1 / n) - 1
-
 
 def strength(closes):
     try:
@@ -36,13 +28,7 @@ def strength(closes):
     except Exception:
         return 0
 
-
 def main():
-    if not os.path.exists(SPX_CSV):
-        raise FileNotFoundError(f"找不到 {SPX_CSV}，請先執行 stock_data.py")
-    df_ref     = pd.read_csv(SPX_CSV)
-    closes_ref = df_ref["close"].reset_index(drop=True)
-
     df_all  = pd.read_csv(PRICE_DATA_CSV, parse_dates=["date"])
     tickers = df_all["ticker"].unique()
 
@@ -52,12 +38,10 @@ def main():
         closes = df["close"].reset_index(drop=True)
         if len(closes) < MIN_DATA_POINTS:
             continue
-        rs_score = relative_strength(closes, closes_ref)
-        if rs_score > 1000:
-            continue
+        score = strength(closes)
         relative_strengths.append({
             "ticker": ticker,
-            "score":  rs_score,
+            "score":  round(score * 100, 2),
             "RS":     100.,
         })
 
@@ -89,7 +73,6 @@ def main():
             print(t)
     else:
         print("\n✅ 所有 ticker 都有資料")
-
 
 if __name__ == "__main__":
     main()
