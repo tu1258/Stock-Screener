@@ -112,26 +112,18 @@ Return a concise bullet-point summary focused on themes and catalysts only.
 News (format: [YYYY-MM-DD] summary):
 {news}""".format(today=TODAY, ticker=ticker, news=news_text)
 
-        for attempt in range(5):
-            try:
-                response = client.models.generate_content(
-                    model=GEMINI_MODEL_SUMMARY,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(temperature=0, max_output_tokens=1024),
-                )
-                result = response.text.strip()
-                summaries[ticker] = result
-                print("✓ {} chars".format(len(result)))
-                break
-            except Exception as e:
-                err = str(e)
-                print("\n  [summary error {}] {}".format(ticker, err[:200]))
-                wait = 60 if ("429" in err or "503" in err or "quota" in err.lower()) else 5
-                time.sleep(wait)
-                if attempt == 4:
-                    print("  [summary failed] {}".format(ticker))
-
-        time.sleep(1)
+        try:
+            response = client.models.generate_content(
+                model=GEMINI_MODEL_SUMMARY,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0, max_output_tokens=1024),
+            )
+            result = response.text.strip()
+            summaries[ticker] = result
+            print("✓ {} chars".format(len(result)))
+        except Exception as e:
+            err = str(e)
+            print("❌ {}".format(err[:100]))
 
     with open(OUTPUT_SUMMARIES, "w", encoding="utf-8") as f:
         json.dump(summaries, f, ensure_ascii=False, indent=2)
