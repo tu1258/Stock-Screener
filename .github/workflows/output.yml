@@ -48,7 +48,7 @@ jobs:
         run: python fetch_news.py
       - name: Run hot_themes.py
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_HOT_THEME: ${{ secrets.GEMINI_API_KEY_HOT_THEME }}
         run: |
           until python hot_themes.py; do
             echo "⚠️ hot_themes.py 未完成，30 秒後重試..."
@@ -61,7 +61,7 @@ jobs:
           git push
       - name: Run theme_analysis.py
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_THEME_ANALYSIS: ${{ secrets.GEMINI_API_KEY_THEME_ANALYSIS }}
         run: |
           until python theme_analysis.py; do
             echo "⚠️ theme_analysis.py 未完成，30 秒後重試..."
