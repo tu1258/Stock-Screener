@@ -253,7 +253,7 @@ Requirements:
         wait = 60 if ("429" in err or "503" in err or "quota" in err.lower()) else 5
         time.sleep(wait)
 
-return "", [], {}
+    return "", [], {}
 
 
 def main():
