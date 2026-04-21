@@ -18,10 +18,10 @@ def compute_indicators_vectorized(df):
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
     
     # 均線
-    df["ma5"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(5).mean())
-    df["ma10"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(10).mean())
-    df["ma50"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50).mean())
-    df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200).mean())    
+    df["ma5"]   = df.groupby("ticker")["close"].transform(lambda x: x.rolling(5,   min_periods=1).mean())
+    df["ma10"]  = df.groupby("ticker")["close"].transform(lambda x: x.rolling(10,  min_periods=1).mean())
+    df["ma50"]  = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50,  min_periods=1).mean())
+    df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200, min_periods=1).mean())
     
     # VCP
     df['prev_close'] = df.groupby('ticker')['close'].shift(1)
@@ -72,7 +72,7 @@ def main():
         (latest_df["avg_value_10"] > 25) &
         (latest_df["atr_14_pct"] > 2.5) & (latest_df["atr_14_pct"] < 25) &
         (latest_df["avg_bar"] > latest_df["ma50"]) &
-        (latest_df["ma50"] > latest_df["ma200"]) &
+        (latest_df["ma50"] >= latest_df["ma200"]) &
         (latest_df["distance"] < latest_df["atr_14"] * 1/2)
     ]
 
