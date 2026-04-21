@@ -209,6 +209,7 @@ Requirements:
                 model=GEMINI_MODEL_THEMES,
                 contents=prompt,
                 config=types.GenerateContentConfig(temperature=0, max_output_tokens=8192),
+                response_mime_type="application/json",
             )
             raw = response.text.strip()
             if raw.startswith("```"):
@@ -245,6 +246,7 @@ Requirements:
 
         except json.JSONDecodeError as e:
             print("  [themes parse error attempt {}] {}".format(attempt + 1, e))
+            print("  [themes raw] {}".format(raw[:500]))
             time.sleep(5)
         except Exception as e:
             err = str(e)
