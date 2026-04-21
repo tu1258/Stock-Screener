@@ -202,59 +202,58 @@ Requirements:
         industry_section=industry_section,
         summaries_text=summaries_text,
     )
-
-    for attempt in range(5):
-        try:
-            response = client.models.generate_content(
-                model=GEMINI_MODEL_THEMES,
-                contents=prompt,
-                config=types.GenerateContentConfig(temperature=0, max_output_tokens=8192),
+    
+    try:
+        response = client.models.generate_content(
+            model=GEMINI_MODEL_THEMES,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0,
+                max_output_tokens=8192,
                 response_mime_type="application/json",
-            )
-            raw = response.text.strip()
-            if raw.startswith("```"):
-                raw = raw.split("```")[1]
-                if raw.lower().startswith("json"):
-                    raw = raw[4:]
-            data = json.loads(raw.strip())
+            ),
+        )
+        raw = response.text.strip()
+        data = json.loads(raw)
 
-            hot_themes_list = data.get("hot_themes", [])
-            ticker_themes   = data.get("ticker_themes", {})
-            rs_lookup       = {t: rs for t, rs in rs95_tickers}
 
-            theme_count = {}
-            for ticker_upper, themes in ticker_themes.items():
-                t = ticker_upper.upper()
-                for theme in themes:
-                    theme_count.setdefault(theme, []).append("{}(RS{})".format(t, rs_lookup.get(t, "?")))
+        hot_themes_list = data.get("hot_themes", [])
+        ticker_themes   = data.get("ticker_themes", {})
+        rs_lookup       = {t: rs for t, rs in rs95_tickers}
 
-            lines = ["## 題材統計（RS95+ 且成交值>=100M，共 {} 檔）\n".format(len(rs95_tickers))]
-            for theme, members in sorted(theme_count.items(), key=lambda x: -len(x[1])):
-                members_str = ", ".join(members[:20])
-                suffix = "... 等共 {} 檔".format(len(members)) if len(members) > 20 else "共 {} 檔".format(len(members))
-                lines.append("{}：{}　{}".format(theme, members_str, suffix))
+        theme_count = {}
+        for ticker_upper, themes in ticker_themes.items():
+            t = ticker_upper.upper()
+            for theme in themes:
+                theme_count.setdefault(theme, []).append("{}(RS{})".format(t, rs_lookup.get(t, "?")))
 
-            lines.append("\n## 今日熱門題材（Gemini 分析）\n")
-            for item in hot_themes_list:
-                lines.append("{} — {}（{}）".format(
-                    item.get("name", ""),
-                    item.get("desc", ""),
-                    ", ".join(item.get("tickers", [])),
-                ))
+        lines = ["## 題材統計（RS95+ 且成交值>=100M，共 {} 檔）\n".format(len(rs95_tickers))]
+        for theme, members in sorted(theme_count.items(), key=lambda x: -len(x[1])):
+            members_str = ", ".join(members[:20])
+            suffix = "... 等共 {} 檔".format(len(members)) if len(members) > 20 else "共 {} 檔".format(len(members))
+            lines.append("{}：{}　{}".format(theme, members_str, suffix))
 
-            return "\n".join(lines), hot_themes_list, rs_lookup
+        lines.append("\n## 今日熱門題材（Gemini 分析）\n")
+        for item in hot_themes_list:
+            lines.append("{} — {}（{}）".format(
+                item.get("name", ""),
+                item.get("desc", ""),
+                ", ".join(item.get("tickers", [])),
+            ))
 
-        except json.JSONDecodeError as e:
-            print("  [themes parse error attempt {}] {}".format(attempt + 1, e))
-            print("  [themes raw] {}".format(raw[:500]))
-            time.sleep(5)
-        except Exception as e:
-            err = str(e)
-            print("  [themes error attempt {}] {}".format(attempt + 1, err[:200]))
-            wait = 60 if ("429" in err or "503" in err or "quota" in err.lower()) else 5
-            time.sleep(wait)
+        return "\n".join(lines), hot_themes_list, rs_lookup
 
-    return "", [], {}
+    except json.JSONDecodeError as e:
+        print("  [themes error] {}".format(str(e)[:200]))
+        print("  [themes raw] {}".format(raw[:500]))
+        time.sleep(5)
+    except Exception as e:
+        err = str(e)
+        print("  [themes error] {}".format(str(e)[:200]))
+        wait = 60 if ("429" in err or "503" in err or "quota" in err.lower()) else 5
+        time.sleep(wait)
+
+return "", [], {}
 
 
 def main():
