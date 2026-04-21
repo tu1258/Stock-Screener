@@ -1,11 +1,11 @@
 ﻿rank,theme,desc,tickers,ticker_count
-1,AI 基礎設施與資料中心,"涵蓋伺服器、算力租賃及資料中心建設，為當前市場最強核心題材。代表個股：AXTI (RS99), AAOI (RS99), AEHR (RS99)。","AXTI, EFOI, AAOI, AEHR, LWLG, SNDK, LITE, CIEN, FORM, TSEM, LGN, WDC, BE, COHR, POWL, TER, STX, HUT, INTC, AMKR, FSLY, MRVL, WULF, TTMI, ONTO, NBIS, AGX, ASX, GLW, MU, FIX, VRT, SITM, MKSI, AEIS, FN, CLS, CIFR",38
-2,半導體設備與先進封裝,"聚焦於解決 AI 晶片生產瓶頸的檢測、測試與封裝技術。代表個股：AXTI (RS99), AEHR (RS99), FORM (RS98), TER (RS97)。","AXTI, AEHR, FORM, TER, AMKR, ONTO, ASX, MKSI, AEIS, SITM",10
-3,光學通訊與高速傳輸,"AI 運算需求帶動資料中心內部高速互連、光學收發器與矽光子技術升級。代表個股：AAOI (RS99), LITE (RS99), CIEN (RS98)。","AAOI, LITE, LWLG, CIEN, TSEM, COHR, MRVL, GLW, FN",9
-4,太空經濟與衛星通訊,"商業太空基礎設施、低軌衛星通訊及 SpaceX 相關連動效應。代表個股：SIDU (RS99), PL (RS99), LUNR (RS98)。","SIDU, PL, FLY, IRDM, LUNR, SATS, GSAT",7
-5,生物技術與併購溢價,"臨床數據突破及大藥廠為填補專利懸崖展開的積極收購活動。代表個股：SYRE (RS99), TERN (RS98), APLS (RS98)。","SYRE, TERN, APLS, RVMD, PRAX, CNTA, IBRX, TVTX",8
-6,電力管理與散熱解決方案,"應對 AI 資料中心龐大能耗與散熱需求的關鍵工業設備與工程服務。代表個股：BE (RS98), POWL (RS97), VRT (RS95)。","BE, POWL, LGN, AGX, VRT, FIX, AEIS",7
-7,記憶體與儲存超級週期,"AI 數據爆炸推升 HBM 記憶體與企業級高容量硬碟需求。代表個股：SNDK (RS99), WDC (RS98), STX (RS97)。","SNDK, WDC, STX, MU",4
-8,能源轉型與關鍵礦產,"戰略物資供應鏈安全及支持工業電氣化的金屬資源。代表個股：ALM (RS99), SKYQ (RS99), CENX (RS96)。","ALM, SKYQ, CENX, CRML",4
-9,加密貨幣礦商轉型算力中心,"礦商利用電力基礎設施優勢轉向 AI 高性能運算 (HPC) 服務。代表個股：HUT (RS97), WULF (RS97), CIFR (RS95)。","HUT, WULF, CIFR",3
-10,租賃服務與技術性軋空,"高空單比例個股在基本面改善或市場情緒帶動下的劇烈反彈。代表個股：CAR (RS99), HTZ (RS95)。","CAR, HTZ",2
+1,AI 基礎設施與資料中心硬體,涵蓋伺服器、網路、電源與冷卻系統，是目前市場最強勁的資本支出去向。代表股包括 AXTI (RS99)、AAOI (RS99)、AEHR (RS99)、SNDK (RS99)、LITE (RS99)、MRVL (RS97)、VRT (RS95)。,"AXTI, AAOI, AEHR, LWLG, BIRD, EFOI, SNDK, LITE, FORM, CIEN, LGN, BE, TSEM, VICR, WDC, COHR, HUT, MRVL, POWL, ONTO, STX, TER, INTC, Q, NBIS, TTMI, SITM, GLW, NVTS, VRT, FIX, DOCN, FN, CLS, AEIS, MU, MKSI, SMTC",38
+2,精準醫療與生物技術併購,聚焦於癌症治療與罕見疾病，近期受大型藥廠併購活動頻繁帶動。代表股包括 ERAS (RS99)、SYRE (RS99)、APLS (RS98)、TERN (RS98)、RVMD (RS97)。,"ERAS, SYRE, APLS, TERN, PBM, RVMD, PRAX, CNTA, IBRX",9
+3,高速光學傳輸與矽光子,AI 算力擴張帶動 800G/1.6T 光模組與光學互連需求。代表股包括 AAOI (RS99)、LITE (RS99)、CIEN (RS98)、TSEM (RS98)、COHR (RS98)、MRVL (RS97)。,"AXTI, AAOI, LWLG, LITE, CIEN, TSEM, COHR, MRVL, GLW, FN, SMTC",11
+4,太空經濟與衛星通訊,商業太空基礎設施、月球物流與低軌衛星通訊服務。代表股包括 SIDU (RS99)、FLY (RS98)、PL (RS98)、IRDM (RS98)、LUNR (RS98)。,"SIDU, FLY, PL, IRDM, LUNR, SATS, GSAT",7
+5,半導體測試與先進封裝設備,解決 AI 晶片複雜度提升帶來的良率與封裝瓶頸。代表股包括 AEHR (RS99)、FORM (RS98)、ONTO (RS97)、TER (RS97)、AMKR (RS97)。,"AEHR, FORM, AMKR, TER, ONTO, ASX, MKSI",7
+6,電力基礎設施與能源轉型,應對資料中心電力缺口、電網現代化與氫能應用。代表股包括 BE (RS98)、LGN (RS98)、POWL (RS97)、VRT (RS95)、FIX (RS95)。,"BE, LGN, POWL, WULF, AGX, VRT, FIX, PLUG",8
+7,記憶體與資料儲存超週期,AI 訓練與推理對高頻寬記憶體 (HBM) 與大容量 SSD 的結構性需求。代表股包括 SNDK (RS99)、WDC (RS98)、STX (RS97)、MU (RS95)。,"SNDK, WDC, STX, MU",4
+8,高空倉量與軋空題材,具備極高空單比例，受市場情緒與技術面驅動的動能股。代表股包括 CAR (RS99)、BIRD (RS99)、HTZ (RS96)。,"CAR, BIRD, HTZ",3
+9,關鍵礦產與供應鏈安全,國防、半導體與工業所需的戰略物資（如鎢、銻、鋁）。代表股包括 ALM (RS99)、CENX (RS95)、UAMY (RS95)。,"ALM, CENX, UAMY",3
+10,邊緣運算與雲端服務,低延遲 AI 應用、邊緣邏輯處理與開發者雲端平台。代表股包括 FSLY (RS97)、UI (RS96)、DOCN (RS95)。,"FSLY, UI, DOCN",3
