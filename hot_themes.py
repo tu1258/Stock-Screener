@@ -6,6 +6,7 @@ import datetime
 import pandas as pd
 from google import genai
 from google.genai import types
+import sys
 
 RS_CSV            = "stock_rs.csv"
 STOCK_DATA_CSV    = "stock_data.csv"
@@ -131,7 +132,7 @@ News (format: [YYYY-MM-DD] summary):
     failed = [t for t, rs in rs95_tickers if news_cache.get(t) and t not in summaries]
     if failed:
         print("\n⚠️ 摘要未完成 {} 檔：{}".format(len(failed), ", ".join(failed)))
-        raise SystemExit(1)
+        raise RuntimeError("Phase 2 失敗")
 
     return summaries
 
@@ -177,23 +178,28 @@ Instructions:
 - Use Source D to assess recent catalysts and market attention.
 - Industry average RS (Source C) is a secondary signal only.
 
-[Output format: return ONLY the following JSON. No Markdown, no explanation.]
+You MUST respond with ONLY valid JSON. Do NOT include any markdown, code fences, or explanation text.
+Do NOT truncate or cut off the JSON output. Output must be complete and parseable.
+
+Return JSON with this exact structure:
 {{
   "hot_themes": [
     {{
-      "name": "主題名稱（繁體中文）",
-      "desc": "說明（含代表性個股RS分數，繁體中文）",
+      "name": "Theme name in Traditional Chinese",
+      "desc": "Brief description in Traditional Chinese, max 50 chars",
       "tickers": ["TICKER1", "TICKER2"]
     }}
   ],
   "ticker_themes": {{
-    "TICKER": ["題材A（繁體中文）", "題材B（繁體中文）"]
+    "TICKER": ["Theme A in Traditional Chinese", "Theme B in Traditional Chinese"]
   }}
 }}
 
 Requirements:
-- hot_themes: top 10 themes sorted by weighted heat. Theme names and descriptions in Traditional Chinese.
-- ticker_themes: tag every RS95+ stock with all relevant themes. Theme names in Traditional Chinese.
+- hot_themes: top 10 themes sorted by weighted heat. ALL fields must be strings.
+- ticker_themes: tag every RS95+ stock with all relevant themes. ALL theme names in Traditional Chinese.
+- CRITICAL: desc must NOT contain special characters or parentheses. Use simple text only.
+- CRITICAL: Do not truncate. Output must be complete JSON ending with }}
 """.format(
         today=TODAY,
         total=len(rs95_tickers),
@@ -209,13 +215,12 @@ Requirements:
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0,
-                max_output_tokens=8192,
+                max_output_tokens=16384,
                 response_mime_type="application/json",
             ),
         )
         raw = response.text.strip()
         data = json.loads(raw)
-
 
         hot_themes_list = data.get("hot_themes", [])
         ticker_themes   = data.get("ticker_themes", {})
@@ -246,13 +251,11 @@ Requirements:
     except json.JSONDecodeError as e:
         print("  [themes error] {}".format(str(e)[:200]))
         print("  [themes raw] {}".format(raw[:500]))
-        time.sleep(5)
+
     except Exception as e:
         err = str(e)
         print("  [themes error] {}".format(str(e)[:200]))
-        wait = 60 if ("429" in err or "503" in err or "quota" in err.lower()) else 5
-        time.sleep(wait)
-
+        
     return "", [], {}
 
 
