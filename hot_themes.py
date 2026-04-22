@@ -131,8 +131,8 @@ News (format: [YYYY-MM-DD] summary):
 
     failed = [t for t, rs in rs95_tickers if news_cache.get(t) and t not in summaries]
     if failed:
-        print("\n⚠️ 摘要未完成 {} 檔：{}".format(len(failed), ", ".join(failed)))
-        raise RuntimeError("Phase 2 失敗")
+        print("⚠️ 摘要未完成 {} 檔：{}".format(len(failed), ", ".join(failed)))
+        sys.exit(1)
 
     return summaries
 
@@ -208,7 +208,7 @@ Requirements:
         industry_section=industry_section,
         summaries_text=summaries_text,
     )
-    
+
     try:
         response = client.models.generate_content(
             model=GEMINI_MODEL_THEMES,
@@ -253,22 +253,24 @@ Requirements:
         print("  [themes raw] {}".format(raw[:500]))
 
     except Exception as e:
-        err = str(e)
         print("  [themes error] {}".format(str(e)[:200]))
-        
+
     return "", [], {}
 
 
 def main():
     gemini_key = os.environ.get("GEMINI_API_KEY_HOT_THEME")
     if not gemini_key:
-        raise EnvironmentError("GEMINI_API_KEY 未設定")
+        print("GEMINI_API_KEY 未設定")
+        sys.exit(1)
 
     client = genai.Client(api_key=gemini_key)
     os.makedirs("output", exist_ok=True)
 
     if not os.path.exists(INPUT_NEWS_CACHE):
-        raise FileNotFoundError("找不到 {}，請先執行 fetch_news.py".format(INPUT_NEWS_CACHE))
+        print("找不到 {}，請先執行 fetch_news.py".format(INPUT_NEWS_CACHE))
+        sys.exit(1)
+
     with open(INPUT_NEWS_CACHE, "r", encoding="utf-8") as f:
         news_cache = json.load(f)
     print("📂 news cache 載入：{} 檔".format(len(news_cache)))
@@ -286,7 +288,8 @@ def main():
         client, rs95_tickers, summaries, industry_text, ticker_to_industry
     )
     if not hot_themes_list:
-        raise RuntimeError("Phase 2 失敗")
+        print("⚠️ Phase 2 失敗")
+        sys.exit(1)
 
     with open(OUTPUT_THEMES_JSON, "w", encoding="utf-8") as f:
         json.dump({
