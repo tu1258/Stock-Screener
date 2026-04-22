@@ -1,11 +1,11 @@
 ﻿rank,theme,desc,tickers,ticker_count
-1,AI 基礎設施與資料中心,支援AI算力需求的核心硬體與雲端基礎設施,"AXTI, AEHR, AAOI, LWLG, SNDK, EFOI, BIRD, LITE, BE, VICR, CIEN, FORM, WDC, TSEM, NVTS, COHR, STX, MRVL, FSLY, AMKR, POWL, TER, POET, INTC, NBIS, ASX, DOCN, ONTO, SITM, CRDO, WULF, TTMI, VRT, MU, DELL, FIX, CLS, AEIS, MPWR, NOK, FN",41
-2,光學互連與矽光子技術,解決資料中心頻寬瓶頸的高速光學傳輸技術,"AAOI, LWLG, LITE, CIEN, TSEM, COHR, MRVL, POET, GLW, CRDO, FN",11
-3,生物技術與精準醫療,專注於癌症與罕見疾病的創新療法與併購活動,"ERAS, SYRE, APLS, TERN, NKTR, RVMD, PRAX, CNTA, IBRX, ARWR",10
-4,半導體設備與先進封裝,提升晶片效能與良率的關鍵製造設備與技術,"AXTI, AEHR, FORM, AMKR, TER, INTC, ASX, ONTO, AEIS",9
-5,電力管理與散熱解決方案,應對資料中心高功耗需求的電力與液冷系統,"BE, VICR, NVTS, POWL, AGX, VRT, FIX, AEIS, MPWR",9
-6,太空經濟與衛星通訊,商業化衛星發射與太空數據服務的快速成長,"FLY, SIDU, PL, IRDM, LUNR, GSAT",6
-7,軋空與技術面動能,受限流通量或高空單比例引發的技術性上漲,"CAR, AAOI, BIRD, SNDK",4
-8,高效能存儲與記憶體,AI模型訓練所需的大容量存儲與高頻寬記憶體,"SNDK, WDC, STX, MU",4
-9,能源安全與關鍵礦產,地緣政治緊張下對國內能源與戰略礦產的重視,"SKYQ, ALM, CENX",3
-10,邊緣運算與工業 AI,將AI處理能力延伸至終端設備與工業自動化,"FSLY, DOCN, BB, NOK",4
+1,AI 基礎設施與資料中心,提供AI算力所需的伺服器與基礎設施,"AXTI, AEHR, AAOI, LWLG, SNDK, EFOI, LITE, BE, VICR, CIEN, FORM, VIAV, WDC, TSEM, NVTS, LGN, COHR, STX, MRVL, HUT, POWL, TER, POET, INTC, NBIS, ASX, AGX, DOCN, ONTO, GLW, SITM, CRDO, WULF, TTMI, VRT, MU, DELL, FIX, CLS, AEIS, MPWR, FN",42
+2,半導體設備與先進封裝,支援AI晶片製造的關鍵測試與封裝技術,"AXTI, AEHR, VICR, FORM, TSEM, NVTS, MRVL, AMKR, TER, INTC, ASX, ONTO, SITM, AEIS, MPWR",15
+3,精準醫療與生物技術,專注於癌症與免疫疾病的創新療法開發,"ERAS, SYRE, APLS, TERN, NKTR, RVMD, PRAX, CNTA, IBRX, ARWR",10
+4,光通訊與矽光子技術,解決資料中心頻寬瓶頸的高速傳輸方案,"AAOI, LWLG, LITE, CIEN, TSEM, COHR, POET, GLW, CRDO, FN",10
+5,能源轉型與電力管理系統,解決資料中心電力需求與能源效率方案,"SKYQ, EFOI, BE, AMPX, LGN, POWL, AGX, VRT, FIX",9
+6,太空經濟與衛星通訊,商業化衛星發射與太空數據傳輸服務,"FLY, SIDU, PL, IRDM, LUNR, GSAT",6
+7,雲端運算與邊緣 AI,提供低延遲邊緣運算與AI應用部署平台,"RMSG, FSLY, NBIS, DOCN, UI, BB, NOK",7
+8,高效能記憶體與儲存,AI運算所需的大容量儲存與高頻寬記憶體,"SNDK, WDC, STX, MU",4
+9,併購套利與產業整合,生技與航太領域的大型企業併購活動,"APLS, TERN, CNTA, GSAT",4
+10,空頭擠壓與投機動能,受市場情緒與籌碼面驅動的投機性交易,"CAR, BIRD",2
