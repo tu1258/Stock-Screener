@@ -1,11 +1,11 @@
 ﻿rank,theme,desc,tickers,ticker_count
-1,AI 基礎設施與資料中心硬體,涵蓋伺服器、網路、電源與冷卻系統，是目前市場最強勁的資本支出去向。代表股包括 AXTI (RS99)、AAOI (RS99)、AEHR (RS99)、SNDK (RS99)、LITE (RS99)、MRVL (RS97)、VRT (RS95)。,"AXTI, AAOI, AEHR, LWLG, BIRD, EFOI, SNDK, LITE, FORM, CIEN, LGN, BE, TSEM, VICR, WDC, COHR, HUT, MRVL, POWL, ONTO, STX, TER, INTC, Q, NBIS, TTMI, SITM, GLW, NVTS, VRT, FIX, DOCN, FN, CLS, AEIS, MU, MKSI, SMTC",38
-2,精準醫療與生物技術併購,聚焦於癌症治療與罕見疾病，近期受大型藥廠併購活動頻繁帶動。代表股包括 ERAS (RS99)、SYRE (RS99)、APLS (RS98)、TERN (RS98)、RVMD (RS97)。,"ERAS, SYRE, APLS, TERN, PBM, RVMD, PRAX, CNTA, IBRX",9
-3,高速光學傳輸與矽光子,AI 算力擴張帶動 800G/1.6T 光模組與光學互連需求。代表股包括 AAOI (RS99)、LITE (RS99)、CIEN (RS98)、TSEM (RS98)、COHR (RS98)、MRVL (RS97)。,"AXTI, AAOI, LWLG, LITE, CIEN, TSEM, COHR, MRVL, GLW, FN, SMTC",11
-4,太空經濟與衛星通訊,商業太空基礎設施、月球物流與低軌衛星通訊服務。代表股包括 SIDU (RS99)、FLY (RS98)、PL (RS98)、IRDM (RS98)、LUNR (RS98)。,"SIDU, FLY, PL, IRDM, LUNR, SATS, GSAT",7
-5,半導體測試與先進封裝設備,解決 AI 晶片複雜度提升帶來的良率與封裝瓶頸。代表股包括 AEHR (RS99)、FORM (RS98)、ONTO (RS97)、TER (RS97)、AMKR (RS97)。,"AEHR, FORM, AMKR, TER, ONTO, ASX, MKSI",7
-6,電力基礎設施與能源轉型,應對資料中心電力缺口、電網現代化與氫能應用。代表股包括 BE (RS98)、LGN (RS98)、POWL (RS97)、VRT (RS95)、FIX (RS95)。,"BE, LGN, POWL, WULF, AGX, VRT, FIX, PLUG",8
-7,記憶體與資料儲存超週期,AI 訓練與推理對高頻寬記憶體 (HBM) 與大容量 SSD 的結構性需求。代表股包括 SNDK (RS99)、WDC (RS98)、STX (RS97)、MU (RS95)。,"SNDK, WDC, STX, MU",4
-8,高空倉量與軋空題材,具備極高空單比例，受市場情緒與技術面驅動的動能股。代表股包括 CAR (RS99)、BIRD (RS99)、HTZ (RS96)。,"CAR, BIRD, HTZ",3
-9,關鍵礦產與供應鏈安全,國防、半導體與工業所需的戰略物資（如鎢、銻、鋁）。代表股包括 ALM (RS99)、CENX (RS95)、UAMY (RS95)。,"ALM, CENX, UAMY",3
-10,邊緣運算與雲端服務,低延遲 AI 應用、邊緣邏輯處理與開發者雲端平台。代表股包括 FSLY (RS97)、UI (RS96)、DOCN (RS95)。,"FSLY, UI, DOCN",3
+1,AI 基礎設施與資料中心,支援AI算力需求的核心硬體與雲端基礎設施,"AXTI, AEHR, AAOI, LWLG, SNDK, EFOI, BIRD, LITE, BE, VICR, CIEN, FORM, WDC, TSEM, NVTS, COHR, STX, MRVL, FSLY, AMKR, POWL, TER, POET, INTC, NBIS, ASX, DOCN, ONTO, SITM, CRDO, WULF, TTMI, VRT, MU, DELL, FIX, CLS, AEIS, MPWR, NOK, FN",41
+2,光學互連與矽光子技術,解決資料中心頻寬瓶頸的高速光學傳輸技術,"AAOI, LWLG, LITE, CIEN, TSEM, COHR, MRVL, POET, GLW, CRDO, FN",11
+3,生物技術與精準醫療,專注於癌症與罕見疾病的創新療法與併購活動,"ERAS, SYRE, APLS, TERN, NKTR, RVMD, PRAX, CNTA, IBRX, ARWR",10
+4,半導體設備與先進封裝,提升晶片效能與良率的關鍵製造設備與技術,"AXTI, AEHR, FORM, AMKR, TER, INTC, ASX, ONTO, AEIS",9
+5,電力管理與散熱解決方案,應對資料中心高功耗需求的電力與液冷系統,"BE, VICR, NVTS, POWL, AGX, VRT, FIX, AEIS, MPWR",9
+6,太空經濟與衛星通訊,商業化衛星發射與太空數據服務的快速成長,"FLY, SIDU, PL, IRDM, LUNR, GSAT",6
+7,軋空與技術面動能,受限流通量或高空單比例引發的技術性上漲,"CAR, AAOI, BIRD, SNDK",4
+8,高效能存儲與記憶體,AI模型訓練所需的大容量存儲與高頻寬記憶體,"SNDK, WDC, STX, MU",4
+9,能源安全與關鍵礦產,地緣政治緊張下對國內能源與戰略礦產的重視,"SKYQ, ALM, CENX",3
+10,邊緣運算與工業 AI,將AI處理能力延伸至終端設備與工業自動化,"FSLY, DOCN, BB, NOK",4
