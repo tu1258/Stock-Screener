@@ -178,8 +178,10 @@ Instructions:
 - Use Source D to assess recent catalysts and market attention.
 - Industry average RS (Source C) is a secondary signal only.
 
-- You MUST output the result as a raw pipe-separated table in Traditional Chinese.
+- You MUST output the result as a raw pipe-separated table.
 - Each line: Rank | Theme Name | Description | TICKER1,TICKER2...
+- Theme name and description should be written in Traditional Chinese.
+- List top 10 themes sorted by weighted heat. ALL fields must be strings.
 - DO NOT use markdown code fences (like ```csv) or JSON.
 - DO NOT provide intro or outro text. Ensure ALL tickers are assigned.
 
