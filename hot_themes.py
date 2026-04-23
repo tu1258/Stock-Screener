@@ -117,7 +117,7 @@ News (format: [YYYY-MM-DD] summary):
             response = client.models.generate_content(
                 model=GEMINI_MODEL_SUMMARY,
                 contents=prompt,
-                config=types.GenerateContentConfig(temperature=0, max_output_tokens=1024),
+                config=types.GenerateContentConfig(temperature=0, max_output_tokens=256),
             )
             result = response.text.strip()
             summaries[ticker] = result
