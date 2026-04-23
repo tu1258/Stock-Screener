@@ -189,15 +189,11 @@ Return JSON with this exact structure:
       "desc": "Brief description in Traditional Chinese, max 50 chars",
       "tickers": ["TICKER1", "TICKER2"]
     }}
-  ],
-  "ticker_themes": {{
-    "TICKER": ["Theme A in Traditional Chinese", "Theme B in Traditional Chinese"]
-  }}
+  ]
 }}
 
 Requirements:
 - hot_themes: top 10 themes sorted by weighted heat. ALL fields must be strings.
-- ticker_themes: tag every RS95+ stock with all relevant themes. ALL theme names in Traditional Chinese.
 - CRITICAL: desc must NOT contain special characters or parentheses. Use simple text only.
 - CRITICAL: Do not truncate. Output must be complete JSON ending with }}
 """.format(
@@ -223,13 +219,13 @@ Requirements:
         data = json.loads(raw)
 
         hot_themes_list = data.get("hot_themes", [])
-        ticker_themes   = data.get("ticker_themes", {})
         rs_lookup       = {t: rs for t, rs in rs95_tickers}
 
         theme_count = {}
-        for ticker_upper, themes in ticker_themes.items():
-            t = ticker_upper.upper()
-            for theme in themes:
+        for item in hot_themes_list:
+            theme = item.get("name", "")
+            for ticker in item.get("tickers", []):
+                t = ticker.upper()
                 theme_count.setdefault(theme, []).append("{}(RS{})".format(t, rs_lookup.get(t, "?")))
 
         lines = ["## 題材統計（RS95+ 且成交值>=100M，共 {} 檔）\n".format(len(rs95_tickers))]
