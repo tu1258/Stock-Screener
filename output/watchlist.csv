@@ -1,8 +1,8 @@
 ﻿ticker,RS,rating,theme,feature,reason
-AAOI,98,10,AI Data Center Infrastructure & Connectivity,800G/1.6T光收發器核心供應商,獲超大規模訂單，技術與營收動能強勁
-ALM,98,9,Strategic Supply Chain & Critical Minerals,鎢礦供應鏈關鍵地位，國防與半導體需求強勁,具備戰略金屬稀缺性與國防供應鏈核心地位
-APLS,97,9,Biotech M&A & Rare Disease,獲Biogen以56億美元收購，補強罕見疾病管線,併購題材核心標的，市場高度關注且估值已定錨
-AMAT,88,9,"AI Data Center Infrastructure & Connectivity, Strategic Supply Chain & Critical Minerals",AI晶片製造設備龍頭，Terafab核心供應商,深度參與AI基礎設施建設，具備關鍵技術護城河
-APLD,87,9,AI Data Center Infrastructure & Connectivity,超大規模AI數據中心託管與電力基礎設施,受惠AI算力需求，營收強勁且具備長期租約優勢。
-AEIS,92,8,AI Data Center Infrastructure & Connectivity,半導體與AI資料中心關鍵電源供應商,受惠AI晶片與晶圓廠設備需求，成長動能強勁。
-AA,90,7,Strategic Supply Chain & Critical Minerals,關鍵金屬供應鏈與國防戰略資源,地緣政治推升鋁價，具戰略物資地位。
+AAOI,98,10,"AI 基礎設施與數據中心擴張, 矽光子與高速光學連接, 美國本土製造與產能回流",AI高速光模組龍頭，產能回流美國,訂單爆發且技術領先，核心題材強勢
+ALM,98,9,"半導體設備與關鍵材料, 國防戰略物資與供應鏈自主, 關鍵戰略金屬與礦產供應",鎢礦供應鏈自主與半導體製程關鍵材料,具備國防與半導體雙重戰略稀缺性，獲市場高度關注。
+APLS,97,9,生物醫藥併購與罕見病療法,獲Biogen以56億美元收購，罕見病管線具戰略價值,併購題材明確，市場高度關注，估值已隨收購價定錨
+AMAT,88,9,"AI 基礎設施與數據中心擴張, 半導體設備與關鍵材料, 先進半導體封測與測試",AI晶片製造與先進封裝核心設備供應商,Terafab合作與EPIC平台強化AI技術護城河
+AEIS,92,8,"AI 基礎設施與數據中心擴張, 半導體設備與關鍵材料",精密電源轉換與控制技術，半導體設備關鍵供應商,受惠AI晶片需求與晶圓廠資本支出，具備強勁產業動能
+APLD,87,8,"AI 基礎設施與數據中心擴張, 電力基礎設施與電網升級",AI數據中心託管與電力基礎設施建設,深度綁定AI算力需求，具備大規模電力與數據中心擴張能力。
+AA,90,7,"國防戰略物資與供應鏈自主, 關鍵戰略金屬與礦產供應",地緣政治驅動鋁價上漲，具備戰略金屬供應地位。,受中東衝突影響，作為關鍵金屬供應商受市場高度關注。
