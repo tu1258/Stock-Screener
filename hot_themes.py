@@ -117,7 +117,7 @@ News (format: [YYYY-MM-DD] summary):
             response = client.models.generate_content(
                 model=GEMINI_MODEL_SUMMARY,
                 contents=prompt,
-                config=types.GenerateContentConfig(temperature=0, max_output_tokens=256),
+                config=types.GenerateContentConfig(temperature=0, max_output_tokens=1024),
             )
             result = response.text.strip()
             summaries[ticker] = result
@@ -178,27 +178,13 @@ Instructions:
 - Use Source D to assess recent catalysts and market attention.
 - Industry average RS (Source C) is a secondary signal only.
 
-You MUST respond with ONLY valid JSON. Do NOT include any markdown, code fences, or explanation text.
-Do NOT truncate or cut off the JSON output. Output must be complete and parseable.
+- You MUST output the result as a raw pipe-separated table.
+- Each line: Rank | Theme Name | Description | TICKER1,TICKER2...
+- DO NOT use markdown code fences (like ```csv) or JSON.
+- DO NOT provide intro or outro text. Ensure ALL tickers are assigned.
 
-Return JSON with this exact structure:
-{{
-  "hot_themes": [
-    {{
-      "name": "Theme name in Traditional Chinese",
-      "desc": "Brief description in Traditional Chinese, max 50 chars",
-      "tickers": "TICKER1,TICKER2"
-    }}
-  ]
-}}
-
-Requirements:
-- hot_themes: top 10 themes sorted by weighted heat. ALL fields must be strings.
-- CRITICAL: desc must NOT contain special characters or parentheses. Use simple text only.
-- CRITICAL: Do not truncate. Output must be complete JSON ending with }}
 """.format(
         today=TODAY,
-        total=len(rs95_tickers),
         ticker_lines=ticker_lines,
         ticker_ind_lines=ticker_ind_lines,
         industry_section=industry_section,
@@ -212,13 +198,26 @@ Requirements:
             config=types.GenerateContentConfig(
                 temperature=0,
                 max_output_tokens=16384,
-                response_mime_type="application/json",
+                response_mime_type="text/plain",
             ),
         )
         raw = response.text.strip()
-        data = json.loads(raw)
-
-        hot_themes_list = data.get("hot_themes", [])
+        hot_themes_list = []
+        # 逐行解析 Pipe Separated 格式
+        for line in raw.split('\n'):
+            if '|' in line:
+                parts = [p.strip() for p in line.split('|')]
+                # 確保至少有名稱、描述、代碼這三個關鍵欄位
+                if len(parts) >= 3:
+                    # 如果第一欄是 Rank 數字，則跳過取後三項；否則取前三項
+                    idx = 1 if parts[0].isdigit() else 0
+                    if parts[idx] == "Theme Name": continue # 跳過表頭
+                    
+                    hot_themes_list.append({
+                        "name": parts[idx],
+                        "desc": parts[idx+1],
+                        "tickers": parts[idx+2].upper().replace(" ", "")
+                    })
         rs_lookup       = {t: rs for t, rs in rs95_tickers}
 
         theme_count = {}
