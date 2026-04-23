@@ -185,6 +185,7 @@ Instructions:
 
 """.format(
         today=TODAY,
+        total=len(rs95_tickers),
         ticker_lines=ticker_lines,
         ticker_ind_lines=ticker_ind_lines,
         industry_section=industry_section,
@@ -203,22 +204,19 @@ Instructions:
         )
         raw = response.text.strip()
         hot_themes_list = []
-        # 逐行解析 Pipe Separated 格式
         for line in raw.split('\n'):
             if '|' in line:
                 parts = [p.strip() for p in line.split('|')]
-                # 確保至少有名稱、描述、代碼這三個關鍵欄位
                 if len(parts) >= 3:
-                    # 如果第一欄是 Rank 數字，則跳過取後三項；否則取前三項
                     idx = 1 if parts[0].isdigit() else 0
-                    if parts[idx] == "Theme Name": continue # 跳過表頭
-                    
+                    if parts[idx] == "Theme Name":
+                        continue
                     hot_themes_list.append({
                         "name": parts[idx],
                         "desc": parts[idx+1],
                         "tickers": parts[idx+2].upper().replace(" ", "")
                     })
-        rs_lookup       = {t: rs for t, rs in rs95_tickers}
+        rs_lookup = {t: rs for t, rs in rs95_tickers}
 
         theme_count = {}
         for item in hot_themes_list:
