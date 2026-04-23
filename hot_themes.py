@@ -24,6 +24,8 @@ GEMINI_MODEL_THEMES  = "gemini-3-flash-preview"
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
+HEADER_KEYWORDS = {"theme name", "rank", "主題", "名稱", "description", "desc"}
+
 
 def load_rs95_liquid(rs_csv, stock_data_csv):
     rs_map = {}
@@ -211,7 +213,8 @@ Instructions:
                 parts = [p.strip() for p in line.split('|')]
                 if len(parts) >= 3:
                     idx = 1 if parts[0].isdigit() else 0
-                    if parts[idx] == "Theme Name":
+                    # 跳過表頭行
+                    if parts[idx].lower() in HEADER_KEYWORDS:
                         continue
                     hot_themes_list.append({
                         "name": parts[idx],
@@ -279,7 +282,7 @@ def main():
     print("✅ 摘要完成\n")
 
     print("🧠 Phase 2：歸納今日熱門題材...")
-    hot_themes_text, hot_themes_list, rs_lookup = fetch_hot_themes(
+    hot_themes_list, rs_lookup = fetch_hot_themes(
         client, rs95_tickers, summaries, industry_text, ticker_to_industry
     )
     if not hot_themes_list:
@@ -288,7 +291,6 @@ def main():
 
     with open(OUTPUT_THEMES_JSON, "w", encoding="utf-8") as f:
         json.dump({
-            "hot_themes_text": hot_themes_text,
             "hot_themes_list": hot_themes_list,
             "rs_lookup":       rs_lookup,
         }, f, ensure_ascii=False, indent=2)
