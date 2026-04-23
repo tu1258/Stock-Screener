@@ -255,7 +255,8 @@ Requirements:
 
 
 def main():
-    gemini_key = os.environ.get("GEMINI_API_KEY_HOT_THEME")
+    #gemini_key = os.environ.get("GEMINI_API_KEY_HOT_THEME")
+    gemini_key = os.environ.get("GEMINI_API_KEY_THEME_ANALYSIS")
     if not gemini_key:
         print("GEMINI_API_KEY 未設定")
         sys.exit(1)
