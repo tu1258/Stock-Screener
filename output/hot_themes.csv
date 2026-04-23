@@ -1,6 +1,12 @@
 ﻿rank,theme,desc,tickers,ticker_count
 1,Rank,Theme Name,DESCRIPTION,1
-2,AI Data Center Infrastructure & Connectivity,"Hyperscale demand for 800G/1.6T transceivers, silicon photonics testing, advanced packaging, and power infrastructure for AI clusters.","AEHR,AAOI,AGX,AMKR",4
-3,Strategic Supply Chain & Critical Minerals,"Focus on Western-aligned production of tungsten, domestic semiconductor assembly, and high-density battery tech for national security.","ALM,AMPX,AMKR",3
-4,Biotech M&A & Rare Disease,Consolidation of specialized immunology and complement-therapy platforms as large-cap pharma acquires validated rare-disease pipelines.,APLS,1
-5,Next-Gen Energy Density & Mobility,Silicon anode battery technology enabling high-performance electric aviation and tactical unmanned systems.,AMPX,1
+2,AI 基礎設施與數據中心擴張,隨 AI 需求激增，超大規模數據中心對高速傳輸、先進封測與電力基礎設施的需求大幅提升。,"AEHR,AAOI,AGX,AMKR",4
+3,矽光子與高速光學連接,800G 及 1.6T 高速光收發器與矽光子技術成為解決 AI 運算集群傳輸瓶頸的關鍵硬體。,"AEHR,AAOI",2
+4,半導體設備與關鍵材料,晶片製造工藝演進帶動專用測試設備與鎢等半導體製程關鍵戰略材料的業績成長。,"AEHR,ALM",2
+5,先進半導體封測與測試,AI 晶片複雜度提升，帶動先進封裝 (OSAT) 與晶圓級可靠性測試設備的剛性需求。,"AEHR,AMKR",2
+6,國防戰略物資與供應鏈自主,鎢等關鍵礦產與高能量密度電池在國防安全與西方國家供應鏈去風險化中具備戰略地位。,"ALM,AMPX",2
+7,美國本土製造與產能回流,受 CHIPS 法案與地緣政治驅動，企業積極在美國本土擴張先進封裝與光學組件生產基地。,"AAOI,AMKR",2
+8,關鍵戰略金屬與礦產供應,全球供應鏈脫鉤背景下，西方盟國對鎢等工業金屬的供應安全與產能開發高度重視。,ALM,1
+9,生物醫藥併購與罕見病療法,大型藥企透過併購具備商業化能力與專利護城河的罕見病研發公司以強化產品管線。,APLS,1
+10,次世代高能量密度電池,矽負極技術突破能量密度瓶頸，賦能電動航空、無人機及高端移動設備等新興應用。,AMPX,1
+11,電力基礎設施與電網升級,AI 數據中心的高耗能特性帶動電力設施 EPC 工程、能源穩定供應與電網現代化建設。,AGX,1
