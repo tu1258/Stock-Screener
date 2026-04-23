@@ -32,8 +32,8 @@ Rental & Leasing Services,Industrials,59.7,19
 Real Estate - Diversified,Real Estate,59.7,3
 Specialty Chemicals,Basic Materials,58.6,58
 Conglomerates,Industrials,57.4,25
-Engineering & Construction,Industrials,57.4,52
 Utilities - Diversified,Utilities,57.4,8
+Engineering & Construction,Industrials,57.4,52
 Broadcasting,Communication Services,56.4,13
 Insurance - Life,Financial,55.8,18
 Apparel Retail,Consumer Cyclical,55.8,32
@@ -50,7 +50,7 @@ Food Distribution,Consumer Defensive,53.9,13
 REIT - Hotel & Motel,Real Estate,53.9,15
 Biotechnology,Healthcare,53.7,590
 Computer Hardware,Technology,53.1,38
-REIT - Diversified,Real Estate,52.4,16
+REIT - Diversified,Real Estate,52.3,16
 Beverages - Brewers,Consumer Defensive,52.1,7
 Specialty Industrial Machinery,Industrials,52.0,75
 Insurance - Diversified,Financial,51.8,12
@@ -84,19 +84,19 @@ Beverages - Non-Alcoholic,Consumer Defensive,45.6,18
 Insurance - Property & Casualty,Financial,45.0,45
 "Furnishings, Fixtures & Appliances",Consumer Cyclical,45.0,33
 Drug Manufacturers - Specialty & Generic,Healthcare,44.9,81
-Resorts & Casinos,Consumer Cyclical,44.8,18
 Drug Manufacturers - General,Healthcare,44.8,21
+Resorts & Casinos,Consumer Cyclical,44.8,18
 Residential Construction,Consumer Cyclical,44.6,21
 Coking Coal,Basic Materials,44.2,5
-Asset Management,Financial,43.3,147
+Asset Management,Financial,43.5,148
 Diagnostics & Research,Healthcare,43.2,47
 Solar,Technology,42.9,23
 Building Materials,Basic Materials,42.8,17
 Grocery Stores,Consumer Defensive,42.5,11
-Utilities - Renewable,Utilities,42.5,23
+Utilities - Renewable,Utilities,42.4,23
 Agricultural Inputs,Basic Materials,42.4,13
-REIT - Office,Real Estate,42.2,21
 Internet Content & Information,Communication Services,42.2,73
+REIT - Office,Real Estate,42.2,21
 REIT - Residential,Real Estate,42.0,21
 Security & Protection Services,Industrials,41.7,21
 Insurance - Specialty,Financial,41.6,17
@@ -129,7 +129,7 @@ Health Information Services,Healthcare,35.4,46
 Waste Management,Industrials,35.2,19
 Medical Devices,Healthcare,35.1,139
 Packaging & Containers,Consumer Cyclical,34.5,23
-Real Estate Services,Real Estate,34.2,46
+Real Estate Services,Real Estate,34.1,46
 Beverages - Wineries & Distilleries,Consumer Defensive,34.0,11
 Tobacco,Consumer Defensive,33.7,10
 Home Improvement Retail,Consumer Cyclical,33.6,5
