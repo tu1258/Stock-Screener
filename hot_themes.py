@@ -187,7 +187,7 @@ Return JSON with this exact structure:
     {{
       "name": "Theme name in Traditional Chinese",
       "desc": "Brief description in Traditional Chinese, max 50 chars",
-      "tickers": ["TICKER1", "TICKER2"]
+      "tickers": "TICKER1,TICKER2"
     }}
   ]
 }}
@@ -224,8 +224,8 @@ Requirements:
         theme_count = {}
         for item in hot_themes_list:
             theme = item.get("name", "")
-            for ticker in item.get("tickers", []):
-                t = ticker.upper()
+            for ticker in item.get("tickers", "").split(","):
+                t = ticker.strip().upper()
                 theme_count.setdefault(theme, []).append("{}(RS{})".format(t, rs_lookup.get(t, "?")))
 
         lines = ["## 題材統計（RS95+ 且成交值>=100M，共 {} 檔）\n".format(len(rs95_tickers))]
@@ -239,7 +239,7 @@ Requirements:
             lines.append("{} — {}（{}）".format(
                 item.get("name", ""),
                 item.get("desc", ""),
-                ", ".join(item.get("tickers", [])),
+                item.get("tickers", ""),
             ))
 
         return "\n".join(lines), hot_themes_list, rs_lookup
@@ -255,8 +255,7 @@ Requirements:
 
 
 def main():
-    #gemini_key = os.environ.get("GEMINI_API_KEY_HOT_THEME")
-    gemini_key = os.environ.get("GEMINI_API_KEY_THEME_ANALYSIS")
+    gemini_key = os.environ.get("GEMINI_API_KEY_HOT_THEME")
     if not gemini_key:
         print("GEMINI_API_KEY 未設定")
         sys.exit(1)
@@ -297,12 +296,12 @@ def main():
 
     theme_rows = []
     for rank, item in enumerate(hot_themes_list, 1):
-        tickers_in_theme = [t.upper() for t in item.get("tickers", [])]
+        tickers_in_theme = [t.strip().upper() for t in item.get("tickers", "").split(",") if t.strip()]
         theme_rows.append({
             "rank":         rank,
             "theme":        item.get("name", ""),
             "desc":         item.get("desc", ""),
-            "tickers":      ", ".join(tickers_in_theme),
+            "tickers":      ",".join(tickers_in_theme),
             "ticker_count": len(tickers_in_theme),
         })
     pd.DataFrame(theme_rows).to_csv(OUTPUT_THEMES_CSV, index=False, encoding="utf-8-sig")
@@ -310,7 +309,7 @@ def main():
     result, seen = [], set()
     for item in hot_themes_list[:10]:
         for t in sorted(
-            [t.strip().upper() for t in item.get("tickers", []) if t.strip()],
+            [t.strip().upper() for t in item.get("tickers", "").split(",") if t.strip()],
             key=lambda t: -rs_lookup.get(t, 0),
         ):
             if t not in seen:
