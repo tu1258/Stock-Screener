@@ -221,6 +221,7 @@ Instructions:
                         "desc": parts[idx+1],
                         "tickers": parts[idx+2].upper().replace(" ", "")
                     })
+
         rs_lookup = {t: rs for t, rs in rs95_tickers}
 
         theme_count = {}
@@ -244,11 +245,8 @@ Instructions:
                 item.get("tickers", ""),
             ))
 
-        return "\n".join(lines), hot_themes_list, rs_lookup
-
-    except json.JSONDecodeError as e:
-        print("  [themes error] {}".format(str(e)[:200]))
-        print("  [themes raw] {}".format(raw[:500]))
+        hot_themes_text = "\n".join(lines)
+        return hot_themes_text, hot_themes_list, rs_lookup
 
     except Exception as e:
         print("  [themes error] {}".format(str(e)[:200]))
@@ -282,15 +280,18 @@ def main():
     print("✅ 摘要完成\n")
 
     print("🧠 Phase 2：歸納今日熱門題材...")
-    hot_themes_list, rs_lookup = fetch_hot_themes(
+    # 修正：正確解包三個回傳值
+    hot_themes_text, hot_themes_list, rs_lookup = fetch_hot_themes(
         client, rs95_tickers, summaries, industry_text, ticker_to_industry
     )
     if not hot_themes_list:
         print("⚠️ Phase 2 失敗")
         sys.exit(1)
 
+    # 修正：hot_themes_text 一併存入 JSON，供 score_ticker.py 使用
     with open(OUTPUT_THEMES_JSON, "w", encoding="utf-8") as f:
         json.dump({
+            "hot_themes_text": hot_themes_text,
             "hot_themes_list": hot_themes_list,
             "rs_lookup":       rs_lookup,
         }, f, ensure_ascii=False, indent=2)
