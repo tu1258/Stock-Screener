@@ -1,12 +1,10 @@
 ﻿rank,theme,desc,tickers,ticker_count
-1,Rank,Theme Name,DESCRIPTION,1
-2,AI 基礎設施與數據中心擴張,隨 AI 需求激增，超大規模數據中心對高速傳輸、先進封測與電力基礎設施的需求大幅提升。,"AEHR,AAOI,AGX,AMKR",4
-3,矽光子與高速光學連接,800G 及 1.6T 高速光收發器與矽光子技術成為解決 AI 運算集群傳輸瓶頸的關鍵硬體。,"AEHR,AAOI",2
-4,半導體設備與關鍵材料,晶片製造工藝演進帶動專用測試設備與鎢等半導體製程關鍵戰略材料的業績成長。,"AEHR,ALM",2
-5,先進半導體封測與測試,AI 晶片複雜度提升，帶動先進封裝 (OSAT) 與晶圓級可靠性測試設備的剛性需求。,"AEHR,AMKR",2
-6,國防戰略物資與供應鏈自主,鎢等關鍵礦產與高能量密度電池在國防安全與西方國家供應鏈去風險化中具備戰略地位。,"ALM,AMPX",2
-7,美國本土製造與產能回流,受 CHIPS 法案與地緣政治驅動，企業積極在美國本土擴張先進封裝與光學組件生產基地。,"AAOI,AMKR",2
-8,關鍵戰略金屬與礦產供應,全球供應鏈脫鉤背景下，西方盟國對鎢等工業金屬的供應安全與產能開發高度重視。,ALM,1
-9,生物醫藥併購與罕見病療法,大型藥企透過併購具備商業化能力與專利護城河的罕見病研發公司以強化產品管線。,APLS,1
-10,次世代高能量密度電池,矽負極技術突破能量密度瓶頸，賦能電動航空、無人機及高端移動設備等新興應用。,AMPX,1
-11,電力基礎設施與電網升級,AI 數據中心的高耗能特性帶動電力設施 EPC 工程、能源穩定供應與電網現代化建設。,AGX,1
+1,AI 數據中心物理層,AI 算力需求驅動數據中心基礎設施大爆發，涵蓋散熱、電源管理及高速互連組件。,"AXTI,AEHR,LWLG,SNDK,AAOI,EFOI,BE,NVTS,LITE,FORM,VICR,CIEN,VIAV,POET,MRVL,POWL,COHR,HUT,TSEM,SITM,FSLY,MU,INTC,NBIS,DOCN,TTMI,ON,ONTO,GLW,VRT,WULF,Q,MPWR,UI,GEV,MKSI,AEIS,RMBS,WDC",39
+2,精準腫瘤與生物技術,針對難治性癌症的精準療法及免疫調節藥物進入臨床關鍵期，併購預期升溫。,"ERAS,SYRE,APLS,TERN,NKTR,RVMD,PRAX,CNTA,IBRX,ARWR,TVTX",11
+3,矽光子與高速光通訊,解決 AI 集群數據傳輸瓶頸，光學互連技術從銅線轉向光纖，800G/1.6T 需求激增。,"LWLG,AAOI,LITE,CIEN,POET,COHR,TSEM,CRDO",8
+4,半導體測試與先進封裝,晶片架構複雜化提升測試難度，先進封裝成為 AI 晶片產能擴張的關鍵瓶頸。,"AEHR,FORM,AMKR,TER,ASX,ONTO,Q,MKSI,AEIS",9
+5,類比與功率半導體,寬能隙材料在數據中心與電動車電源轉換中展現極高效率，需求結構性增長。,"NVTS,VICR,MXL,WOLF,ON,STM,MPWR",7
+6,記憶體與大容量存儲,AI 模型訓練帶動 HBM 及企業級 SSD 需求，記憶體產業進入供需失衡的超級週期。,"SNDK,WDC,STX,MU,RMBS",5
+7,商業航太與衛星數據,衛星通訊、月球物流及太空數據存儲技術成熟，Space-as-a-Service 模式獲支持。,"PL,SIDU,LUNR,IRDM,FLY,GSAT",6
+8,電力基礎設施與能源轉型,AI 數據中心面臨電力瓶頸，帶動燃料電池、電網現代化及綠色能源基礎設施建設。,"BE,AMPX,POWL,PLUG,GEV,LBRT",6
+9,基礎設施工程與營造,受益於數據中心及能源轉型項目的現代化建設，工程訂單量與積壓訂單創歷史新高。,"LGN,AGX,FIX,MTZ,ALM",5
