@@ -1,8 +1,11 @@
 ﻿rank,theme,desc,tickers,ticker_count
-1,AI 基礎設施與實體層,市場焦點從軟體轉向硬體實體層，涵蓋高效能運算晶片、光學連接組件及資料中心基礎設施。,"AXTI,AEHR,LWLG,SNDK,AAOI,EFOI,BE,NVTS,LITE,WDC,FORM,VICR,CIEN,MXL,LGN,POET,MRVL,STX,AGX,AMKR,TER,POWL,COHR,HUT,WOLF,TSEM,SITM,FSLY,MU,INTC,NBIS,DOCN,TTMI,ASX,ON,CRDO,STM,ONTO,FIX,GLW,VRT,WULF,Q,MPWR,GEV,MKSI,AEIS,RMBS",48
-2,AI 電力供應與熱能管理,解決 AI 運算帶來的巨大功耗與散熱瓶頸，包含燃料電池、電源模組、液冷技術及電網基礎設施。,"BE,EFOI,NVTS,VICR,LGN,AGX,POWL,HUT,WOLF,ON,VRT,WULF,GEV,AEIS,PLUG,AMPX",16
-3,光學通訊與矽光子技術,AI 叢集規模化導致銅纜頻寬受限，光學互連與矽光子技術成為解決資料傳輸瓶頸的關鍵路徑。,"AXTI,LWLG,AAOI,LITE,CIEN,POET,MRVL,COHR,TSEM,CRDO,STM,GLW",12
-4,半導體設備與先進封裝,AI 晶片複雜度提升，帶動晶圓測試、先進封裝（如 HBM、2.5D/3D）及製程控制設備需求。,"AXTI,AEHR,FORM,AMKR,TER,TSEM,SITM,INTC,ASX,ONTO,Q,MKSI,AEIS,RMBS",14
-5,精準腫瘤學與生技併購,針對 RAS 等「不可成藥」靶點的突破，以及大藥廠為應對專利懸崖而展開的臨床階段資產併購潮。,"ERAS,SYRE,APLS,TERN,RVMD,NKTR,PRAX,CNTA,IBRX,TVTX,ARWR",11
-6,太空經濟與衛星基礎設施,從衛星發射轉向高毛利的空間數據服務、軌道分析平台及月球物流基礎設施建設。,"ALM,PL,LUNR,SIDU,IRDM,FLY,GSAT",7
-7,記憶體與儲存超級週期,AI 模型對高頻寬記憶體（HBM）及大容量儲存的結構性需求，導致記憶體產業進入供需失衡的上升週期。,"SNDK,WDC,STX",3
+1,AI 光通訊與高速互連,解決AI數據傳輸瓶頸的關鍵光學組件,"AXTI,LWLG,AAOI,LITE,CIEN,POET,MRVL,COHR,TSEM,CRDO,GLW",11
+2,精準醫療與腫瘤免疫,針對難治性癌症與免疫疾病的突破性療法,"ERAS,SYRE,APLS,TERN,NKTR,RVMD,PRAX,CNTA,IBRX,ARWR,TVTX",11
+3,AI 電力供應與散熱管理,支撐高算力數據中心的能源與冷卻方案,"BE,EFOI,NVTS,VICR,POWL,VRT,FIX,MPWR,ON",9
+4,半導體先進封裝與測試,提升AI晶片效能與良率的後端製程設備,"AEHR,FORM,AMKR,TER,ONTO,Q,MKSI,AEIS,ASX,INTC",10
+5,投機動能與雲端平台,雲端推論架構與高波動投機動能題材,"RMSG,BIRD,CAR,NBIS,DOCN,FSLY",6
+6,AI 記憶體與數據儲存,受惠AI存儲需求爆發的存儲器與硬碟,"SNDK,WDC,STX,MU,RMBS",5
+7,類比晶片與工業連接,工業自動化與網路測試的關鍵半導體,"MXL,VIAV,TTMI,SITM,STM,UI",6
+8,能源轉型與電網現代化,數據中心電力需求帶動的基礎設施建設,"AGX,LGN,HUT,WULF,GEV,PLUG,LBRT,MTZ",8
+9,商業航太與衛星通訊,軌道數據服務與低軌衛星通訊基礎設施,"PL,SIDU,LUNR,IRDM,FLY,GSAT",6
+10,關鍵材料與電池技術,國防與電動化所需的戰略金屬與電池,"ALM,AMPX,WOLF",3
