@@ -183,6 +183,7 @@ Instructions:
 - You MUST output the result as a raw pipe-separated table.
 - Each line: Rank | Theme Name | Description | TICKER1,TICKER2...
 - Theme name and description should be written in Traditional Chinese.
+- Description must be less than 20 Traditional Chinese characters.
 - List top 10 themes sorted by weighted heat. ALL fields must be strings.
 - DO NOT use markdown code fences (like ```csv) or JSON.
 - DO NOT provide intro or outro text. Ensure ALL tickers are assigned.
