@@ -207,7 +207,7 @@ Instructions:
             ),
         )
         raw = response.text.strip()
-        print("  [themes raw preview]\n{}\n---".format(raw[:500]))
+        print("  [themes raw preview]\n{}\n---".format(raw))
         hot_themes_list = []
         for line in raw.split('\n'):
             if '|' in line:
