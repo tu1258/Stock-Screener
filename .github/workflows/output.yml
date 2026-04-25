@@ -49,24 +49,24 @@ jobs:
       - name: Run hot_themes.py
         env:
           GEMINI_API_KEY_HOT_THEME: ${{ secrets.GEMINI_API_KEY_HOT_THEME }}
-          GEMINI_API_KEY_THEME_ANALYSIS: ${{ secrets.GEMINI_API_KEY_THEME_ANALYSIS }}
+          GEMINI_API_KEY_SCORE: ${{ secrets.GEMINI_API_KEY_SCORE }}
         run: |
-          until python hot_themes.py; do
-            echo "⚠️ hot_themes.py 未完成，60 秒後重試..."
+          until python hot_theme.py; do
+            echo "⚠️ hot_theme.py 未完成，60 秒後重試..."
             sleep 60
           done
       - name: Commit hot theme output
         run: |
-          git add output/hot_themes.csv output/hot_theme_watchlist.txt
+          git add output/hot_theme.csv output/hot_theme_watchlist.txt
           git commit -m "Daily Update (hot theme)" || echo "No changes to commit"
           git push
-      - name: Run theme_analysis.py
+      - name: Run score_ticker.py
         env:
           GEMINI_API_KEY_HOT_THEME: ${{ secrets.GEMINI_API_KEY_HOT_THEME }}
-          GEMINI_API_KEY_THEME_ANALYSIS: ${{ secrets.GEMINI_API_KEY_THEME_ANALYSIS }}
+          GEMINI_API_KEY_SCORE: ${{ secrets.GEMINI_API_KEY_SCORE }}
         run: |
-          until python theme_analysis.py; do
-            echo "⚠️ theme_analysis.py 未完成，60 秒後重試..."
+          until python score_ticker.py; do
+            echo "⚠️ score_ticker.py 未完成，60 秒後重試..."
             sleep 60
           done
       - name: Commit final output
