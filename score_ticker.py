@@ -68,22 +68,17 @@ No Markdown, no extra explanation.""".format(
         response = client.models.generate_content(
             model=GEMINI_MODEL_SCORE,
             contents=prompt,
-            config=types.GenerateContentConfig(temperature=0, max_output_tokens=512),
+            config=types.GenerateContentConfig(
+                temperature=0,
+                max_output_tokens=512,
+                response_mime_type="application/json",
+            ),
         )
-        raw = response.text.strip()
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.lower().startswith("json"):
-                raw = raw[4:]
-        result = json.loads(raw.strip())
+        result = json.loads(response.text.strip())
         result["ticker"] = ticker.upper()
         return result
-    except json.JSONDecodeError:
-        print("❌ JSON parse error")
-        return None
     except Exception as e:
-        err = str(e)
-        print("❌ {}".format(err[:100]))
+        print("❌ {}".format(str(e)[:100]))
         return None
 
 
@@ -116,7 +111,6 @@ def main():
             news_cache = json.load(f)
         print("📂 news cache 載入：{} 檔".format(len(news_cache)))
 
-    # 斷點進度
     progress = {}
     if os.path.exists(OUTPUT_PROGRESS):
         with open(OUTPUT_PROGRESS, "r", encoding="utf-8") as f:
@@ -140,7 +134,6 @@ def main():
         result = score_ticker(client, ticker, hot_themes_text, news_text)
 
         if result is None:
-            # 這檔失敗，記錄下來，繼續跑其他檔
             print("❌ 失敗，稍後重試")
             failed_this_run.append(ticker)
             continue
@@ -160,15 +153,11 @@ def main():
 
         time.sleep(SCORING_SLEEP)
 
-    # 如果還有失敗的，以非零 exit code 結束，讓 workflow 知道要重跑
     if failed_this_run:
         print("\n⚠️ 本次未完成 {} 檔：{}".format(len(failed_this_run), ", ".join(failed_this_run)))
-
-        # 輸出目前已完成的結果（部分結果）
         _write_output(progress, rs_map)
         raise SystemExit(1)
 
-    # 全部完成
     _write_output(progress, rs_map)
     print("\n✅ 全部完成")
 
