@@ -1,11 +1,11 @@
 ﻿rank,theme,desc,tickers,ticker_count
-1,AI 光通訊與高速互連,解決AI數據傳輸瓶頸的關鍵光學組件,"AXTI,LWLG,AAOI,LITE,CIEN,POET,MRVL,COHR,TSEM,CRDO,GLW",11
-2,精準醫療與腫瘤免疫,針對難治性癌症與免疫疾病的突破性療法,"ERAS,SYRE,APLS,TERN,NKTR,RVMD,PRAX,CNTA,IBRX,ARWR,TVTX",11
-3,AI 電力供應與散熱管理,支撐高算力數據中心的能源與冷卻方案,"BE,EFOI,NVTS,VICR,POWL,VRT,FIX,MPWR,ON",9
-4,半導體先進封裝與測試,提升AI晶片效能與良率的後端製程設備,"AEHR,FORM,AMKR,TER,ONTO,Q,MKSI,AEIS,ASX,INTC",10
-5,投機動能與雲端平台,雲端推論架構與高波動投機動能題材,"RMSG,BIRD,CAR,NBIS,DOCN,FSLY",6
-6,AI 記憶體與數據儲存,受惠AI存儲需求爆發的存儲器與硬碟,"SNDK,WDC,STX,MU,RMBS",5
-7,類比晶片與工業連接,工業自動化與網路測試的關鍵半導體,"MXL,VIAV,TTMI,SITM,STM,UI",6
-8,能源轉型與電網現代化,數據中心電力需求帶動的基礎設施建設,"AGX,LGN,HUT,WULF,GEV,PLUG,LBRT,MTZ",8
-9,商業航太與衛星通訊,軌道數據服務與低軌衛星通訊基礎設施,"PL,SIDU,LUNR,IRDM,FLY,GSAT",6
-10,關鍵材料與電池技術,國防與電動化所需的戰略金屬與電池,"ALM,AMPX,WOLF",3
+1,AI 基礎設施與資料中心,支撐 AI 運算的核心硬體與機房建設,"MXL,AXTI,AEHR,AAOI,SNDK,LWLG,POET,EFOI,LITE,VICR,BE,FORM,INTC,WDC,CIEN,NVTS,AMKR,LGN,STX,TTMI,MRVL,TER,AGX,POWL,COHR,CRDO,SITM,MU,HUT,ONTO,TSEM,AMD,RMBS,Q,ON,STM,ARM,DOCN,GLW,ALAB,MPWR,VRT,NBIS,FIX,WULF,CLS,AEIS,SMTC,MKSI,DELL,BIRD,UI,RMSG,FSLY",54
+2,先進半導體與 AI 晶片,高性能運算與功率半導體技術領先者,"MXL,AXTI,AEHR,POET,VICR,FORM,INTC,NVTS,AMKR,MRVL,TER,COHR,ASX,CRDO,SITM,MU,ONTO,TSEM,AMD,RMBS,Q,ON,STM,ARM,ALAB,ACLS,MPWR,AEIS,SMTC,MKSI",30
+3,光學通訊與矽光子,解決資料中心頻寬瓶頸的高速傳輸技術,"MXL,AAOI,LWLG,POET,LITE,VIAV,CIEN,COHR,CRDO,TSEM,RMBS,GLW,SMTC",13
+4,先進封裝與測試設備,提升晶片效能與良率的關鍵製程環節,"AXTI,AEHR,FORM,AMKR,TER,ASX,ONTO,ACLS",8
+5,電力基礎設施與能源轉型,滿足資料中心龐大電力需求的能源方案,"BE,WOLF,LGN,AGX,POWL,GEV,PLUG,AEIS,AMPX,VRT",10
+6,工業自動化與基礎建設,關鍵基礎設施與高科技廠房工程服務,"LGN,AGX,POWL,FIX,TER,ALM,PL,SIDU,LUNR",9
+7,精準醫療與生物技術,針對癌症與免疫系統的創新療法開發,"ERAS,APLS,SYRE,TERN,NKTR,RVMD,PRAX,CNTA,ARWR,IBRX",10
+8,記憶體與儲存技術,AI 訓練與推理所需的超高頻寬存儲,"SNDK,WDC,STX,MU,RMBS,ONTO,DELL",7
+9,併購與私有化題材,具備戰略價值的企業收購與資本運作,"APLS,TERN,AVNS,CNTA,GSAT,CAR",6
+10,太空經濟與衛星通訊,低軌衛星與太空數據服務的商業化應用,"PL,SIDU,LUNR",3
