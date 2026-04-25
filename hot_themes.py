@@ -181,7 +181,7 @@ Instructions:
 - You MUST output a JSON array of exactly 10 objects, sorted by weighted heat.
 - Each object has these fields:
     "name": theme name in Traditional Chinese (string)
-    "desc": description in Traditional Chinese, 10 characters or less (string)
+    "desc": description in Traditional Chinese, 25 characters or less (string)
     "tickers": comma-separated ticker symbols, uppercase, no spaces (string)
 - Output raw JSON only. No markdown, no extra text.
 
@@ -205,6 +205,7 @@ Instructions:
             ),
         )
         raw = response.text.strip()
+        print("  [themes raw]\n{}\n---".format(raw))
         hot_themes_list = json.loads(raw)
 
         # 正規化 tickers 欄位
