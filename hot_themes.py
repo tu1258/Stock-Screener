@@ -24,8 +24,6 @@ GEMINI_MODEL_THEMES  = "gemini-3-flash-preview"
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
-HEADER_KEYWORDS = {"theme name", "rank", "主題", "名稱", "description", "desc"}
-
 
 def load_rs95_liquid(rs_csv, stock_data_csv):
     rs_map = {}
@@ -180,13 +178,12 @@ Instructions:
 - Use Source D to assess recent catalysts and market attention.
 - Industry average RS (Source C) is a secondary signal only.
 
-- You MUST output the result as a raw pipe-separated table.
-- Each line: Rank | Theme Name | Description | TICKER1,TICKER2...
-- Theme name and description should be written in Traditional Chinese.
-- Description must be less than 20 Traditional Chinese characters.
-- List top 10 themes sorted by weighted heat. ALL fields must be strings.
-- DO NOT use markdown code fences (like ```csv) or JSON.
-- DO NOT provide intro or outro text. Ensure ALL tickers are assigned.
+- You MUST output a JSON array of exactly 10 objects, sorted by weighted heat.
+- Each object has these fields:
+    "name": theme name in Traditional Chinese (string)
+    "desc": description in Traditional Chinese, 10 characters or less (string)
+    "tickers": comma-separated ticker symbols, uppercase, no spaces (string)
+- Output raw JSON only. No markdown, no extra text.
 
 """.format(
         today=TODAY,
@@ -204,25 +201,15 @@ Instructions:
             config=types.GenerateContentConfig(
                 temperature=0,
                 max_output_tokens=16384,
-                response_mime_type="text/plain",
+                response_mime_type="application/json",
             ),
         )
         raw = response.text.strip()
-        print("  [themes raw preview]\n{}\n---".format(raw))
-        hot_themes_list = []
-        for line in raw.split('\n'):
-            if '|' in line:
-                parts = [p.strip() for p in line.split('|')]
-                if len(parts) >= 3:
-                    idx = 1 if parts[0].isdigit() else 0
-                    # 跳過表頭行
-                    if parts[idx].lower() in HEADER_KEYWORDS:
-                        continue
-                    hot_themes_list.append({
-                        "name": parts[idx],
-                        "desc": parts[idx+1],
-                        "tickers": parts[idx+2].upper().replace(" ", "")
-                    })
+        hot_themes_list = json.loads(raw)
+
+        # 正規化 tickers 欄位
+        for item in hot_themes_list:
+            item["tickers"] = item.get("tickers", "").upper().replace(" ", "").rstrip(",")
 
         rs_lookup = {t: rs for t, rs in rs95_tickers}
 
@@ -231,7 +218,8 @@ Instructions:
             theme = item.get("name", "")
             for ticker in item.get("tickers", "").split(","):
                 t = ticker.strip().upper()
-                theme_count.setdefault(theme, []).append("{}(RS{})".format(t, rs_lookup.get(t, "?")))
+                if t:
+                    theme_count.setdefault(theme, []).append("{}(RS{})".format(t, rs_lookup.get(t, "?")))
 
         lines = ["## 題材統計（RS95+ 且成交值>=100M，共 {} 檔）\n".format(len(rs95_tickers))]
         for theme, members in sorted(theme_count.items(), key=lambda x: -len(x[1])):
@@ -282,7 +270,6 @@ def main():
     print("✅ 摘要完成\n")
 
     print("🧠 Phase 2：歸納今日熱門題材...")
-    # 修正：正確解包三個回傳值
     hot_themes_text, hot_themes_list, rs_lookup = fetch_hot_themes(
         client, rs95_tickers, summaries, industry_text, ticker_to_industry
     )
@@ -290,7 +277,6 @@ def main():
         print("⚠️ Phase 2 失敗")
         sys.exit(1)
 
-    # 修正：hot_themes_text 一併存入 JSON，供 score_ticker.py 使用
     with open(OUTPUT_THEMES_JSON, "w", encoding="utf-8") as f:
         json.dump({
             "hot_themes_text": hot_themes_text,
