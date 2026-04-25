@@ -1,11 +1,11 @@
 ﻿rank,theme,desc,tickers,ticker_count
-1,AI光學互連與矽光子,AI數據傳輸核心技術,"MXL,AAOI,POET,LITE,CIEN,MRVL,COHR,CRDO,TSEM,LWLG,GLW",11
-2,AI電力基礎設施與散熱,支撐AI算力的能源後盾,"VICR,BE,POWL,AGX,VRT,MPWR,ON,AEIS,EFOI,NVTS,HUT,FIX,WULF",13
-3,AI半導體設備與先進封裝,解決AI晶片產能瓶頸,"AXTI,AEHR,FORM,AMKR,TER,ONTO,ASX,ACLS,MKSI,Q",10
-4,生技併購與罕見病藥物,藥廠專利到期引發併購潮,"APLS,TERN,CNTA,SYRE,NKTR,PRAX,IBRX,ARWR,AVNS",9
-5,AI存儲與記憶體超級週期,AI海量數據存儲需求,"SNDK,WDC,STX,MU,RMBS,DELL",6
-6,次世代運算架構與晶圓代工,算力升級與晶圓代工轉型,"INTC,MRVL,AMD,ARM,ALAB",5
-7,太空經濟與國防戰略物資,商業航太與關鍵礦產,"PL,SIDU,LUNR,IRDM,GSAT,ALM",6
-8,網路通訊與工業電子基礎設施,數位轉型之硬體基礎,"VIAV,TTMI,UI,SMTC,CLS",5
-9,能源轉型與工業現代化,綠能與工業電氣化趨勢,"WOLF,LGN,GEV,PLUG",4
-10,精準腫瘤學與RAS抑制劑,癌症標靶治療重大突破,"ERAS,RVMD",2
+1,AI光通訊與矽光子,解決AI數據傳輸瓶頸,"MXL,AXTI,AEHR,AAOI,LWLG,POET,LITE,CIEN,COHR,CRDO,TSEM,RMBS,GLW,ALAB,SMTC",15
+2,AI電力與能源基建,應對AI算力電力需求,"VICR,BE,WOLF,EFOI,NVTS,POWL,AGX,LGN,ON,MPWR,VRT,GEV,AEIS,PLUG",14
+3,高效能網路與通訊系統,構建AI數據中心骨幹,"AAOI,LITE,VIAV,CIEN,TTMI,MRVL,UI",7
+4,先進封裝與半導體測試,提升AI晶片良率關鍵,"AEHR,FORM,AMKR,TER,ASX,ONTO,ACLS,MKSI",8
+5,記憶體與數據存儲,HBM與NAND供不應求,"SNDK,WDC,STX,MU,RMBS,ONTO",6
+6,生技與醫療併購,大藥廠積極收購資產,"APLS,TERN,SYRE,AVNS,NKTR,PRAX,CNTA",7
+7,Agentic AI與自研晶片,CPU需求激增與自研,"INTC,AMD,ARM,ALAB",4
+8,精準腫瘤與RAS抑制劑,攻克難治性癌症突破,"ERAS,RVMD,CNTA,ARWR,IBRX",5
+9,AI雲端算力與邊緣運算,算力服務與邊緣推理,"HUT,DOCN,NBIS,FSLY,WULF",5
+10,太空經濟與衛星通訊,軌道數據與全球連接,"PL,SIDU,LUNR,IRDM,GSAT",5
