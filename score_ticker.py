@@ -9,7 +9,7 @@ from google.genai import types
 INPUT_TXT         = "output/technical_watchlist.txt"
 RS_CSV            = "stock_rs.csv"
 INPUT_NEWS_CACHE  = "output/news_cache.json"
-INPUT_THEMES_JSON = "output/hot_themes.json"
+INPUT_THEMES_JSON = "output/hot_theme.json"
 OUTPUT_PROGRESS   = "output/theme_progress.json"
 OUTPUT_CSV        = "output/watchlist.csv"
 OUTPUT_WATCHLIST  = "output/watchlist.txt"
@@ -83,7 +83,7 @@ No Markdown, no extra explanation.""".format(
 
 
 def main():
-    gemini_key = os.environ.get("GEMINI_API_KEY_THEME_ANALYSIS")
+    gemini_key = os.environ.get("GEMINI_API_KEY_SCORE")
     if not gemini_key:
         raise EnvironmentError("GEMINI_API_KEY 未設定")
 
