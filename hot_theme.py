@@ -14,8 +14,8 @@ INDUSTRY_RS_CSV   = "industry_rs.csv"
 TICKER_IND_CSV    = "ticker_industry.csv"
 INPUT_NEWS_CACHE  = "output/news_cache.json"
 OUTPUT_SUMMARIES  = "output/rs95_summaries.json"
-OUTPUT_THEMES_CSV = "output/hot_themes.csv"
-OUTPUT_THEMES_JSON= "output/hot_themes.json"
+OUTPUT_THEMES_CSV = "output/hot_theme.csv"
+OUTPUT_THEMES_JSON= "output/hot_theme.json"
 OUTPUT_HOT_WL     = "output/hot_theme_watchlist.txt"
 MIN_AVG_VALUE_10D = 100
 
@@ -247,8 +247,7 @@ Instructions:
 
 
 def main():
-    #gemini_key = os.environ.get("GEMINI_API_KEY_HOT_THEME")
-    gemini_key = os.environ.get("GEMINI_API_KEY_THEME_ANALYSIS")
+    gemini_key = os.environ.get("GEMINI_API_KEY_HOT_THEME")
     if not gemini_key:
         print("GEMINI_API_KEY 未設定")
         sys.exit(1)
