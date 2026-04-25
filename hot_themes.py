@@ -125,6 +125,7 @@ News (format: [YYYY-MM-DD] summary):
         except Exception as e:
             err = str(e)
             print("❌ {}".format(err[:100]))
+        time.sleep(1)
 
     with open(OUTPUT_SUMMARIES, "w", encoding="utf-8") as f:
         json.dump(summaries, f, ensure_ascii=False, indent=2)
