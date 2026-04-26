@@ -11,6 +11,7 @@ STOCK_DATA_CSV    = "stock_data.csv"
 INPUT_TXT         = "output/technical_watchlist.txt"
 OUTPUT_NEWS_CACHE = "output/news_cache.json"
 MIN_AVG_VALUE_10D = 100
+MIN_ATR_PCT       = 2.5
 
 TODAY         = datetime.date.today().strftime("%Y-%m-%d")
 ONE_MONTH_AGO = (datetime.date.today() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
@@ -31,7 +32,7 @@ def load_rs95_liquid(rs_csv, stock_data_csv):
         return sorted(rs_map.items(), key=lambda x: -x[1])
 
     price_df = pd.read_csv(stock_data_csv, parse_dates=["date"],
-                           usecols=["ticker", "date", "close", "volume"])
+                           usecols=["ticker", "date", "high", "low", "close", "volume"])
     price_df = price_df[price_df["ticker"].str.upper().isin(rs_map)]
     price_df = price_df.sort_values(["ticker", "date"])
     price_df["daily_value"] = price_df["close"] * price_df["volume"] / 1_000_000
@@ -43,7 +44,33 @@ def load_rs95_liquid(rs_csv, stock_data_csv):
     )
     avg_val["ticker"] = avg_val["ticker"].str.upper()
     liquid_set = set(avg_val[avg_val["avg_value_10"] >= MIN_AVG_VALUE_10D]["ticker"].tolist())
-    return sorted([(t, rs) for t, rs in rs_map.items() if t in liquid_set], key=lambda x: -x[1])
+
+    # TR / ATR
+    price_df["prev_close"] = price_df.groupby("ticker")["close"].shift(1)
+    price_df["tr"] = pd.concat([
+        price_df["high"] - price_df["low"],
+        (price_df["high"] - price_df["prev_close"]).abs(),
+        (price_df["low"]  - price_df["prev_close"]).abs()
+    ], axis=1).max(axis=1)
+    price_df["tr_pct"] = price_df["tr"] / price_df["prev_close"] * 100
+    price_df["atr_14_pct"] = price_df.groupby("ticker")["tr_pct"].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
+
+    # 暴漲過濾
+    price_df["tr_pct_roll_sum_14"] = price_df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).sum())
+    price_df["tr_pct_roll_max_14"] = price_df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).max())
+    price_df["atr_pct_13_excl"] = ((price_df["tr_pct_roll_sum_14"] - price_df["tr_pct_roll_max_14"]) / 13)
+
+    latest = price_df.groupby("ticker").tail(1).copy()
+    latest["ticker"] = latest["ticker"].str.upper()
+    latest = latest.set_index("ticker")
+
+    atr_ok_set   = set(latest[latest["atr_14_pct"] > MIN_ATR_PCT].index)
+    no_spike_set = set(latest[
+        latest["tr_pct_roll_max_14"] <= 25 * latest["atr_pct_13_excl"]
+    ].index)
+
+    valid_set = liquid_set & atr_ok_set & no_spike_set
+    return sorted([(t, rs) for t, rs in rs_map.items() if t in valid_set], key=lambda x: -x[1])
 
 
 def fetch_finnhub_news(ticker, api_key):
