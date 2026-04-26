@@ -15,7 +15,6 @@ OUTPUT_PROGRESS   = "output/theme_progress.json"
 OUTPUT_CSV        = "output/watchlist.csv"
 OUTPUT_WATCHLIST  = "output/watchlist.txt"
 RATING_THRESHOLD  = 6
-SCORING_SLEEP     = 1
 
 GEMINI_MODEL_SCORE = "gemini-3.1-flash-lite-preview"
 
@@ -89,6 +88,8 @@ Fields (all Chinese text must be in Traditional Chinese):
     except Exception as e:
         print("❌ {}".format(str(e)[:100]))
         return None
+    finally:
+        time.sleep(4)
 
 
 def main():
@@ -159,8 +160,6 @@ def main():
 
         with open(OUTPUT_PROGRESS, "w", encoding="utf-8") as f:
             json.dump(progress, f, ensure_ascii=False, indent=2)
-
-        time.sleep(SCORING_SLEEP)
 
     if failed_this_run:
         print("\n⚠️ 本次未完成 {} 檔：{}".format(len(failed_this_run), ", ".join(failed_this_run)))
