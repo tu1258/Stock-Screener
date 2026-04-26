@@ -6,6 +6,8 @@ import datetime
 import pandas as pd
 from google import genai
 from google.genai import types
+from pydantic import BaseModel
+from typing import List
 import sys
 
 RS_CSV            = "stock_rs.csv"
@@ -19,10 +21,19 @@ OUTPUT_THEMES_JSON= "output/hot_theme.json"
 OUTPUT_HOT_WL     = "output/hot_theme_watchlist.txt"
 MIN_AVG_VALUE_10D = 100
 
-GEMINI_MODEL_SUMMARY = "gemma-4-31b-it"       # Phase 1：摘要，高 RPD，不需要 thinking
-GEMINI_MODEL_THEMES  = "gemini-3-flash-preview" # Phase 2：主題歸納，需要市場知識
+GEMINI_MODEL_SUMMARY = "gemma-4-31b-it"
+GEMINI_MODEL_THEMES  = "gemini-3-flash-preview"
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
+
+
+class ThemeItem(BaseModel):
+    name: str
+    desc: str
+    tickers: str
+
+class ThemeList(BaseModel):
+    themes: List[ThemeItem]
 
 
 def load_rs95_liquid(rs_csv, stock_data_csv):
@@ -183,12 +194,10 @@ Instructions:
 - Use Source D to assess recent catalysts and market attention.
 - Industry average RS (Source C) is a secondary signal only.
 
-- You MUST output a JSON array of exactly 10 objects, sorted by weighted heat.
-- Each object has these fields:
-    "name": theme name in Traditional Chinese (string)
-    "desc": description in Traditional Chinese, 10 characters or less (string)
-    "tickers": comma-separated ticker symbols, uppercase, no spaces (string)
-- Output raw JSON only. No markdown, no extra text.
+Output exactly 10 themes sorted by weighted heat, each with:
+- name: theme name in Traditional Chinese
+- desc: description in Traditional Chinese, 10 characters or less
+- tickers: comma-separated ticker symbols, uppercase, no spaces
 
 """.format(
         today=TODAY,
@@ -205,13 +214,17 @@ Instructions:
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0,
+                top_p=0.95,
+                top_k=1,
                 max_output_tokens=16384,
                 response_mime_type="application/json",
+                response_schema=ThemeList,
             ),
         )
         raw = response.text.strip()
         print("  [themes raw]\n{}\n---".format(raw))
-        hot_themes_list = json.loads(raw)
+        parsed = json.loads(raw)
+        hot_themes_list = parsed["themes"]
 
         for item in hot_themes_list:
             item["tickers"] = item.get("tickers", "").upper().replace(" ", "").rstrip(",")
