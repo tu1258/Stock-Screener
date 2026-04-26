@@ -27,7 +27,7 @@ def main():
 
     print("[1/3] 從 Finviz 取得 ticker 與 industry...")
     t0         = time.time()
-    df_finviz  = fetch_finviz_data() # SIZE
+    df_finviz  = fetch_finviz_data(500) # SIZE
     tickers    = df_finviz["Ticker"].tolist()
     print(f"      取得 {len(tickers)} 個 ticker（{time.time()-t0:.1f}s）")
 
