@@ -19,8 +19,8 @@ OUTPUT_THEMES_JSON= "output/hot_theme.json"
 OUTPUT_HOT_WL     = "output/hot_theme_watchlist.txt"
 MIN_AVG_VALUE_10D = 100
 
-GEMINI_MODEL_SUMMARY = "gemini-3.1-flash-lite-preview"
-GEMINI_MODEL_THEMES  = "gemini-3-flash-preview"
+GEMINI_MODEL_SUMMARY = "gemma-4-31b-it"       # Phase 1：摘要，高 RPD，不需要 thinking
+GEMINI_MODEL_THEMES  = "gemini-3-flash-preview" # Phase 2：主題歸納，需要市場知識
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
@@ -117,14 +117,18 @@ News (format: [YYYY-MM-DD] summary):
             response = client.models.generate_content(
                 model=GEMINI_MODEL_SUMMARY,
                 contents=prompt,
-                config=types.GenerateContentConfig(temperature=0, max_output_tokens=1024),
+                config=types.GenerateContentConfig(
+                    temperature=1,
+                    top_p=0.95,
+                    top_k=64,
+                    max_output_tokens=1024,
+                ),
             )
             result = response.text.strip()
             summaries[ticker] = result
             print("✓ {} chars".format(len(result)))
         except Exception as e:
-            err = str(e)
-            print("❌ {}".format(err[:100]))
+            print("❌ {}".format(str(e)[:100]))
         time.sleep(1)
 
     with open(OUTPUT_SUMMARIES, "w", encoding="utf-8") as f:
@@ -209,7 +213,6 @@ Instructions:
         print("  [themes raw]\n{}\n---".format(raw))
         hot_themes_list = json.loads(raw)
 
-        # 正規化 tickers 欄位
         for item in hot_themes_list:
             item["tickers"] = item.get("tickers", "").upper().replace(" ", "").rstrip(",")
 
