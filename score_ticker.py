@@ -30,7 +30,7 @@ class ScoreResult(BaseModel):
     reason: str
 
 
-def score_ticker(client, ticker, hot_themes_text, news_text):
+def score_ticker(client, ticker, hot_themes_json, news_text):
     news_section = "[Recent news for {} (past 30 days)]\n{}".format(ticker, news_text) if news_text else "(no recent news)"
 
     prompt = """You are a senior US equity analyst. Today is {today}.
@@ -40,7 +40,7 @@ Your task: score how well {ticker} belongs to today's hot investment themes.
 A stock scores high if it clearly belongs to one or more of the top-ranked themes.
 A stock scores low if it has no meaningful connection to any of the themes.
 
-[Today's hot theme list — use this as your scoring framework]
+[Today's hot theme list (JSON, sorted by weighted heat)]
 {hot_themes}
 
 [Recent news for {ticker} — use this together with your own knowledge to judge whether {ticker} fits the themes above]
@@ -66,7 +66,7 @@ Fields (all Chinese text must be in Traditional Chinese):
 - reason: scoring rationale (max 20 Traditional Chinese characters)""".format(
         today=TODAY,
         ticker=ticker,
-        hot_themes=hot_themes_text,
+        hot_themes=hot_themes_json,
         news_section=news_section,
     )
 
@@ -103,7 +103,7 @@ def main():
         raise FileNotFoundError("找不到 {}，請先執行 hot_theme.py".format(INPUT_THEMES_JSON))
     with open(INPUT_THEMES_JSON, "r", encoding="utf-8") as f:
         themes_data = json.load(f)
-    hot_themes_text = themes_data["hot_themes_text"]
+    hot_themes_json = json.dumps(themes_data["hot_themes_list"], ensure_ascii=False, indent=2)
 
     with open(INPUT_TXT, "r") as f:
         tickers = [line.strip().upper() for line in f if line.strip()]
@@ -140,7 +140,7 @@ def main():
         news_text = news_cache.get(ticker, "")
         print("  [{:3d}/{}] {}".format(i, len(tickers), ticker), end=" ... ", flush=True)
 
-        result = score_ticker(client, ticker, hot_themes_text, news_text)
+        result = score_ticker(client, ticker, hot_themes_json, news_text)
 
         if result is None:
             print("❌ 失敗，稍後重試")
