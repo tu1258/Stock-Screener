@@ -53,21 +53,19 @@ def load_rs95_liquid(rs_csv, stock_data_csv):
         (price_df["low"]  - price_df["prev_close"]).abs()
     ], axis=1).max(axis=1)
     price_df["tr_pct"] = price_df["tr"] / price_df["prev_close"] * 100
-    price_df["atr_14_pct"] = price_df.groupby("ticker")["tr_pct"].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
+    price_df["atr_14_pct"] = price_df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).mean())
 
     # 暴漲過濾
-    price_df["tr_pct_roll_sum_14"] = price_df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).sum())
-    price_df["tr_pct_roll_max_14"] = price_df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).max())
-    price_df["atr_pct_13_excl"] = ((price_df["tr_pct_roll_sum_14"] - price_df["tr_pct_roll_max_14"]) / 13)
+    price_df["tr_pct_sum_14"] = price_df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).sum())
+    price_df["tr_pct_max_14"] = price_df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).max())
+    price_df["atr_pct_13_excl"] = ((price_df["tr_pct_sum_14"] - price_df["tr_pct_max_14"]) / 13)
 
     latest = price_df.groupby("ticker").tail(1).copy()
     latest["ticker"] = latest["ticker"].str.upper()
     latest = latest.set_index("ticker")
 
     atr_ok_set   = set(latest[latest["atr_14_pct"] > MIN_ATR_PCT].index)
-    no_spike_set = set(latest[
-        latest["tr_pct_roll_max_14"] <= 25 * latest["atr_pct_13_excl"]
-    ].index)
+    no_spike_set = set(latest[latest["tr_pct_max_14"] <= 25 * latest["atr_pct_13_excl"]].index)
 
     valid_set = liquid_set & atr_ok_set & no_spike_set
     return sorted([(t, rs) for t, rs in rs_map.items() if t in valid_set], key=lambda x: -x[1])
