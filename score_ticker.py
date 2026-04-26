@@ -17,7 +17,7 @@ OUTPUT_WATCHLIST  = "output/watchlist.txt"
 RATING_THRESHOLD  = 6
 SCORING_SLEEP     = 1
 
-GEMINI_MODEL_SCORE = "gemma-4-31b-it"
+GEMINI_MODEL_SCORE = "gemini-3.1-flash-lite-preview"
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
