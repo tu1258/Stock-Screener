@@ -30,8 +30,8 @@ def compute_indicators_vectorized(df):
     ], axis=1).max(axis=1)
     df["tr_pct"] = df["tr"] / df['prev_close'] * 100
     
-    df['atr_14'] = df.groupby('ticker')['tr'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
-    df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
+    df['atr_14'] = df.groupby('ticker')['tr'].transform(lambda x: x.rolling(14).mean())
+    df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.rolling(14).mean())
     df["avg_bar"] = (df['close'] + df['high'] + df['low']) / 3
     df['distance'] = abs(df["avg_bar"] - df["ma5"]); # Keltner Channel
     # 價量
@@ -41,10 +41,10 @@ def compute_indicators_vectorized(df):
     df["trade_chg"] = df["close"] - df["open"]
     df["trade_money_flow"] = df["volume"] * df["trade_chg"]
     df["trade_money_flow_avg"] = df.groupby('ticker')['trade_money_flow'].transform(lambda x: x.rolling(10).mean()) 
-    # 暴漲過濾：近14日最大tr_pct vs 排除最大日後的13日均值
-    df["tr_pct_roll_sum_14"] = df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).sum())
-    df["tr_pct_roll_max_14"] = df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).max())
-    df["atr_pct_13_excl"] = (df["tr_pct_roll_sum_14"] - df["tr_pct_roll_max_14"]) / (13)
+    # 暴漲過濾
+    df["tr_pct_sum_14"] = df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).sum())
+    df["tr_pct_max_14"] = df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).max())
+    df["atr_pct_13_excl"] = ((df["tr_pct_sum_14"] - df["tr_pct_max_14"]) / 13)
 
     return df
 # ---------------- 主程式 ---------------- #
@@ -71,7 +71,7 @@ def main():
         (latest_df["avg_bar"] > latest_df["ma50"]) &
         (latest_df["ma50"] >= latest_df["ma200"]) &
         (latest_df["distance"] < latest_df["atr_14"] * 1/2) &
-        (latest_df["tr_pct_roll_max_14"] <= 25 * latest_df["atr_pct_13_excl"])
+        (latest_df["tr_pct_max_14"] <= 25 * latest_df["atr_pct_13_excl"])
     ]
     # merge RS 並排序
     final_tickers = (
