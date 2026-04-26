@@ -197,7 +197,7 @@ Notes:
 - Cross-reference with Source A to avoid single-stock distortion of theme assessment.
 """.format(industry=industry_text)
 
-    prompt = """Today is {today}. You are a senior US equity analyst. Your task is to identify today's hot investment themes.
+    prompt = """Today is {today}. You are a senior US equity analyst that focuses on momentum stocks. Your task is to identify today's hot investment themes.
 
 [Source A: Stocks with RS>=95 and avg daily value>=100M USD (total {total} stocks, sorted by RS descending)]
 {ticker_lines}
@@ -209,16 +209,27 @@ Notes:
 {summaries_text}
 
 Instructions:
-- RS is a relative strength score. RS99 = top 1% of all stocks; RS95 = top 5%.
-- RS weighting is LINEAR. Use these exact weights per stock:
-    RS99 = 5,  RS98 = 4,  RS97 = 3,  RS96 = 2,  RS95 = 1
-  A theme's score = sum of weights of all its member stocks.
+- RS is a relative strength score. RS99 = top 1% of all stocks; RS95 = top 5%. Higher RS indicates hotter theme.
 - One stock may belong to multiple themes.
-- Use your own knowledge for sector classification; Source B is only a rough reference.
+- Use your own knowledge and recent news (Source D) for theme classification; Source B is only a rough reference.
 - Use Source D to assess recent catalysts and market attention.
-- Industry average RS (Source C) is a secondary signal only.
+- Industry average RS (Source C) is a secondary signal for theme strength analysis.
 
-Output exactly 10 themes sorted by weighted heat, each with:
+- If a stock or group of stocks has high RS but no identifiable catalyst or narrative in the past 30 days, do NOT force them into a theme. 
+  It is acceptable to output fewer than 10 themes if the data does not support 10 distinct narratives.
+
+- Valid themes should satisfy: 
+  - (1) clear recent catalyst visible in Source D
+  - (2) coherent narrative with forward potential — a thesis explaining why capital is flowing here NOW
+  - (3) 2+ coordinated RS95+ stocks
+
+- Themes must show continuity and growth potential — avoid themes driven purely by:
+  - M&A speculation (stock moves only on acquisition rumors, no fundamental change)
+  - Short squeeze (price spike driven by short covering, not real demand)
+  - Meme/retail frenzy (social media driven, no institutional backing)
+  - One-day gap-up with no follow-through (stock spiked then went flat or reversed)
+
+Output themes ranked by your overall assessment holistically — consider RS strength, industry/theme strength, catalyst, narrative, and potential, each with:
 - name: theme name in Traditional Chinese
 - tickers: comma-separated ticker symbols, uppercase, no spaces
 
