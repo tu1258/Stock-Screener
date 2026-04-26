@@ -14,7 +14,7 @@ INPUT_THEMES_JSON = "output/hot_theme.json"
 OUTPUT_PROGRESS   = "output/theme_progress.json"
 OUTPUT_CSV        = "output/watchlist.csv"
 OUTPUT_WATCHLIST  = "output/watchlist.txt"
-RATING_THRESHOLD  = 6
+RATING_THRESHOLD  = 4
 
 GEMINI_MODEL_SCORE = "gemini-3.1-flash-lite-preview"
 
@@ -32,37 +32,24 @@ class ScoreResult(BaseModel):
 def score_ticker(client, ticker, hot_themes_json, news_text):
     news_section = "[Recent news for {} (past 30 days)]\n{}".format(ticker, news_text) if news_text else "(no recent news)"
 
-    prompt = """You are a senior US equity analyst. Today is {today}.
+    prompt = """You are a senior US equity analyst focused on momentum and thematic investing. Today is {today}.
 
-Your task: score how well {ticker} belongs to today's hot investment themes.
+Score how well {ticker} fits today's hot investment themes based on your own assessment of catalyst strength, narrative fit, and forward potential.
 
-A stock scores high if it clearly belongs to one or more of the top-ranked themes.
-A stock scores low if it has no meaningful connection to any of the themes.
-
-[Today's hot theme list (JSON, sorted by weighted heat)]
+[Today's hot themes]
 {hot_themes}
 
-[Recent news for {ticker} — use this together with your own knowledge to judge whether {ticker} fits the themes above]
+[Recent news for {ticker}]
 {news_section}
 
-Scoring criteria:
-- 10: Core holding of the current strongest theme; explosive momentum, highly concentrated capital
-- 9: Leader of a strong theme; clear catalyst, extremely high market attention
-- 8: Key member of a strong sector; clear theme with sustained capital inflow
-- 7: Member of a hot sector but not the core, or theme still building
-- 6: Theme has support but many competitors, or attention not yet focused
-- 5: Flat theme, unclear sector rotation position
-- 4: Theme fading, capital attention declining
-- 3: Theme cooling off, capital outflow, limited fundamental support
-- 2: Theme nearly gone, market has moved on
-- 1: Completely abandoned by market, disconnected from current trends
+Rate on a scale of 1-5. 5 = strongest fit, 1 = no meaningful connection.
 
 Fields (all Chinese text must be in Traditional Chinese):
 - ticker: symbol (uppercase)
-- rating: integer 1-10
-- theme: matching theme name(s) from the hot theme list above (comma-separated, Traditional Chinese)
-- feature: relevance to hot themes or competitive edge (max 20 Traditional Chinese characters)
-- reason: scoring rationale (max 20 Traditional Chinese characters)""".format(
+- rating: integer 1-5
+- theme: matched theme name(s) from the list above (comma-separated, Traditional Chinese)
+- feature: this stock's role or edge within the theme (max 20 Traditional Chinese characters)
+- reason: rationale for the score (max 20 Traditional Chinese characters)""".format(
         today=TODAY,
         ticker=ticker,
         hot_themes=hot_themes_json,
