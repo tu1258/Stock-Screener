@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI基礎設施與數據中心硬體,"AEHR,AAOI,AMKR,AGX",4
-2,光通訊與矽光子技術,"AEHR,AAOI",2
-3,先進半導體封裝與測試,"AEHR,AMKR",2
-4,供應鏈自主與戰略物資,"ALM,AMKR,AMPX",3
-5,醫療生技併購套利,"APLS,AVNS",2
-6,工業與材料戰略升級,"ALM,AGX,AMPX",3
-7,國防與無人機關鍵技術,"ALM,AMPX",2
-8,罕見疾病靶向療法,APLS,1
-9,戰略性工業金屬供應,ALM,1
-10,醫療器材私有化轉型,AVNS,1
+1,AI 基礎設施與資料中心連接,"AEHR,AAOI,AMKR,AGX",4
+2,矽光子與次世代 AI 網路,"AEHR,AAOI",2
+3,半導體先進封裝與測試,"AEHR,AMKR",2
+4,國防與航太關鍵零組件,"ALM,AMPX",2
+5,關鍵戰略礦產與資源安全,ALM,1
+6,生技產業併購與資產重組,APLS,1
+7,半導體供應鏈本土化,AMKR,1
+8,醫療器材與創新療法,AVNS,1
+9,資料中心電力基礎設施,AGX,1
+10,高能量密度電池與無人機應用,AMPX,1
