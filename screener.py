@@ -1,19 +1,17 @@
 import pandas as pd
 import numpy as np
 import os
-
 os.makedirs("csv", exist_ok=True)
 os.makedirs("txt", exist_ok=True)
-
 PRICE_CSV = "stock_data.csv"
 RS_CSV = "stock_rs.csv"
 OUTPUT_CSV = "output/technical_watchlist.csv"
 OUTPUT_TXT = "output/technical_watchlist.txt"
+
 # ---------------- 技術指標計算 ---------------- #
 def compute_indicators_vectorized(df):
     # 確保按ticker與日期排序
     df = df.sort_values(["ticker", "date"]).copy()
-
     # 10日平均成交值
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
     
@@ -36,7 +34,6 @@ def compute_indicators_vectorized(df):
     df["atr_14_pct"] = df.groupby('ticker')['tr_pct'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
     df["avg_bar"] = (df['close'] + df['high'] + df['low']) / 3
     df['distance'] = abs(df["avg_bar"] - df["ma5"]); # Keltner Channel
-
     # 價量
     df["chg"] = df.groupby("ticker")["close"].diff()
     df["money_flow"] = df["volume"] * df["chg"]
@@ -44,20 +41,21 @@ def compute_indicators_vectorized(df):
     df["trade_chg"] = df["close"] - df["open"]
     df["trade_money_flow"] = df["volume"] * df["trade_chg"]
     df["trade_money_flow_avg"] = df.groupby('ticker')['trade_money_flow'].transform(lambda x: x.rolling(10).mean()) 
-    
-    return df
+    # 暴漲過濾：近14日最大tr_pct vs 排除最大日後的13日均值
+    df["tr_pct_roll_sum_14"] = df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).sum())
+    df["tr_pct_roll_max_14"] = df.groupby("ticker")["tr_pct"].transform(lambda x: x.rolling(14).max())
+    df["atr_pct_13_excl"] = (df["tr_pct_roll_sum_14"] - df["tr_pct_roll_max_14"]) / (13)
 
+    return df
 # ---------------- 主程式 ---------------- #
 def main():
     # 讀檔
     price_df = pd.read_csv(PRICE_CSV, parse_dates=["date"])
     rs_df = pd.read_csv(RS_CSV)
-
     # ---------- 1. RS 篩選 ----------
     rs_filtered = rs_df[rs_df["RS"] >= 90].copy()
     rs_filtered = rs_filtered.sort_values("score", ascending=False)
     rs_tickers = rs_filtered["ticker"].tolist()
-
     # ---------- 2. 計算技術指標 ----------
     price_df = price_df[price_df["ticker"].isin(rs_tickers)]
     price_df = compute_indicators_vectorized(price_df)
@@ -72,9 +70,9 @@ def main():
         (latest_df["atr_14_pct"] > 2.5) & (latest_df["atr_14_pct"] < 25) &
         (latest_df["avg_bar"] > latest_df["ma50"]) &
         (latest_df["ma50"] >= latest_df["ma200"]) &
-        (latest_df["distance"] < latest_df["atr_14"] * 1/2)
+        (latest_df["distance"] < latest_df["atr_14"] * 1/2) &
+        (latest_df["tr_pct_roll_max_14"] <= 25 * latest_df["atr_pct_13_excl"])
     ]
-
     # merge RS 並排序
     final_tickers = (
         tech_filtered.merge(rs_filtered[["ticker", "score", "RS"]], on="ticker", how="left")
@@ -84,12 +82,9 @@ def main():
             "atr_14_pct", "avg_value_10"
         ]]
     )
-
     final_tickers = final_tickers.round(3)
-
     # 輸出
     final_tickers.to_csv(OUTPUT_CSV, index=False, header=True)
     final_tickers["ticker"].to_csv(OUTPUT_TXT, index=False, header=False)
-
 if __name__ == "__main__":
     main()
