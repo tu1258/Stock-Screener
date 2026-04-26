@@ -139,7 +139,7 @@ News (format: [YYYY-MM-DD] summary):
             print("✓ {} chars".format(len(result)))
         except Exception as e:
             print("❌ {}".format(str(e)[:100]))
-        time.sleep(1)
+        time.sleep(4)
 
     with open(OUTPUT_SUMMARIES, "w", encoding="utf-8") as f:
         json.dump(summaries, f, ensure_ascii=False, indent=2)
