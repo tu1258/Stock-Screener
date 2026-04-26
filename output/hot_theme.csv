@@ -1,11 +1,3 @@
 ﻿rank,theme,tickers,ticker_count
-1,高效能運算與AI基礎設施,"AEHR,AAOI,AMKR",3
-2,半導體設備與封測,"AEHR,AMKR",2
-3,光通訊技術,AAOI,1
-4,醫療保健與生物技術,"APLS,AVNS",2
-5,工業與基礎建設,"ALM,AGX,AMPX",3
-6,關鍵工業材料,"ALM,AMPX",2
-7,工業金屬與資源,ALM,1
-8,生物製藥,APLS,1
-9,醫療器材,AVNS,1
-10,工程與電力設備,"AGX,AMPX",2
+1,AI 數據中心與硬體基礎設施,"AEHR,AAOI,AMKR,AGX",4
+2,戰略物資與國防科技供應鏈,"ALM,AMPX",2
