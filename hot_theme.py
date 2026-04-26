@@ -230,36 +230,12 @@ Output exactly 10 themes sorted by weighted heat, each with:
             item["tickers"] = item.get("tickers", "").upper().replace(" ", "").rstrip(",")
 
         rs_lookup = {t: rs for t, rs in rs95_tickers}
-
-        theme_count = {}
-        for item in hot_themes_list:
-            theme = item.get("name", "")
-            for ticker in item.get("tickers", "").split(","):
-                t = ticker.strip().upper()
-                if t:
-                    theme_count.setdefault(theme, []).append("{}(RS{})".format(t, rs_lookup.get(t, "?")))
-
-        lines = ["## 題材統計（RS95+ 且成交值>=100M，共 {} 檔）\n".format(len(rs95_tickers))]
-        for theme, members in sorted(theme_count.items(), key=lambda x: -len(x[1])):
-            members_str = ", ".join(members[:20])
-            suffix = "... 等共 {} 檔".format(len(members)) if len(members) > 20 else "共 {} 檔".format(len(members))
-            lines.append("{}：{}　{}".format(theme, members_str, suffix))
-
-        lines.append("\n## 今日熱門題材（Gemini 分析）\n")
-        for item in hot_themes_list:
-            lines.append("{} — {}（{}）".format(
-                item.get("name", ""),
-                item.get("desc", ""),
-                item.get("tickers", ""),
-            ))
-
-        hot_themes_text = "\n".join(lines)
-        return hot_themes_text, hot_themes_list, rs_lookup
+        return hot_themes_list, rs_lookup
 
     except Exception as e:
         print("  [themes error] {}".format(str(e)[:200]))
 
-    return "", [], {}
+    return [], {}
 
 
 def main():
@@ -288,7 +264,7 @@ def main():
     print("✅ 摘要完成\n")
 
     print("🧠 Phase 2：歸納今日熱門題材...")
-    hot_themes_text, hot_themes_list, rs_lookup = fetch_hot_themes(
+    hot_themes_list, rs_lookup = fetch_hot_themes(
         client, rs95_tickers, summaries, industry_text, ticker_to_industry
     )
     if not hot_themes_list:
@@ -297,7 +273,6 @@ def main():
 
     with open(OUTPUT_THEMES_JSON, "w", encoding="utf-8") as f:
         json.dump({
-            "hot_themes_text": hot_themes_text,
             "hot_themes_list": hot_themes_list,
             "rs_lookup":       rs_lookup,
         }, f, ensure_ascii=False, indent=2)
