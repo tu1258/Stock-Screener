@@ -20,6 +20,7 @@ OUTPUT_THEMES_CSV = "output/hot_theme.csv"
 OUTPUT_THEMES_JSON= "output/hot_theme.json"
 OUTPUT_HOT_WL     = "output/hot_theme_watchlist.txt"
 MIN_AVG_VALUE_10D = 100
+MIN_ATR_PCT       = 2.5
 
 GEMINI_MODEL_SUMMARY = "gemini-3.1-flash-lite-preview"
 GEMINI_MODEL_THEMES  = "gemini-3-flash-preview"
