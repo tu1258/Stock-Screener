@@ -29,7 +29,6 @@ TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
 class ThemeItem(BaseModel):
     name: str
-    desc: str
     tickers: str
 
 class ThemeList(BaseModel):
@@ -196,7 +195,6 @@ Instructions:
 
 Output exactly 10 themes sorted by weighted heat, each with:
 - name: theme name in Traditional Chinese
-- desc: description in Traditional Chinese, 10 characters or less
 - tickers: comma-separated ticker symbols, uppercase, no spaces
 
 """.format(
@@ -283,7 +281,6 @@ def main():
         theme_rows.append({
             "rank":         rank,
             "theme":        item.get("name", ""),
-            "desc":         item.get("desc", ""),
             "tickers":      ",".join(tickers_in_theme),
             "ticker_count": len(tickers_in_theme),
         })
