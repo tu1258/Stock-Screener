@@ -67,7 +67,7 @@ def load_rs95_liquid(rs_csv, stock_data_csv):
     atr_ok_set   = set(latest[latest["atr_14_pct"] > MIN_ATR_PCT].index)
     no_spike_set = set(latest[latest["tr_pct_max_14"] <= 25 * latest["atr_pct_13_excl"]].index)
 
-    valid_set = liquid_set & atr_ok_set & no_spike_set
+    valid_set = liquid_set #& atr_ok_set & no_spike_set
     return sorted([(t, rs) for t, rs in rs_map.items() if t in valid_set], key=lambda x: -x[1])
 
 
