@@ -53,7 +53,7 @@ def load_rs95_liquid(rs_csv, stock_data_csv):
         (price_df["low"]  - price_df["prev_close"]).abs()
     ], axis=1).max(axis=1)
     price_df['atr_14'] = price_df.groupby('ticker')['tr'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
-    price_df["atr_14_pct"] = price_df['atr_14'] / price_df.groupby("ticker")["close"].transform(lambda x: x.rolling(14,  min_periods=1).mean())
+    price_df["atr_14_pct"] = price_df['atr_14'] / price_df.groupby("ticker")["close"].transform(lambda x: x.rolling(14,  min_periods=1).mean()) * 100
 
     # 暴漲過濾
     price_df["tr_sum_14"] = price_df.groupby("ticker")["tr"].transform(lambda x: x.rolling(14).sum())
