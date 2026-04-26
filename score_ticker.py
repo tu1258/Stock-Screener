@@ -16,17 +16,24 @@ OUTPUT_WATCHLIST  = "output/watchlist.txt"
 RATING_THRESHOLD  = 6
 SCORING_SLEEP     = 1
 
-GEMINI_MODEL_SCORE = "gemini-3.1-flash-lite-preview"
+GEMINI_MODEL_SCORE = "gemma-4-31b-it"  # Phase 3：評分，開 thinking，RPD 1500
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
+
+
+def parse_thinking_output(raw):
+    """從 Gemma 4 thinking 輸出中取出最終答案（<channel|> 之後的部分）"""
+    if "<channel|>" in raw:
+        return raw.split("<channel|>")[-1].strip()
+    return raw.strip()
 
 
 def score_ticker(client, ticker, hot_themes_text, news_text):
     news_section = "[Recent news for {} (past 30 days)]\n{}".format(ticker, news_text) if news_text else "(no recent news)"
 
-    prompt = """You are a senior US equity analyst. Today is {today}.
+    system_prompt = "<|think|>You are a senior US equity analyst. Today is {today}.".format(today=TODAY)
 
-Your task: score how well {ticker} belongs to today's hot investment themes.
+    user_prompt = """Your task: score how well {ticker} belongs to today's hot investment themes.
 
 A stock scores high if it clearly belongs to one or more of the top-ranked themes.
 A stock scores low if it has no meaningful connection to any of the themes.
@@ -57,8 +64,7 @@ Fields:
 - "feature": relevance to hot themes or competitive edge (max 20 Traditional Chinese characters)
 - "reason": scoring rationale (max 20 Traditional Chinese characters)
 
-No Markdown, no extra explanation.""".format(
-        today=TODAY,
+No Markdown, no extra explanation. Output JSON only.""".format(
         ticker=ticker,
         hot_themes=hot_themes_text,
         news_section=news_section,
@@ -67,10 +73,13 @@ No Markdown, no extra explanation.""".format(
     try:
         response = client.models.generate_content(
             model=GEMINI_MODEL_SCORE,
-            contents=prompt,
+            contents=user_prompt,
             config=types.GenerateContentConfig(
-                temperature=0,
-                max_output_tokens=512,
+                temperature=1,
+                top_p=0.95,
+                top_k=64,
+                max_output_tokens=4096,
+                system_instruction=system_prompt,
                 response_mime_type="application/json",
             ),
         )
