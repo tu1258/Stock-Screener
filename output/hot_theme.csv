@@ -1,3 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 數據中心與硬體基礎設施,"AEHR,AAOI,AMKR,AGX",4
-2,戰略物資與國防科技供應鏈,"ALM,AMPX",2
+1,AI 光學通訊與矽光子,"MXL,AAOI,AEHR,LWLG,POET,LITE,COHR,TSEM,CRDO,MRVL,CIEN",11
+2,AI 能源基礎設施與散熱系統,"VICR,BE,POWL,AGX,VRT,ON,MPWR,GEV,AEIS,HUT,WULF",11
+3,AI 存儲與記憶體超級週期,"SNDK,WDC,MU,STX,RMBS",5
+4,先進封裝與半導體測試設備,"FORM,AMKR,TER,ASX,ONTO,ACLS,MKSI,SMTC",8
+5,自主 AI 算力與邊緣雲端平台,"INTC,AMD,ARM,DOCN,NBIS,FSLY",6
+6,精準腫瘤與免疫療法突破,"ERAS,SYRE,RVMD,NKTR,PRAX,ARWR,IBRX",7
+7,太空基礎設施與衛星通訊,"PL,LUNR,GSAT,SIDU,IRDM",5
+8,戰略性半導體材料與關鍵礦產,"ALM,WOLF,NVTS",3
+9,企業級 AI 硬體與網路設備,"DELL,CLS,UI,VIAV,LGN",5
+10,氫能與工業綠能轉型,"PLUG,BE",2
