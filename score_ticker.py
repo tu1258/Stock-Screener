@@ -16,7 +16,8 @@ OUTPUT_CSV        = "output/watchlist.csv"
 OUTPUT_WATCHLIST  = "output/watchlist.txt"
 RATING_THRESHOLD  = 4
 
-GEMINI_MODEL_SCORE = "gemini-3.1-flash-lite-preview"
+#GEMINI_MODEL_SCORE = "gemini-3.1-flash-lite-preview"
+GEMINI_MODEL_SCORE = "gemma-4-31b-it"
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
