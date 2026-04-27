@@ -35,7 +35,11 @@ def score_ticker(client, ticker, hot_themes_json, news_text):
 
     prompt = """You are a senior US equity analyst focused on momentum and thematic investing. Today is {today}.
 
-Score how well {ticker} fits today's hot investment themes based on your own assessment of catalyst strength, narrative fit, and forward potential.
+Your task: evaluate how well {ticker} fits today's hot investment themes. Consider the following:
+- What is the company's core business and its role within any relevant theme?
+- Which of today's hot themes does this stock belong to, and what is its role within the theme?
+- What recent catalysts are driving the stock?
+- What is the forward narrative and growth potential?
 
 [Today's hot themes]
 {hot_themes}
@@ -43,7 +47,7 @@ Score how well {ticker} fits today's hot investment themes based on your own ass
 [Recent news for {ticker}]
 {news_section}
 
-Rate on a scale of 1-5. 5 = strongest fit, 1 = no meaningful connection.
+Based on your assessment of catalyst strength, narrative fit, and forward potential, rate on a scale of 1-5. 5 = strongest fit, 1 = no meaningful connection.
 
 Fields (all Chinese text must be in Traditional Chinese):
 - ticker: symbol (uppercase)
