@@ -32,7 +32,7 @@ def compute_indicators_vectorized(df):
     df["tr_pct"] = df["tr"] / df['prev_close'] * 100
     
     df['atr_14'] = df.groupby('ticker')['tr'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
-    df["atr_14_pct"] = df['atr_14'] / df['ma14']
+    df["atr_14_pct"] = df['atr_14'] / df['ma14'] * 100
     df["avg_bar"] = (df['close'] + df['high'] + df['low']) / 3
     df['distance'] = abs(df["avg_bar"] - df["ma5"]); # Keltner Channel
     # 價量
