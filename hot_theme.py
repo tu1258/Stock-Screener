@@ -140,9 +140,9 @@ def build_summaries(client, rs95_tickers, news_cache):
         prompt = """Today is {today}. The following are recent news headlines (past 30 days) for stock {ticker}, sourced from Finnhub.
 Based on this information, summarize from an investment theme and market catalyst perspective:
 - What is the company's core business?
-- What is the strongest current investment theme? Why is the market paying attention?
+- Which investment theme(s) does this stock belong to, and what is its role within the theme?
 - What recent catalysts (earnings, products, partnerships, regulations, industry trends) are driving the stock?
-- In which sector or theme does it have speculative potential or scarcity value?
+- What is the forward narrative and growth potential?
 
 Return a concise bullet-point summary focused on themes and catalysts only.
 
@@ -216,23 +216,22 @@ Instructions:
 - Use Source D to assess recent catalysts and market attention.
 - Industry average RS (Source C) is a secondary signal for theme strength analysis.
 
-- If a stock or group of stocks has high RS but no identifiable catalyst or narrative in the past 30 days, do NOT force them into a theme. 
-  It is acceptable to output fewer than 10 themes if the data does not support 10 distinct narratives.
-
 - Valid themes should satisfy: 
   - (1) clear recent catalyst visible in Source D
   - (2) coherent narrative with forward potential — a thesis explaining why capital is flowing here NOW
-  - (3) 2+ coordinated RS95+ stocks
+  - (3) Multiple coordinated RS95+ stocks
 
 - Themes must show continuity and growth potential — avoid themes driven purely by:
   - M&A speculation (stock moves only on acquisition rumors, no fundamental change)
   - Short squeeze (price spike driven by short covering, not real demand)
   - Meme/retail frenzy (social media driven, no institutional backing)
   - One-day gap-up with no follow-through (stock spiked then went flat or reversed)
+  
+- If a stock or group of stocks has high RS but no identifiable catalyst or narrative, do NOT force them into a theme. 
 
-Output themes ranked by your overall assessment holistically — consider RS strength, industry/theme strength, catalyst, narrative, and potential, each with:
-- name: theme name in Traditional Chinese
-- tickers: comma-separated ticker symbols, uppercase, no spaces
+- Output all qualifying themes (at least 5) ranked by your overall assessment holistically — consider RS strength, industry/theme strength, catalyst, narrative, and potential, each with:
+  - name: theme name in Traditional Chinese
+  - tickers: comma-separated ticker symbols, uppercase, no spaces
 
 """.format(
         today=TODAY,
