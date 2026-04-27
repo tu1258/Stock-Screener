@@ -234,7 +234,7 @@ Output:
 - themes: all qualifying themes (at least 5), ranked by your overall assessment holistically — consider RS strength, industry/theme strength, catalyst, narrative, and potential. Each theme with:
   - name: theme name in Traditional Chinese
   - tickers: comma-separated ticker symbols, uppercase, no spaces
-- summary: written for a downstream AI analyst that will use it to score individual stocks. Be specific, sharp, and actionable — state which themes are strongest, what catalysts are driving them, what narrative and forward potential each carries, and what the market is pricing in right now.
+- summary: written for a downstream AI analyst that will use it to score individual stocks. Be precise and sharp — state which themes are strongest, what catalysts are driving them, what narrative and forward potential each carries, and what the market is pricing in right now.
 
 """.format(
         today=TODAY,
