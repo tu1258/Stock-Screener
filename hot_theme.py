@@ -234,7 +234,7 @@ Output:
 - themes: all qualifying themes (at least 5), ranked by your overall assessment holistically — consider RS strength, industry/theme strength, catalyst, narrative, and potential. Each theme with:
   - name: theme name in Traditional Chinese
   - tickers: comma-separated ticker symbols, uppercase, no spaces
-- summary: a brief market overview in Traditional Chinese — what is the overall market narrative today, where is capital concentrating, and what themes have the strongest forward momentum
+- summary: a brief market overview in Traditional Chinese — what is the overall market narrative recently, where is capital concentrating, and what themes have the strongest forward momentum
 
 """.format(
         today=TODAY,
