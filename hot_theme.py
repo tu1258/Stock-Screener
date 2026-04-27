@@ -35,6 +35,7 @@ class ThemeItem(BaseModel):
 
 class ThemeList(BaseModel):
     themes: List[ThemeItem]
+    summary: str
 
 
 def load_rs95_liquid(rs_csv, stock_data_csv):
@@ -73,12 +74,12 @@ def load_rs95_liquid(rs_csv, stock_data_csv):
         (price_df["low"]  - price_df["prev_close"]).abs()
     ], axis=1).max(axis=1)
     price_df['atr_14'] = price_df.groupby('ticker')['tr'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
-    price_df["atr_14_pct"] = price_df['atr_14'] / price_df.groupby("ticker")["close"].transform(lambda x: x.rolling(14,  min_periods=1).mean()) * 100
+    price_df["atr_14_pct"] = price_df['atr_14'] / price_df.groupby("ticker")["close"].transform(lambda x: x.rolling(14, min_periods=1).mean()) * 100
 
     # 暴漲過濾
     price_df["tr_sum_14"] = price_df.groupby("ticker")["tr"].transform(lambda x: x.rolling(14).sum())
     price_df["tr_max_14"] = price_df.groupby("ticker")["tr"].transform(lambda x: x.rolling(14).max())
-    price_df["atr_13_excl"] = ((price_df["tr_sum_14"] - price_df["tr_max_14"]) / 13)
+    price_df["atr_13_excl"] = (price_df["tr_sum_14"] - price_df["tr_max_14"]) / 13
 
     latest = price_df.groupby("ticker").tail(1).copy()
     latest["ticker"] = latest["ticker"].str.upper()
@@ -87,7 +88,7 @@ def load_rs95_liquid(rs_csv, stock_data_csv):
     atr_ok_set   = set(latest[latest["atr_14_pct"] > MIN_ATR_PCT].index)
     no_spike_set = set(latest[latest["tr_max_14"] <= 25 * latest["atr_13_excl"]].index)
 
-    valid_set = liquid_set & no_spike_set & atr_ok_set 
+    valid_set = liquid_set & no_spike_set & atr_ok_set
     return sorted([(t, rs) for t, rs in rs_map.items() if t in valid_set], key=lambda x: -x[1])
 
 
@@ -226,12 +227,14 @@ Instructions:
   - Short squeeze (price spike driven by short covering, not real demand)
   - Meme/retail frenzy (social media driven, no institutional backing)
   - One-day gap-up with no follow-through (stock spiked then went flat or reversed)
-  
-- If a stock or group of stocks has high RS but no identifiable catalyst or narrative, do NOT force them into a theme. 
 
-- Output all qualifying themes (at least 5) ranked by your overall assessment holistically — consider RS strength, industry/theme strength, catalyst, narrative, and potential, each with:
+- If a stock or group of stocks has high RS but no identifiable catalyst or narrative, do NOT force them into a theme.
+
+Output:
+- themes: all qualifying themes (at least 5), ranked by your overall assessment holistically — consider RS strength, industry/theme strength, catalyst, narrative, and potential. Each theme with:
   - name: theme name in Traditional Chinese
   - tickers: comma-separated ticker symbols, uppercase, no spaces
+- summary: a brief market overview in Traditional Chinese — what is the overall market narrative today, where is capital concentrating, and what themes have the strongest forward momentum
 
 """.format(
         today=TODAY,
@@ -259,17 +262,18 @@ Instructions:
         print("  [themes raw]\n{}\n---".format(raw))
         parsed = json.loads(raw)
         hot_themes_list = parsed["themes"]
+        market_summary  = parsed.get("summary", "")
 
         for item in hot_themes_list:
             item["tickers"] = item.get("tickers", "").upper().replace(" ", "").rstrip(",")
 
         rs_lookup = {t: rs for t, rs in rs95_tickers}
-        return hot_themes_list, rs_lookup
+        return hot_themes_list, rs_lookup, market_summary
 
     except Exception as e:
         print("  [themes error] {}".format(str(e)[:200]))
 
-    return [], {}
+    return [], {}, ""
 
 
 def main():
@@ -298,7 +302,7 @@ def main():
     print("✅ 摘要完成\n")
 
     print("🧠 Phase 2：歸納今日熱門題材...")
-    hot_themes_list, rs_lookup = fetch_hot_themes(
+    hot_themes_list, rs_lookup, market_summary = fetch_hot_themes(
         client, rs95_tickers, summaries, industry_text, ticker_to_industry
     )
     if not hot_themes_list:
@@ -309,6 +313,7 @@ def main():
         json.dump({
             "hot_themes_list": hot_themes_list,
             "rs_lookup":       rs_lookup,
+            "market_summary":  market_summary,
         }, f, ensure_ascii=False, indent=2)
 
     theme_rows = []
@@ -333,6 +338,9 @@ def main():
                 result.append(t)
     with open(OUTPUT_HOT_WL, "w", encoding="utf-8") as f:
         f.write("\n".join(result) + "\n")
+
+    if market_summary:
+        print("\n📊 市場總結：\n{}".format(market_summary))
 
     print("✅ 完成")
     print("   {}".format(OUTPUT_THEMES_JSON))
