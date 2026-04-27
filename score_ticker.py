@@ -30,7 +30,7 @@ class ScoreResult(BaseModel):
     reason: str
 
 
-def score_ticker(client, ticker, hot_themes_json, news_text):
+def score_ticker(client, ticker, market_summary, hot_themes_json, news_text):
     news_section = "[Recent news for {} (past 30 days)]\n{}".format(ticker, news_text) if news_text else "(no recent news)"
 
     prompt = """You are a senior US equity analyst focused on momentum and thematic investing. Today is {today}.
@@ -40,6 +40,9 @@ Your task: evaluate how well {ticker} fits today's hot investment themes. Consid
 - Which of today's hot themes does this stock belong to, and what is its role within the theme?
 - What recent catalysts are driving the stock?
 - What is the forward narrative and growth potential?
+
+[Today's market overview]
+{market_summary}
 
 [Today's hot themes]
 {hot_themes}
@@ -57,6 +60,7 @@ Fields (all Chinese text must be in Traditional Chinese):
 - reason: rationale for the score (max 20 Traditional Chinese characters)""".format(
         today=TODAY,
         ticker=ticker,
+        market_summary=market_summary,
         hot_themes=hot_themes_json,
         news_section=news_section,
     )
@@ -96,7 +100,8 @@ def main():
         raise FileNotFoundError("找不到 {}，請先執行 hot_theme.py".format(INPUT_THEMES_JSON))
     with open(INPUT_THEMES_JSON, "r", encoding="utf-8") as f:
         themes_data = json.load(f)
-    hot_themes_json = json.dumps(themes_data["hot_themes_list"], ensure_ascii=False, indent=2)
+    hot_themes_json  = json.dumps(themes_data["hot_themes_list"], ensure_ascii=False, indent=2)
+    market_summary   = themes_data.get("market_summary", "")
 
     with open(INPUT_TXT, "r") as f:
         tickers = [line.strip().upper() for line in f if line.strip()]
@@ -133,7 +138,7 @@ def main():
         news_text = news_cache.get(ticker, "")
         print("  [{:3d}/{}] {}".format(i, len(tickers), ticker), end=" ... ", flush=True)
 
-        result = score_ticker(client, ticker, hot_themes_json, news_text)
+        result = score_ticker(client, ticker, market_summary, hot_themes_json, news_text)
 
         if result is None:
             print("❌ 失敗，稍後重試")
