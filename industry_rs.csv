@@ -16,15 +16,15 @@ Banks - Diversified,Financial,66.7,19
 Chemicals,Basic Materials,66.5,18
 Other Precious Metals & Mining,Basic Materials,66.1,17
 Electronic Components,Technology,65.9,46
-Oil & Gas Midstream,Energy,64.5,56
 Uranium,Energy,64.5,11
 Tools & Accessories,Industrials,64.3,10
+Oil & Gas Midstream,Energy,64.1,56
 Other Industrial Metals & Mining,Basic Materials,64.1,49
 REIT - Industrial,Real Estate,63.9,17
 REIT - Retail,Real Estate,63.1,27
 Oil & Gas Refining & Marketing,Energy,62.7,18
-Financial Conglomerates,Financial,62.5,6
 Oil & Gas E&P,Energy,62.5,78
+Financial Conglomerates,Financial,62.5,6
 Rental & Leasing Services,Industrials,61.8,20
 Real Estate - Diversified,Real Estate,61.7,3
 Marine Shipping,Industrials,61.3,39
@@ -32,9 +32,9 @@ Apparel Manufacturing,Consumer Cyclical,61.3,24
 Banks - Regional,Financial,61.3,325
 REIT - Healthcare Facilities,Real Estate,60.8,17
 Utilities - Diversified,Utilities,60.5,8
-Specialty Chemicals,Basic Materials,60.0,58
+Specialty Chemicals,Basic Materials,59.7,58
+Conglomerates,Industrials,59.6,25
 Healthcare Plans,Healthcare,59.5,11
-Conglomerates,Industrials,59.3,25
 Engineering & Construction,Industrials,59.1,52
 Utilities - Regulated Gas,Utilities,59.0,16
 Utilities - Independent Power Producers,Utilities,59.0,8
@@ -43,7 +43,7 @@ Insurance - Life,Financial,58.2,18
 Steel,Basic Materials,56.5,22
 Railroads,Industrials,56.5,12
 REIT - Hotel & Motel,Real Estate,56.3,15
-REIT - Diversified,Real Estate,55.9,16
+REIT - Diversified,Real Estate,56.0,16
 Luxury Goods,Consumer Cyclical,55.7,11
 Footwear & Accessories,Consumer Cyclical,55.1,14
 Utilities - Regulated Electric,Utilities,55.0,40
@@ -59,47 +59,47 @@ Building Products & Equipment,Industrials,53.1,34
 Metal Fabrication,Industrials,53.0,18
 Integrated Freight & Logistics,Industrials,52.6,31
 REIT - Mortgage,Real Estate,52.5,39
+Scientific & Technical Instruments,Technology,52.4,33
 Telecom Services,Communication Services,52.3,57
-Scientific & Technical Instruments,Technology,52.2,33
 Beverages - Non-Alcoholic,Consumer Defensive,51.9,18
 Broadcasting,Communication Services,51.8,13
+Auto Parts,Consumer Cyclical,51.5,54
 Computer Hardware,Technology,51.5,38
 Credit Services,Financial,51.0,50
 Beverages - Brewers,Consumer Defensive,51.0,7
 Biotechnology,Healthcare,50.8,590
 Electrical Equipment & Parts,Industrials,50.6,47
 Farm Products,Consumer Defensive,50.1,19
-Auto Parts,Consumer Cyclical,49.8,54
 Medical Care Facilities,Healthcare,49.3,50
-Specialty Business Services,Industrials,49.0,44
+Specialty Business Services,Industrials,48.7,44
 Utilities - Regulated Water,Utilities,48.5,13
 Department Stores,Consumer Cyclical,48.2,4
 Medical Distribution,Healthcare,48.0,10
+Building Materials,Basic Materials,48.0,16
+Leisure,Consumer Cyclical,47.8,33
 Insurance - Property & Casualty,Financial,47.7,45
-Leisure,Consumer Cyclical,47.6,33
 Entertainment,Communication Services,47.4,51
 Farm & Heavy Construction Machinery,Industrials,47.3,26
+Resorts & Casinos,Consumer Cyclical,47.0,18
+Aerospace & Defense,Industrials,46.9,78
 Utilities - Renewable,Utilities,46.8,23
-Resorts & Casinos,Consumer Cyclical,46.8,18
-Building Materials,Basic Materials,46.4,16
-Aerospace & Defense,Industrials,46.4,78
 Electronic Gaming & Multimedia,Communication Services,46.3,23
 REIT - Residential,Real Estate,46.1,21
 REIT - Office,Real Estate,46.0,21
 "Furnishings, Fixtures & Appliances",Consumer Cyclical,46.0,33
+Residential Construction,Consumer Cyclical,45.4,21
 Drug Manufacturers - Specialty & Generic,Healthcare,45.2,81
+Capital Markets,Financial,45.2,89
 Insurance - Specialty,Financial,45.1,17
-Capital Markets,Financial,45.1,89
-Residential Construction,Consumer Cyclical,45.0,20
-Solar,Technology,44.4,23
+Solar,Technology,44.3,23
 Drug Manufacturers - General,Healthcare,44.1,21
 Agricultural Inputs,Basic Materials,43.9,13
-Gambling,Consumer Cyclical,43.9,13
-Asset Management,Financial,42.9,147
+Gambling,Consumer Cyclical,43.8,13
 Confectioners,Consumer Defensive,42.6,5
+Asset Management,Financial,42.5,147
 Lumber & Wood Production,Basic Materials,41.5,6
 Restaurants,Consumer Cyclical,41.3,53
-Grocery Stores,Consumer Defensive,41.1,11
+Grocery Stores,Consumer Defensive,41.2,11
 Internet Content & Information,Communication Services,40.9,72
 Travel Services,Consumer Cyclical,40.3,19
 Specialty Retail,Consumer Cyclical,40.0,46
@@ -109,7 +109,6 @@ Consumer Electronics,Technology,39.4,19
 Diagnostics & Research,Healthcare,39.1,47
 Real Estate - Development,Real Estate,38.4,14
 Thermal Coal,Energy,38.2,6
-Internet Retail,Consumer Cyclical,38.2,39
 Personal Services,Consumer Cyclical,38.0,15
 Coking Coal,Basic Materials,37.8,5
 Consulting Services,Industrials,37.7,21
@@ -117,16 +116,17 @@ Airlines,Industrials,37.6,18
 Staffing & Employment Services,Industrials,37.2,17
 Business Equipment & Supplies,Industrials,37.2,5
 Medical Instruments & Supplies,Healthcare,37.1,57
-Auto & Truck Dealerships,Consumer Cyclical,37.0,27
 Financial Data & Stock Exchanges,Financial,37.0,15
+Auto & Truck Dealerships,Consumer Cyclical,37.0,27
+Internet Retail,Consumer Cyclical,36.8,39
 Software - Infrastructure,Technology,36.8,160
 Waste Management,Industrials,36.3,19
 Tobacco,Consumer Defensive,35.9,10
 Auto Manufacturers,Consumer Cyclical,35.8,31
 Packaging & Containers,Consumer Cyclical,35.5,22
 Textile Manufacturing,Consumer Cyclical,35.4,5
-Real Estate Services,Real Estate,35.2,46
-Packaged Foods,Consumer Defensive,34.9,62
+Packaged Foods,Consumer Defensive,35.0,62
+Real Estate Services,Real Estate,34.8,46
 Health Information Services,Healthcare,34.6,46
 Mortgage Finance,Financial,34.5,13
 Pollution & Treatment Controls,Industrials,34.4,18
@@ -138,7 +138,7 @@ Household & Personal Products,Consumer Defensive,33.3,31
 Education & Training Services,Consumer Defensive,33.2,44
 Beverages - Wineries & Distilleries,Consumer Defensive,32.5,11
 Information Technology Services,Technology,32.2,69
-Recreational Vehicles,Consumer Cyclical,30.8,16
+Recreational Vehicles,Consumer Cyclical,30.7,16
 Insurance Brokers,Financial,27.6,22
 Paper & Paper Products,Basic Materials,22.8,5
 Pharmaceutical Retailers,Healthcare,21.1,7
