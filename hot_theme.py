@@ -273,7 +273,7 @@ Output themes ranked by your overall assessment holistically — consider RS str
 
 
 def main():
-    gemini_key = os.environ.get("GEMINI_API_KEY_SCORE")
+    gemini_key = os.environ.get("GEMINI_API_KEY_HOT_THEME")
     if not gemini_key:
         print("GEMINI_API_KEY 未設定")
         sys.exit(1)
