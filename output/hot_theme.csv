@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 光學互連與頻寬優化,"MXL,AAOI,LITE,POET,LWLG,CIEN,COHR,CRDO,MRVL",9
-2,AI 電力供應與散熱基礎設施,"VICR,BE,POWL,VRT,GEV,FIX,AEIS,MPWR,ON",9
-3,記憶體與儲存硬體超級週期,"SNDK,WDC,STX,MU,RMBS",5
-4,先進封裝與半導體檢測設備,"AEHR,FORM,TER,ONTO,AMKR,ASX,ACLS,MKSI",8
-5,客製化晶片與運算架構轉型,"MRVL,ARM,ALAB,INTC,AMD",5
-6,AI 推論雲與算力基礎設施轉型,"DOCN,NBIS,HUT,WULF,BIRD",5
-7,精準腫瘤與標靶藥物突破,"ERAS,RVMD,ARWR,IBRX",4
-8,太空經濟與衛星通訊整合,"PL,SIDU,LUNR,IRDM,GSAT",5
-9,精準神經科學與免疫療法,"SYRE,NKTR,PRAX",3
-10,數位基礎設施驗證與邊緣雲,"VIAV,UI,FSLY",3
+1,AI 光學連接與矽光子基礎設施,"AAOI,MXL,LITE,CIEN,LWLG,TSEM,COHR",7
+2,AI 資料中心電力供應與散熱管理,"BE,VRT,GEV,POWL,AGX,FIX",6
+3,記憶體與儲存架構超級週期,"SNDK,WDC,STX,MU,RMBS",5
+4,先進封裝與半導體測試設備,"AEHR,FORM,AMKR,TER,ASX,ONTO,ACLS",7
+5,次世代 AI 運算架構：CPU 與客製化晶片,"INTC,AMD,ARM,CLS,NBIS,DOCN",6
+6,太空基礎設施與地理空間智能,"PL,LUNR,GSAT,VIAV",4
+7,精準腫瘤醫學：RAS 靶向療法,"RVMD,ERAS",2
+8,長效型免疫與皮膚病生物製劑,"ORKA,SYRE,NKTR",3
+9,功率半導體與高壓電網現代化,"WOLF,ON,MPWR,AEIS",4
+10,戰略礦產與半導體特用化學品,"ALM,CRML,Q",3
