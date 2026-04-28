@@ -17,8 +17,8 @@ def compute_indicators_vectorized(df):
     
     # 均線
     df["ma5"]   = df.groupby("ticker")["close"].transform(lambda x: x.rolling(5,   min_periods=1).mean())
-    df["ma10"]  = df.groupby("ticker")["close"].transform(lambda x: x.rolling(10,  min_periods=1).mean())
     df["ma14"]  = df.groupby("ticker")["close"].transform(lambda x: x.rolling(14,  min_periods=1).mean())
+    df["ma20"]  = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20,  min_periods=1).mean())
     df["ma50"]  = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50,  min_periods=1).mean())
     df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200, min_periods=1).mean())
     
@@ -69,7 +69,8 @@ def main():
     tech_filtered = latest_df[
         (latest_df["avg_value_10"] > 100) &
         (latest_df["atr_14_pct"] > 2.5) & (latest_df["atr_14_pct"] < 25) &
-        (latest_df["avg_bar"] > latest_df["ma50"]) &
+        (latest_df["avg_bar"] >= latest_df["ma20"]) &
+        (latest_df["avg_bar"] >= latest_df["ma50"]) &
         (latest_df["ma50"] >= latest_df["ma200"]) &
         (latest_df["distance"] < latest_df["atr_14"] * 1/2) &
         (latest_df["tr_max_14"] <= 25 * latest_df["atr_13_excl"])
