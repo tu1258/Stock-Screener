@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 光學互連與矽光子,"MXL,AAOI,LWLG,LITE,COHR,MRVL,TSEM,CIEN",8
-2,AI 存儲基礎設施與記憶體循環,"SNDK,WDC,STX,MU",4
-3,AI 數據中心電力與散熱管理,"BE,VRT,POWL,AGX,FIX,MPWR,VICR",7
-4,半導體測試與先進封裝設備,"AEHR,FORM,TER,ONTO,ACLS,AMKR,ASX",7
-5,AI 雲端基礎設施與推理平台,"DOCN,NBIS,HUT,WULF",4
-6,核心處理器與晶圓代工轉型,"INTC,AMD,TSEM,NVTS",4
-7,商業太空經濟與衛星通訊,"PL,LUNR,FLY,GSAT,IRDM",5
-8,精準腫瘤與免疫療法突破,"ORKA,SYRE,RVMD,NKTR,PRAX",5
-9,能源基礎設施與油田服務,"SEI,LBRT",2
-10,戰略性關鍵礦產與供應鏈本土化,"ALM,CRML,UAMY",3
+1,AI 光學與高速互連基礎設施,"MXL,AAOI,LWLG,LITE,CIEN,MRVL,CRDO,COHR,TSEM,ALAB",10
+2,AI 電力供應與散熱管理,"BE,POWL,AGX,VRT,FIX,MPWR",6
+3,記憶體與儲存硬體超級週期,"SNDK,WDC,SIMO,STX,MU",5
+4,半導體先進封裝與測試設備,"AXTI,AEHR,FORM,AMKR,ASX,ONTO,ACLS",7
+5,邊緣 AI 與代理運算處理器,"INTC,AMD,STM,BB,SITM",5
+6,AI 推論雲與能源轉型運算,"DOCN,NBIS,WULF,HUT",4
+7,太空經濟與衛星通訊網路,"PL,SIDU,LUNR,IRDM,GSAT",5
+8,精準腫瘤與免疫療法突破,"ORKA,RVMD,NKTR,PRAX",4
+9,關鍵礦產與能源轉型材料,"ALM,CRML,WOLF,PLUG",4
+10,油氣探勘服務與週期性復甦,"PTEN,LBRT,SEI,BTE",4
