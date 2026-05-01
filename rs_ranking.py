@@ -7,7 +7,7 @@ PRICE_DATA_CSV  = os.path.join(DIR, "stock_data.csv")
 OUTPUT_CSV      = os.path.join(DIR, "stock_rs.csv")
 INDUSTRY_CSV    = os.path.join(DIR, "ticker_industry.csv")
 INDUSTRY_RS_CSV = os.path.join(DIR, "industry_rs.csv")
-MIN_DATA_POINTS = 63
+MIN_DATA_POINTS = 21
 
 def geo_monthly_return(closes, n):
     required = n * 21
