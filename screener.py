@@ -54,7 +54,7 @@ def main():
     price_df = pd.read_csv(PRICE_CSV, parse_dates=["date"])
     rs_df = pd.read_csv(RS_CSV)
     # ---------- 1. RS 篩選 ----------
-    rs_filtered = rs_df[rs_df["RS"] >= 80].copy()
+    rs_filtered = rs_df[rs_df["RS"] >= 90].copy()
     rs_filtered = rs_filtered.sort_values("score", ascending=False)
     rs_tickers = rs_filtered["ticker"].tolist()
     # ---------- 2. 計算技術指標 ----------
@@ -67,7 +67,7 @@ def main():
     )
     # ---------- 3. 技術分析篩選 ----------
     tech_filtered = latest_df[
-        (latest_df["avg_value_10"] > 100) &
+        (latest_df["avg_value_10"] > 20) &
         (latest_df["atr_14_pct"] > 2) & (latest_df["atr_14_pct"] < 20) &
         (latest_df["avg_bar"] >= latest_df["ma20"]) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
