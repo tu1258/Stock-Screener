@@ -228,6 +228,8 @@ Instructions:
   - Meme/retail frenzy (social media driven, no institutional backing)
   - Single binary event outcome (e.g. FDA approval/rejection, M&A close, court ruling)
 
+- Exclude stocks in "biotechnology" sector
+
 - If a stock or group of stocks has high RS but no identifiable catalyst or narrative, do NOT force them into a theme.
 
 Output:
