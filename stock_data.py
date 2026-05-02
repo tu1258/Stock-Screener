@@ -7,7 +7,7 @@ import time
 OUTPUT_FILE   = "stock_data.csv"
 TICKER_FILE   = "stock_ticker.csv"
 INDUSTRY_FILE = "ticker_industry.csv"
-DAYS          = 250
+DAYS          = 400
 
 def fetch_finviz_data(limit=None):
     print("  從 Finviz 取得所有股票資料...")
