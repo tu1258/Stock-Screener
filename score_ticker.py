@@ -55,6 +55,7 @@ Rate 1 for stocks driven purely by:
 - Short squeeze (price spike driven by short covering, not real demand)
 - Meme/retail frenzy (social media driven, no institutional backing)
 - Single binary event outcome (e.g. FDA approval/rejection, M&A close, court ruling)
+- Speculation without real business(especially biotech stocks)
 
 Based on your assessment of catalyst strength, narrative fit, and forward potential, rate on a scale of 1-5. 5 = strongest fit, 1 = no meaningful connection.
 
