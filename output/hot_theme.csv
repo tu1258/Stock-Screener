@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 光學互連與高速傳輸網絡,"MXL,AAOI,LWLG,AEHR,LITE,CRDO,CIEN,MRVL,VIAV",9
-2,AI 物理層存儲與記憶體超級週期,"SNDK,STX,WDC,SIMO,MU",5
-3,AI 數據中心電力供應與散熱基礎設施,"BE,FCEL,POWL,FIX,MPWR,ON,NVTS,VICR",8
-4,先進封裝與半導體測試設備,"AXTI,AEHR,FORM,AMKR,ASX,ONTO,ACLS",7
-5,雲端巨頭自研晶片與架構轉移,"ARM,MRVL,AMD,INTC",4
-6,電網現代化與能源工程建設,"MYRG,MTZ,AGX,POWL,LGN",5
-7,AI 推論雲與數位能源轉型,"DOCN,NBIS,HUT,WULF",4
-8,關鍵礦產與供應鏈去風險化,"USAR,UAMY",2
-9,國防安全與航太通訊硬體,"TTMI,TSEM,BB,VIAV",4
-10,精準醫療與次世代免疫療法,"RVMD,ORKA",2
+1,AI 光通訊與矽光子技術,"MXL,AXTI,LWLG,AEHR,AAOI,LITE,CRDO,CIEN,ALAB",9
+2,AI 存儲與記憶體超級週期,"SNDK,STX,WDC,SIMO,MU,ONTO",6
+3,AI 數據中心電力與電網基礎設施,"BE,FCEL,POWL,AGX,MTZ,FIX,HUT,WULF",8
+4,次世代 AI 處理器與架構轉型,"INTC,AMD,ARM,MRVL",4
+5,半導體測試與先進封裝設備,"AEHR,FORM,ACLS,ONTO,AMKR,ASX",6
+6,物理 AI 與工業電源管理,"ON,MPWR,TXN,POWI,NVTS",5
+7,關鍵礦產與供應鏈去風險化,"USAR,UAMY",2
+8,邊緣運算與代理人推論雲,"DOCN,FSLY,BB",3
+9,精準腫瘤學與 RAS 抑制劑,"RVMD,ORKA",2
+10,高速網路協議與測試驗證,"VIAV,NOK",2
