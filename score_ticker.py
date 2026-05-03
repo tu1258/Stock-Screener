@@ -14,7 +14,7 @@ INPUT_THEMES_JSON = "output/hot_theme.json"
 OUTPUT_PROGRESS   = "output/theme_progress.json"
 OUTPUT_CSV        = "output/watchlist.csv"
 OUTPUT_WATCHLIST  = "output/watchlist.txt"
-RATING_THRESHOLD  = 4
+RATING_THRESHOLD  = 6
 
 #GEMINI_MODEL_SCORE = "gemini-3.1-flash-lite-preview"
 GEMINI_MODEL_SCORE = "gemma-4-31b-it"
@@ -57,11 +57,11 @@ Rate 1 for stocks driven purely by:
 - Single binary event outcome (e.g. FDA approval/rejection, M&A close, court ruling)
 - Speculation without real business(especially biotech stocks)
 
-Based on your assessment of catalyst strength, narrative fit, and forward potential, rate on a scale of 1-5. 5 = strongest fit, 1 = no meaningful connection.
+Based on your assessment of catalyst strength, narrative fit, and forward potential, rate on a scale of 1-10. 10 = strongest fit, 1 = no meaningful connection.
 
 Fields (all Chinese text must be in Traditional Chinese):
 - ticker: symbol (uppercase)
-- rating: integer 1-5
+- rating: integer 1-10
 - theme: matched theme name(s) from the list above (comma-separated, Traditional Chinese)
 - feature: this stock's role or edge within the theme (max 20 Traditional Chinese characters)
 - reason: rationale for the score (max 20 Traditional Chinese characters)""".format(
