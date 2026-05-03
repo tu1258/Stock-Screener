@@ -96,7 +96,7 @@ def main():
         (latest_df["avg_value_10"] > 20) &
         (latest_df["atr_14_pct"] > 2) & (latest_df["atr_14_pct"] < 20) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
-        (latest_df["ma50"] >= latest_df["ma200"] &
+        (latest_df["ma50"] >= latest_df["ma200"]) &
         (latest_df["tr_max_14"] <= 25 * latest_df["atr_13_excl"])
     ]
 
