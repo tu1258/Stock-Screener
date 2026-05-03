@@ -8,10 +8,10 @@ import pandas as pd
 
 RS_CSV            = "stock_rs.csv"
 STOCK_DATA_CSV    = "stock_data.csv"
-INPUT_TXT         = "output/technical_watchlist.txt"
+INPUT_TXT         = "output/daily_watchlist.txt"
 OUTPUT_NEWS_CACHE = "output/news_cache.json"
 MIN_AVG_VALUE_10D = 100
-MIN_ATR_PCT       = 2.5
+MIN_ATR_PCT       = 2
 
 TODAY         = datetime.date.today().strftime("%Y-%m-%d")
 ONE_MONTH_AGO = (datetime.date.today() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
@@ -110,14 +110,14 @@ def main():
     rs95_set = {t for t, _ in rs95_tickers}
 
     with open(INPUT_TXT, "r") as f:
-        technical_tickers = [line.strip().upper() for line in f if line.strip()]
+        daily_tickers = [line.strip().upper() for line in f if line.strip()]
 
-    extra_tickers = [t for t in technical_tickers if t not in rs95_set]
+    extra_tickers = [t for t in daily_tickers if t not in rs95_set]
     all_tickers = [(t, "RS{}".format(rs)) for t, rs in rs95_tickers] + \
-                  [(t, "technical") for t in extra_tickers]
+                  [(t, "daily") for t in extra_tickers]
 
-    print("📋 RS95: {} 檔，technical: {} 檔，合計去重: {} 檔\n".format(
-        len(rs95_tickers), len(technical_tickers), len(all_tickers)))
+    print("📋 RS95: {} 檔，daily: {} 檔，合計去重: {} 檔\n".format(
+        len(rs95_tickers), len(daily_tickers), len(all_tickers)))
 
     news_cache = {}
     total = len(all_tickers)
