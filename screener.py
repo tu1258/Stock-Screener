@@ -65,7 +65,7 @@ def main():
                 .groupby("ticker", group_keys=False)
                 .tail(1)
     )
-    # ---------- 3. 技術分析篩選 ----------
+    # ---------- 3. Daily Watchlist 篩選 ----------
     tech_filtered = latest_df[
         (latest_df["avg_value_10"] > 20) &
         (latest_df["atr_14_pct"] > 2) & (latest_df["atr_14_pct"] < 20) &
@@ -88,5 +88,30 @@ def main():
     # 輸出
     final_tickers.to_csv(OUTPUT_CSV, index=False, header=True)
     final_tickers["ticker"].to_csv(OUTPUT_TXT, index=False, header=False)
+
+
+
+    # ---------- 4. Universe Watchlist 篩選 ----------
+    universe_filtered = latest_df[
+        (latest_df["avg_value_10"] > 20) &
+        (latest_df["atr_14_pct"] > 2) & (latest_df["atr_14_pct"] < 20) &
+        (latest_df["avg_bar"] >= latest_df["ma50"]) &
+        (latest_df["ma50"] >= latest_df["ma200"] &
+        (latest_df["tr_max_14"] <= 25 * latest_df["atr_13_excl"])
+    ]
+
+    universe_tickers = (
+        universe_filtered.merge(rs_filtered[["ticker", "score", "RS"]], on="ticker", how="left")
+        .sort_values("score", ascending=False)[[
+            "ticker", "RS", "close", "volume",
+            "distance", "atr_14",
+            "atr_14_pct", "avg_value_10"
+        ]]
+    )
+    universe_tickers = universe_tickers.round(3)
+    universe_tickers.to_csv(UNIVERSE_CSV, index=False, header=True)
+    universe_tickers["ticker"].to_csv(UNIVERSE_TXT, index=False, header=False)
+
+
 if __name__ == "__main__":
     main()
