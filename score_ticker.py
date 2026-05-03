@@ -7,7 +7,7 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel
 
-INPUT_TXT         = "output/technical_watchlist.txt"
+INPUT_TXT         = "output/daily_watchlist.txt"
 RS_CSV            = "stock_rs.csv"
 INPUT_NEWS_CACHE  = "output/news_cache.json"
 INPUT_THEMES_JSON = "output/hot_theme.json"
