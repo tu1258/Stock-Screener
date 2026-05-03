@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 光通訊與矽光子技術,"MXL,AXTI,LWLG,AEHR,AAOI,LITE,CRDO,CIEN,ALAB",9
-2,AI 存儲與記憶體超級週期,"SNDK,STX,WDC,SIMO,MU,ONTO",6
-3,AI 數據中心電力與電網基礎設施,"BE,FCEL,POWL,AGX,MTZ,FIX,HUT,WULF",8
-4,次世代 AI 處理器與架構轉型,"INTC,AMD,ARM,MRVL",4
-5,半導體測試與先進封裝設備,"AEHR,FORM,ACLS,ONTO,AMKR,ASX",6
-6,物理 AI 與工業電源管理,"ON,MPWR,TXN,POWI,NVTS",5
-7,關鍵礦產與供應鏈去風險化,"USAR,UAMY",2
-8,邊緣運算與代理人推論雲,"DOCN,FSLY,BB",3
-9,精準腫瘤學與 RAS 抑制劑,"RVMD,ORKA",2
-10,高速網路協議與測試驗證,"VIAV,NOK",2
+1,AI 數據中心光學互連與矽光子,"MXL,AAOI,VIAV,LITE,CIEN,COHR,CRDO,LWLG",8
+2,AI 電力基礎設施與散熱管理,"BE,POWL,VRT,FCEL,VICR,NVTS",6
+3,數據存儲超級週期 (NAND 與 HDD 結構性短缺),"SNDK,STX,WDC,MU,SIMO",5
+4,先進半導體封裝與計量檢測 (AI OSAT),"AMKR,ASX,ONTO,AEHR,FORM,ACLS",6
+5,客製化晶片與 CPU 核心 AI 轉型 (ARM 架構崛起),"ARM,MRVL,AMD,INTC",4
+6,專業 AI 雲端與託管推理服務,"DOCN,NBIS,FSLY,HUT,WULF",5
+7,電網現代化與工業電氣化工程 (EPC),"AGX,MYRG,FIX,MTZ,LGN",5
+8,精準腫瘤學與靶向免疫療法 (後期生技),"RVMD,ORKA,PRAX,NKTR",4
+9,關鍵礦產與稀土供應鏈自主,"USAR,CRML,UAMY,Q",4
+10,第三代半導體 (碳化矽與氮化鎵),"WOLF,ON,COHR,NVTS",4
