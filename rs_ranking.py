@@ -19,7 +19,7 @@ def geo_monthly_return(closes, n):
 
 def strength(closes):
     try:
-        months = [1, 2, 3, 4, 5, 6]
+        months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         values = [geo_monthly_return(closes, n) for n in months]
         valid  = [v for v in values if v is not None]
         if not valid:
