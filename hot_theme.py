@@ -227,7 +227,7 @@ Instructions:
   - Short squeeze (price spike driven by short covering, not real demand)
   - Meme/retail frenzy (social media driven, no institutional backing)
   - Single binary event outcome (e.g. FDA approval/rejection, M&A close, court ruling)
-  - Speculation without real business(especially "biotechnology" stocks)
+  - Speculation without real business
 
 - If a stock or group of stocks has high RS but no identifiable catalyst or narrative, do NOT force them into a theme.
 
