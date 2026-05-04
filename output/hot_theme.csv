@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 光學通訊與高速網路基礎設施,"MXL,AAOI,LITE,CIEN,MRVL,COHR,CRDO,ALAB,CLS,VIAV,LWLG",11
-2,AI 記憶體與大容量儲存超級週期,"SNDK,STX,MU,WDC,SIMO",5
-3,AI 電力管理與先進散熱解決方案,"BE,VRT,POWL,VICR,ON,NVTS,POWI",7
-4,先進封裝與半導體製程控制設備,"AXTI,AEHR,FORM,AMKR,ASX,ONTO,ACLS",7
-5,邊緣運算與 AI 推論雲端平台,"DOCN,NBIS,FSLY,HUT,WULF",5
-6,次世代 AI 處理器與客製化晶片,"INTC,AMD,ARM,MRVL",4
-7,電網現代化與資料中心機電工程,"MYRG,AGX,FIX,MTZ,POWL",5
-8,精準腫瘤醫學與神經科學突破,"RVMD,PRAX,NKTR,ORKA",4
-9,戰略性關鍵礦產與供應鏈自主,"UAMY,USAR,CRML",3
-10,商業航太與地球觀測情報,"PL,IRDM",2
+1,AI 光學連接與高速網路基礎設施,"MXL,AAOI,LITE,CIEN,COHR,CRDO,LWLG,VIAV,NOK",9
+2,AI 存儲與記憶體超級週期,"SNDK,STX,MU,WDC,SIMO",5
+3,AI 數據中心電力與散熱管理,"BE,VRT,POWL,VICR,NVTS,ON,FCEL",7
+4,先進半導體封裝與測試設備,"AEHR,FORM,AMKR,ONTO,ACLS,Q,ASX",7
+5,客製化 AI 晶片與次世代運算架構,"MRVL,ARM,AMD,INTC,ALAB",5
+6,AI 驅動之機電工程與基礎建設,"FIX,AGX,MTZ,MYRG,LGN",5
+7,關鍵礦產與資源自主化,"USAR,CRML,UAMY",3
+8,邊緣運算與 AI 推論雲端服務,"DOCN,NBIS,FSLY,SANM,CLS",5
+9,精準醫療與免疫療法突破,"RVMD,ORKA,NKTR,PRAX",4
+10,寬能隙半導體與電力電子,"WOLF,ON,COHR,NVTS,STM",5
