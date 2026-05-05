@@ -11,7 +11,7 @@ STOCK_DATA_CSV    = "stock_data.csv"
 INPUT_TXT         = "output/daily_watchlist.txt"
 OUTPUT_NEWS_CACHE = "output/news_cache.json"
 MIN_AVG_VALUE_10D = 100
-MIN_ATR_PCT       = 2
+MIN_ATR_PCT       = 2.5
 
 TODAY         = datetime.date.today().strftime("%Y-%m-%d")
 ONE_MONTH_AGO = (datetime.date.today() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
