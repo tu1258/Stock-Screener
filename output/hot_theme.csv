@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 光學連接與高速網路基礎設施,"MXL,AAOI,LITE,CIEN,COHR,CRDO,LWLG,VIAV,NOK",9
-2,AI 存儲與記憶體超級週期,"SNDK,STX,MU,WDC,SIMO",5
-3,AI 數據中心電力與散熱管理,"BE,VRT,POWL,VICR,NVTS,ON,FCEL",7
-4,先進半導體封裝與測試設備,"AEHR,FORM,AMKR,ONTO,ACLS,Q,ASX",7
-5,客製化 AI 晶片與次世代運算架構,"MRVL,ARM,AMD,INTC,ALAB",5
-6,AI 驅動之機電工程與基礎建設,"FIX,AGX,MTZ,MYRG,LGN",5
-7,關鍵礦產與資源自主化,"USAR,CRML,UAMY",3
-8,邊緣運算與 AI 推論雲端服務,"DOCN,NBIS,FSLY,SANM,CLS",5
-9,精準醫療與免疫療法突破,"RVMD,ORKA,NKTR,PRAX",4
-10,寬能隙半導體與電力電子,"WOLF,ON,COHR,NVTS,STM",5
+1,AI 光通訊與高速連接基礎設施,"LITE,CIEN,COHR,CRDO,MXL,AAOI,LWLG,AXTI,MRVL,VIAV",10
+2,AI 存儲與記憶體結構性超級週期,"SNDK,STX,MU,WDC,SIMO",5
+3,AI 電力供應與液冷散熱方案,"BE,VRT,POWL,AGX,MTZ,MYRG,FIX,FCEL",8
+4,半導體先進封裝、測試與計量設備,"ONTO,AMKR,AEHR,FORM,ASX,GFS",6
+5,AI 專用雲端運算與推論平台 (Neoclouds),"NBIS,DOCN,XNDU",3
+6,戰略性關鍵礦產與供應鏈去風險化,"UAMY,USAR,CRML",3
+7,精準腫瘤學與 RAS 抑制劑突破,"RVMD,CELC,ERAS",3
+8,半導體代工復興與主權供應鏈,"INTC,AMD,TSEM,ALGM,STM",5
+9,精準神經科學與免疫療法創新,"PRAX,NKTR,ORKA",3
+10,能源服務與頁岩油鑽探效率提升,"LBRT,PTEN",2
