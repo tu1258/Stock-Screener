@@ -68,8 +68,8 @@ def main():
     )
     # ---------- 3. Daily Watchlist 篩選 ----------
     tech_filtered = latest_df[
-        (latest_df["avg_value_10"] > 20) &
-        (latest_df["atr_14_pct"] > 2) & (latest_df["atr_14_pct"] < 20) &
+        (latest_df["avg_value_10"] > 25) &
+        (latest_df["atr_14_pct"] > 2.5) & (latest_df["atr_14_pct"] < 25) &
         (latest_df["avg_bar"] >= latest_df["ma20"]) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
         (latest_df["ma50"] >= latest_df["ma200"]) &
