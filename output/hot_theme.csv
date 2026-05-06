@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 光通訊與高速連接基礎設施,"LITE,CIEN,COHR,CRDO,MXL,AAOI,LWLG,AXTI,MRVL,VIAV",10
-2,AI 存儲與記憶體結構性超級週期,"SNDK,STX,MU,WDC,SIMO",5
-3,AI 電力供應與液冷散熱方案,"BE,VRT,POWL,AGX,MTZ,MYRG,FIX,FCEL",8
-4,半導體先進封裝、測試與計量設備,"ONTO,AMKR,AEHR,FORM,ASX,GFS",6
-5,AI 專用雲端運算與推論平台 (Neoclouds),"NBIS,DOCN,XNDU",3
-6,戰略性關鍵礦產與供應鏈去風險化,"UAMY,USAR,CRML",3
-7,精準腫瘤學與 RAS 抑制劑突破,"RVMD,CELC,ERAS",3
-8,半導體代工復興與主權供應鏈,"INTC,AMD,TSEM,ALGM,STM",5
-9,精準神經科學與免疫療法創新,"PRAX,NKTR,ORKA",3
-10,能源服務與頁岩油鑽探效率提升,"LBRT,PTEN",2
+1,AI 光通訊與高速連接基礎設施,"MXL,AAOI,LITE,COHR,CRDO,ALAB,VIAV,CIEN,LWLG",9
+2,AI 儲存與記憶體結構性成長週期,"SNDK,STX,WDC,MU,SIMO",5
+3,AI 資料中心電力供應與熱能管理,"BE,VRT,POWL,AESI,FPS,NVTS,VICR,ON,FCEL",9
+4,AI 基礎設施土木與機電工程服務,"STRL,FIX,MTZ,AGX,MYRG,LGN",6
+5,半導體先進封裝與製程控制設備,"AMKR,ASX,ONTO,FORM,AEHR,UCTT",6
+6,AI 原生雲端與算力基礎設施租賃,"DOCN,NBIS,WULF,HUT,CIFR,APLD",6
+7,關鍵礦產與稀土供應鏈去風險化,"CRML,USAR,UAMY",3
+8,次世代半導體材料與基板技術,"AXTI,Q,WOLF,POWI",4
+9,精準醫療與神經科學突破性療法,"MANE,ORKA,RVMD,CELC,PRAX,NKTR",6
+10,美國半導體製造本土化與代工轉型,"INTC,AMD,GFS,UMC",4
