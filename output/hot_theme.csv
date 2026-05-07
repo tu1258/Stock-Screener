@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 光通訊與高速連接基礎設施,"MXL,AAOI,LITE,COHR,CRDO,ALAB,VIAV,CIEN,LWLG",9
-2,AI 儲存與記憶體結構性成長週期,"SNDK,STX,WDC,MU,SIMO",5
-3,AI 資料中心電力供應與熱能管理,"BE,VRT,POWL,AESI,FPS,NVTS,VICR,ON,FCEL",9
-4,AI 基礎設施土木與機電工程服務,"STRL,FIX,MTZ,AGX,MYRG,LGN",6
-5,半導體先進封裝與製程控制設備,"AMKR,ASX,ONTO,FORM,AEHR,UCTT",6
-6,AI 原生雲端與算力基礎設施租賃,"DOCN,NBIS,WULF,HUT,CIFR,APLD",6
-7,關鍵礦產與稀土供應鏈去風險化,"CRML,USAR,UAMY",3
-8,次世代半導體材料與基板技術,"AXTI,Q,WOLF,POWI",4
-9,精準醫療與神經科學突破性療法,"MANE,ORKA,RVMD,CELC,PRAX,NKTR",6
-10,美國半導體製造本土化與代工轉型,"INTC,AMD,GFS,UMC",4
+1,AI 實體基礎設施 - 光學連接與矽光子,"MXL,AAOI,LWLG,LITE,CIEN,VIAV,COHR,GLW,CRDO",9
+2,AI 實體基礎設施 - 電力管理與散熱系統,"BE,VRT,POWL,VICR,FPS,FCEL,AESI",7
+3,AI 實體基礎設施 - 記憶體與大容量儲存,"SNDK,MU,STX,WDC,SIMO",5
+4,AI 實體基礎設施 - 資料中心營造與機電工程,"STRL,LGN,AGX,MYRG,FIX,ECG,MTZ",7
+5,AI 實體基礎設施 - 先進封裝與檢測設備,"AEHR,AMKR,ASX,ONTO,FORM,ACLS,UCTT",7
+6,AI 實體基礎設施 - 算力處理器與伺服器復興,"AMD,INTC,ARM,MRVL,NVTS,ON,GFS,TSEM,UMC",9
+7,數位基礎設施轉型 - 從加密貨幣到 AI 託管,"HUT,WULF,IREN,APLD,CIFR,RIOT,KEEL",7
+8,關鍵礦產與戰略物資自主供應鏈,"USAR,CRML,UAMY",3
+9,精準醫療與次世代腫瘤標靶療法,"RVMD,CELC,PRAX,MANE,ORKA",5
+10,邊緣運算與 AI 原生雲端服務,"DOCN,NBIS,BB,FSLY,DELL",5
