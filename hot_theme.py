@@ -20,9 +20,8 @@ OUTPUT_THEMES_CSV = "output/hot_theme.csv"
 OUTPUT_THEMES_JSON= "output/hot_theme.json"
 OUTPUT_HOT_WL     = "output/hot_theme_watchlist.txt"
 MIN_AVG_VALUE_10D = 100
-MIN_ATR_PCT       = 2.5
+MIN_ADR           = 2.5
 
-#GEMINI_MODEL_SUMMARY = "gemini-3.1-flash-lite-preview"
 GEMINI_MODEL_SUMMARY = "gemma-4-31b-it"
 GEMINI_MODEL_THEMES  = "gemini-3-flash-preview"
 
@@ -66,32 +65,29 @@ def load_rs95_liquid(rs_csv, stock_data_csv):
     avg_val["ticker"] = avg_val["ticker"].str.upper()
     liquid_set = set(avg_val[avg_val["avg_value_10"] >= MIN_AVG_VALUE_10D]["ticker"].tolist())
 
-    # TR / ATR
-    price_df["prev_close"] = price_df.groupby("ticker")["close"].shift(1)
-    price_df["tr"] = pd.concat([
-        price_df["high"] - price_df["low"],
-        (price_df["high"] - price_df["prev_close"]).abs(),
-        (price_df["low"]  - price_df["prev_close"]).abs()
-    ], axis=1).max(axis=1)
-    price_df['atr_14'] = price_df.groupby('ticker')['tr'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
-    price_df["atr_14_pct"] = price_df['atr_14'] / price_df.groupby("ticker")["close"].transform(lambda x: x.rolling(14, min_periods=1).mean()) * 100
+    # DR / ADR
+    price_df["dr"] = (price_df["high"] / price_df["low"] - 1) * 100
+    price_df["adr"] = price_df.groupby("ticker")["dr"].transform(
+        lambda x: x.rolling(20).mean()
+    )
 
     # 暴漲過濾
-    price_df["tr_sum_14"] = price_df.groupby("ticker")["tr"].transform(lambda x: x.rolling(14).sum())
-    price_df["tr_max_14"] = price_df.groupby("ticker")["tr"].transform(lambda x: x.rolling(14).max())
-    price_df["atr_13_excl"] = (price_df["tr_sum_14"] - price_df["tr_max_14"]) / 13
+    price_df["dr_sum_20"] = price_df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).sum())
+    price_df["dr_max_20"] = price_df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).max())
+    price_df["adr_excl"]  = (price_df["dr_sum_20"] - price_df["dr_max_20"]) / 19
 
     latest = price_df.groupby("ticker").tail(1).copy()
     latest["ticker"] = latest["ticker"].str.upper()
     latest = latest.set_index("ticker")
 
-    atr_ok_set   = set(latest[latest["atr_14_pct"] > MIN_ATR_PCT].index)
-    no_spike_set = set(latest[latest["tr_max_14"] <= 25 * latest["atr_13_excl"]].index)
+    adr_ok_set   = set(latest[latest["adr"] > MIN_ADR].index)
+    no_spike_set = set(latest[latest["dr_max_20"] <= 25 * latest["adr_excl"]].index)
 
-    valid_set = liquid_set & no_spike_set & atr_ok_set
+    valid_set = liquid_set & no_spike_set & adr_ok_set
     return sorted([(t, rs) for t, rs in rs_map.items() if t in valid_set], key=lambda x: -x[1])
 
 
+# 以下函數完全不變
 def load_industry_ranking(industry_rs_csv, ticker_ind_csv):
     ticker_to_industry = {}
     if os.path.exists(ticker_ind_csv):
