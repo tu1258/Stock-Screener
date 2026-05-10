@@ -9,55 +9,54 @@ OUTPUT_CSV = "output/daily_watchlist.csv"
 OUTPUT_TXT = "output/daily_watchlist.txt"
 UNIVERSE_CSV = "output/universe_watchlist.csv"
 UNIVERSE_TXT = "output/universe_watchlist.txt"
+
 # ---------------- 技術指標計算 ---------------- #
 def compute_indicators_vectorized(df):
-    # 確保按ticker與日期排序
     df = df.sort_values(["ticker", "date"]).copy()
+
     # 10日平均成交值
     df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
-    
+
     # 均線
     df["ma5"]   = df.groupby("ticker")["close"].transform(lambda x: x.rolling(5,   min_periods=1).mean())
-    df["ma14"]  = df.groupby("ticker")["close"].transform(lambda x: x.rolling(14,  min_periods=1).mean())
     df["ma20"]  = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20,  min_periods=1).mean())
     df["ma50"]  = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50,  min_periods=1).mean())
     df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200, min_periods=1).mean())
-    
-    # VCP
-    df['prev_close'] = df.groupby('ticker')['close'].shift(1)
-    df['tr'] = pd.concat([
-        df['high'] - df['low'],
-        (df['high'] - df['prev_close']).abs(),
-        (df['low'] - df['prev_close']).abs()
-    ], axis=1).max(axis=1)
-    df["tr_pct"] = df["tr"] / df['prev_close'] * 100
-    
-    df['atr_14'] = df.groupby('ticker')['tr'].transform(lambda x: x.ewm(alpha=1/14, adjust=False).mean())
-    df["atr_14_pct"] = df['atr_14'] / df['ma14'] * 100
+
+    # DR = high/low - 1（單日振幅%）
+    df["dr"] = (df["high"] / df["low"] - 1) * 100
+
+    # ADR = 20日 DR 均值
+    df["adr"] = df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).mean())
+
     df["avg_bar"] = (df['close'] + df['high'] + df['low']) / 3
-    df['distance'] = abs(df["avg_bar"] - df["ma5"]); # Keltner Channel
+    df['distance'] = abs(df["avg_bar"] - df["ma5"])
+
     # 價量
     df["chg"] = df.groupby("ticker")["close"].diff()
     df["money_flow"] = df["volume"] * df["chg"]
-    df["money_flow_avg"] = df.groupby('ticker')['money_flow'].transform(lambda x: x.rolling(10).mean()) 
+    df["money_flow_avg"] = df.groupby('ticker')['money_flow'].transform(lambda x: x.rolling(10).mean())
     df["trade_chg"] = df["close"] - df["open"]
     df["trade_money_flow"] = df["volume"] * df["trade_chg"]
-    df["trade_money_flow_avg"] = df.groupby('ticker')['trade_money_flow'].transform(lambda x: x.rolling(10).mean()) 
-    # 暴漲過濾
-    df["tr_sum_14"] = df.groupby("ticker")["tr"].transform(lambda x: x.rolling(14).sum())
-    df["tr_max_14"] = df.groupby("ticker")["tr"].transform(lambda x: x.rolling(14).max())
-    df["atr_13_excl"] = ((df["tr_sum_14"] - df["tr_max_14"]) / 13)
+    df["trade_money_flow_avg"] = df.groupby('ticker')['trade_money_flow'].transform(lambda x: x.rolling(10).mean())
+
+    # 暴漲過濾：排除20日內最大單日DR後，剩19日的均值
+    df["dr_sum_20"] = df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).sum())
+    df["dr_max_20"] = df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).max())
+    df["adr_excl"]  = (df["dr_sum_20"] - df["dr_max_20"]) / 19
 
     return df
+
 # ---------------- 主程式 ---------------- #
 def main():
-    # 讀檔
     price_df = pd.read_csv(PRICE_CSV, parse_dates=["date"])
     rs_df = pd.read_csv(RS_CSV)
+
     # ---------- 1. RS 篩選 ----------
     rs_filtered = rs_df[rs_df["RS"] >= 90].copy()
     rs_filtered = rs_filtered.sort_values("score", ascending=False)
     rs_tickers = rs_filtered["ticker"].tolist()
+
     # ---------- 2. 計算技術指標 ----------
     price_df = price_df[price_df["ticker"].isin(rs_tickers)]
     price_df = compute_indicators_vectorized(price_df)
@@ -66,53 +65,47 @@ def main():
                 .groupby("ticker", group_keys=False)
                 .tail(1)
     )
+
     # ---------- 3. Daily Watchlist 篩選 ----------
     tech_filtered = latest_df[
         (latest_df["avg_value_10"] > 25) &
-        (latest_df["atr_14_pct"] > 2.5) & (latest_df["atr_14_pct"] < 25) &
-        (latest_df["avg_bar"] >= latest_df["ma20"]) &
+        (latest_df["adr"] > 2.5) & (latest_df["adr"] < 25) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
         (latest_df["ma50"] >= latest_df["ma200"]) &
-        (latest_df["distance"] < latest_df["atr_14"] * 1/2) &
-        (latest_df["tr_max_14"] <= 25 * latest_df["atr_13_excl"])
+        (latest_df["distance"] < latest_df["adr"] / 100 * latest_df["close"]) &
+        (latest_df["dr_max_20"] <= 25 * latest_df["adr_excl"])
     ]
-    # merge RS 並排序
+
     final_tickers = (
         tech_filtered.merge(rs_filtered[["ticker", "score", "RS"]], on="ticker", how="left")
         .sort_values("score", ascending=False)[[
-            "ticker", "RS", "close", "volume", 
-            "distance", "atr_14",
-            "atr_14_pct", "avg_value_10"
+            "ticker", "RS", "close", "volume",
+            "distance", "adr", "avg_value_10"
         ]]
     )
     final_tickers = final_tickers.round(3)
-    # 輸出
     final_tickers.to_csv(OUTPUT_CSV, index=False, header=True)
     final_tickers["ticker"].to_csv(OUTPUT_TXT, index=False, header=False)
-
-
 
     # ---------- 4. Universe Watchlist 篩選 ----------
     universe_filtered = latest_df[
         (latest_df["avg_value_10"] > 25) &
-        (latest_df["atr_14_pct"] > 2.5) & (latest_df["atr_14_pct"] < 25) &
+        (latest_df["adr"] > 2.5) & (latest_df["adr"] < 25) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
         (latest_df["ma50"] >= latest_df["ma200"]) &
-        (latest_df["tr_max_14"] <= 25 * latest_df["atr_13_excl"])
+        (latest_df["dr_max_20"] <= 25 * latest_df["adr_excl"])
     ]
 
     universe_tickers = (
         universe_filtered.merge(rs_filtered[["ticker", "score", "RS"]], on="ticker", how="left")
         .sort_values("score", ascending=False)[[
             "ticker", "RS", "close", "volume",
-            "distance", "atr_14",
-            "atr_14_pct", "avg_value_10"
+            "distance", "adr", "avg_value_10"
         ]]
     )
     universe_tickers = universe_tickers.round(3)
     universe_tickers.to_csv(UNIVERSE_CSV, index=False, header=True)
     universe_tickers["ticker"].to_csv(UNIVERSE_TXT, index=False, header=False)
-
 
 if __name__ == "__main__":
     main()
