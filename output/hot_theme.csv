@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 物理層基礎設施與工程,"STRL,LGN,MYRG,AGX,FIX,PENG,APLD,AESI,FPS,POWL",10
-2,AI 存儲與記憶體超級週期,"MU,SNDK,STX,WDC,SIMO",5
-3,光學互連與矽光子技術,"AAOI,LITE,COHR,LWLG,VIAV,MTSI,GLW,AXTI,AEHR",9
-4,AI 能源供應與電力架構,"BE,FCEL,WOLF,NVTS,DGXX,ON,VICR",7
-5,代理型 AI 與雲端原生基礎設施,"DOCN,NBIS,RXT,TWLO,DDOG,AKAM",6
-6,AI 算力與先進半導體製造,"INTC,AMD,MXL,MRVL,STM,ASX,UMC,GFS,TSEM",9
-7,半導體設備與精密測試,"FORM,UCTT,VECO,ACLS,MKSI,AEHR,AXTI",7
-8,太空經濟與衛星通訊基礎設施,"RKLB,LUNR,PL,DXYZ,SITM",5
-9,精準醫療與神經科學藥物,"RVMD,PRAX,MANE,ORKA",4
-10,邊緣 AI 與工業自動化硬體,"SYNA,BB,VSH,FLEX",4
+1,AI 實體基礎設施：核心半導體與運算加速,"INTC,AMD,MU,MRVL,STM,ASX,NVTS,VSH,SMTC,MXL",10
+2,AI 實體基礎設施：高速光學連接與網路通訊,"MXL,AAOI,CIEN,LITE,MTSI,GLW,COHR,AKAM,VIAV",9
+3,AI 實體基礎設施：記憶體與海量儲存超級週期,"MU,STX,WDC,SNDK,SIMO",5
+4,AI 實體基礎設施：電力管理與能源供應鏈,"BE,FCEL,POWL,FPS,AESI,ON,VICR,VSH",8
+5,AI 實體基礎設施：資料中心機電工程與建設,"LGN,STRL,MYRG,AGX,FIX",5
+6,AI 原生雲與基礎設施代管（Neocloud）,"RXT,DOCN,NBIS,IREN,APLD,HUT,WULF,KEEL",8
+7,半導體資本設備與先進封裝測試,"AXTI,AEHR,FORM,UCTT,VECO,ACLS,MKSI",7
+8,太空經濟與低軌衛星基礎設施,"DXYZ,PL,RKLB,LUNR",4
+9,精準醫療：神經科學與腫瘤學突破,"RVMD,PRAX,MANE,ORKA",4
+10,AI 軟體觀測、安全與自動化代理,"DDOG,TWLO,BB",3
