@@ -5,8 +5,8 @@ os.makedirs("csv", exist_ok=True)
 os.makedirs("txt", exist_ok=True)
 PRICE_CSV = "stock_data.csv"
 RS_CSV = "stock_rs.csv"
-OUTPUT_CSV = "output/daily_watchlist.csv"
-OUTPUT_TXT = "output/daily_watchlist.txt"
+OUTPUT_CSV = "output/technical_watchlist.csv"
+OUTPUT_TXT = "output/technical_watchlist.txt"
 UNIVERSE_CSV = "output/universe_watchlist.csv"
 UNIVERSE_TXT = "output/universe_watchlist.txt"
 
@@ -26,8 +26,9 @@ def compute_indicators_vectorized(df):
     # DR = high/low - 1（單日振幅%）
     df["dr"] = (df["high"] / df["low"] - 1) * 100
 
-    # ADR = 20日 DR 均值
-    df["adr"] = df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).mean())
+    # ADR
+    df["adr5"] = df.groupby("ticker")["dr"].transform(lambda x: x.rolling(5).mean())
+    df["adr20"] = df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).mean())
 
     df["avg_bar"] = (df['close'] + df['high'] + df['low']) / 3
     df['distance'] = abs(df["avg_bar"] - df["ma5"])
@@ -66,13 +67,14 @@ def main():
                 .tail(1)
     )
 
-    # ---------- 3. Daily Watchlist 篩選 ----------
+    # ---------- 3. Technical Watchlist 篩選 ----------
     tech_filtered = latest_df[
         (latest_df["avg_value_10"] > 25) &
-        (latest_df["adr"] > 2.5) & (latest_df["adr"] < 25) &
+        (latest_df["adr20"] > 2.5) & (latest_df["adr20"] < 25) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
         (latest_df["ma50"] >= latest_df["ma200"]) &
-        (latest_df["distance"] < latest_df["adr"] / 100 * latest_df["close"] * 1/2) &
+        (latest_df["distance"] < latest_df["adr20"] / 100 * latest_df["close"]) &
+        (latest_df["dr"] < latest_df["adr5"]) &
         (latest_df["dr_max_20"] <= 25 * latest_df["adr_excl"])
     ]
 
@@ -80,7 +82,7 @@ def main():
         tech_filtered.merge(rs_filtered[["ticker", "score", "RS"]], on="ticker", how="left")
         .sort_values("score", ascending=False)[[
             "ticker", "RS", "close", "volume",
-            "distance", "adr", "avg_value_10"
+            "distance", "dr", "adr5", "adr20", "avg_value_10"
         ]]
     )
     final_tickers = final_tickers.round(3)
@@ -90,7 +92,7 @@ def main():
     # ---------- 4. Universe Watchlist 篩選 ----------
     universe_filtered = latest_df[
         (latest_df["avg_value_10"] > 25) &
-        (latest_df["adr"] > 2.5) & (latest_df["adr"] < 25) &
+        (latest_df["adr20"] > 2.5) & (latest_df["adr20"] < 25) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
         (latest_df["ma50"] >= latest_df["ma200"]) &
         (latest_df["dr_max_20"] <= 25 * latest_df["adr_excl"])
@@ -100,7 +102,7 @@ def main():
         universe_filtered.merge(rs_filtered[["ticker", "score", "RS"]], on="ticker", how="left")
         .sort_values("score", ascending=False)[[
             "ticker", "RS", "close", "volume",
-            "distance", "adr", "avg_value_10"
+            "distance", "dr", "adr5", "adr20", "avg_value_10"
         ]]
     )
     universe_tickers = universe_tickers.round(3)
