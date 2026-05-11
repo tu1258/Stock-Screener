@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 物理層：記憶體與儲存超級週期,"MU,SNDK,WDC,STX,SIMO",5
-2,AI 物理層：光通訊與高速互連技術,"LITE,COHR,AAOI,MTSI,LWLG,CIEN,VIAV,GLW",8
-3,AI 基礎設施：電力供應與能源管理,"BE,DGXX,FCEL,POWL,MYRG,FLNC,FPS,AESI",8
-4,AI 物理層：半導體設備、測試與先進封裝,"AEHR,ACLS,VECO,AMKR,ASX,MKSI,FORM,UCTT,AXTI",9
-5,AI 基礎設施：資料中心工程建設與冷卻系統,"LGN,STRL,FIX,AGX",4
-6,AI 雲端轉型：算力租賃與 Neocloud 服務,"NBIS,DOCN,RXT,AKAM,APLD,IREN,HUT,WULF,KEEL",9
-7,AI 物理層：核心處理器與功率半導體,"INTC,AMD,MRVL,NVTS,ON,STM,UMC,GFS,TSEM,SYNA,SMTC",11
-8,AI 軟體層：雲端觀測、安全與代理人介面,"DDOG,TWLO,INOD",3
-9,太空經濟：衛星基礎設施與發射服務,"RKLB,PL,LUNR,DXYZ",4
-10,精準醫療：腫瘤與免疫療法臨床突破,"RVMD,ORKA,MANE,PRAX",4
+1,AI 記憶體與海量儲存超級週期,"SNDK,STX,WDC,MU",4
+2,AI 電力與電網基礎設施,"BE,FCEL,POWL,AGX,MYRG,FPS,DGXX",7
+3,AI 光學互連與矽光子,"LWLG,AAOI,LITE,CIEN,MTSI,GLW,COHR,MRVL",8
+4,AI 專用數據中心與新興雲服務,"DOCN,NBIS,IREN,APLD,HUT,KEEL",6
+5,AI 散熱管理與電子基礎設施工程,"FIX,STRL,LGN,FLEX",4
+6,AI 先進封裝與測試設備,"AMKR,ASX,MKSI,FORM,UCTT,VECO,ACLS,AEHR",8
+7,次世代半導體材料與功率晶片,"AXTI,WOLF,NVTS,ON,VICR,VSH",6
+8,AI 驅動的可觀測性與邊緣智能,"DDOG,AKAM,TWLO,SYNA,BB",5
+9,新太空經濟與月球基礎設施,"RKLB,LUNR,PL,DXYZ",4
+10,精準醫療與神經科學突破,"RVMD,PRAX,MANE,ORKA",4
