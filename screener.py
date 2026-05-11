@@ -28,6 +28,7 @@ def compute_indicators_vectorized(df):
 
     # ADR
     df["adr5"] = df.groupby("ticker")["dr"].transform(lambda x: x.rolling(5).mean())
+    df["adr10"] = df.groupby("ticker")["dr"].transform(lambda x: x.rolling(10).mean())
     df["adr20"] = df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).mean())
 
     df["avg_bar"] = (df['close'] + df['high'] + df['low']) / 3
@@ -73,7 +74,7 @@ def main():
         (latest_df["adr20"] > 2.5) & (latest_df["adr20"] < 25) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
         (latest_df["ma50"] >= latest_df["ma200"]) &
-        (latest_df["distance"] < latest_df["adr20"] / 100 * latest_df["close"]) &
+        (latest_df["distance"] < latest_df["adr10"] / 100 * latest_df["close"]) &
         (latest_df["dr"] < latest_df["adr5"]) &
         (latest_df["dr_max_20"] <= 25 * latest_df["adr_excl"])
     ]
@@ -82,7 +83,7 @@ def main():
         tech_filtered.merge(rs_filtered[["ticker", "score", "RS"]], on="ticker", how="left")
         .sort_values("score", ascending=False)[[
             "ticker", "RS", "close", "volume",
-            "distance", "dr", "adr5", "adr20", "avg_value_10"
+            "distance", "dr", "adr5", "adr10", "adr20", "avg_value_10"
         ]]
     )
     final_tickers = final_tickers.round(3)
@@ -102,7 +103,7 @@ def main():
         universe_filtered.merge(rs_filtered[["ticker", "score", "RS"]], on="ticker", how="left")
         .sort_values("score", ascending=False)[[
             "ticker", "RS", "close", "volume",
-            "distance", "dr", "adr5", "adr20", "avg_value_10"
+            "distance", "dr", "adr5", "adr10", "adr20", "avg_value_10"
         ]]
     )
     universe_tickers = universe_tickers.round(3)
