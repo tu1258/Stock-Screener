@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 實體基礎設施 - 存儲與記憶體,"MU,STX,WDC,SNDK,SIMO",5
-2,AI 光學互連與矽光子技術,"MXL,AAOI,LITE,CIEN,MTSI,GLW,COHR,LWLG",8
-3,AI 數據中心電力與能源管理,"BE,FCEL,POWL,FPS,AGX,MYRG,FLNC,ON",8
-4,半導體設備與先進封裝測試,"AEHR,AXTI,FORM,UCTT,VECO,MKSI,ACLS,AMKR,ASX",9
-5,AI 雲端基礎設施與 Neocloud 轉型,"DOCN,NBIS,APLD,IREN,WULF,HUT,KEEL",7
-6,AI 實體建構與機電工程,"STRL,FIX,LGN",3
-7,次世代處理器與晶圓代工轉型,"INTC,AMD,UMC,GFS,TSEM,STM",6
-8,太空經濟與衛星基礎設施,"RKLB,LUNR,PL,DXYZ",4
-9,精準醫療與神經科學生技,"RVMD,PRAX,MANE,ORKA",4
-10,AI 軟體定義與可觀測性平台,"DDOG,TWLO,AKAM,BB",4
+1,AI 物理層：記憶體與儲存超級週期,"MU,SNDK,WDC,STX,SIMO",5
+2,AI 物理層：光通訊與高速互連技術,"LITE,COHR,AAOI,MTSI,LWLG,CIEN,VIAV,GLW",8
+3,AI 基礎設施：電力供應與能源管理,"BE,DGXX,FCEL,POWL,MYRG,FLNC,FPS,AESI",8
+4,AI 物理層：半導體設備、測試與先進封裝,"AEHR,ACLS,VECO,AMKR,ASX,MKSI,FORM,UCTT,AXTI",9
+5,AI 基礎設施：資料中心工程建設與冷卻系統,"LGN,STRL,FIX,AGX",4
+6,AI 雲端轉型：算力租賃與 Neocloud 服務,"NBIS,DOCN,RXT,AKAM,APLD,IREN,HUT,WULF,KEEL",9
+7,AI 物理層：核心處理器與功率半導體,"INTC,AMD,MRVL,NVTS,ON,STM,UMC,GFS,TSEM,SYNA,SMTC",11
+8,AI 軟體層：雲端觀測、安全與代理人介面,"DDOG,TWLO,INOD",3
+9,太空經濟：衛星基礎設施與發射服務,"RKLB,PL,LUNR,DXYZ",4
+10,精準醫療：腫瘤與免疫療法臨床突破,"RVMD,ORKA,MANE,PRAX",4
