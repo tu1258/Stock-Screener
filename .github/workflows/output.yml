@@ -32,7 +32,7 @@ jobs:
         run: python screener.py
       - name: Commit screener output
         run: |
-          git add output/daily_watchlist.csv output/daily_watchlist.txt output/universe_watchlist.csv output/universe_watchlist.txt 
+          git add output/technical_watchlist.csv output/technical_watchlist.txt output/universe_watchlist.csv output/universe_watchlist.txt 
           git commit -m "Daily Update (screener)" || echo "No changes to commit"
           git push
       - name: Run market_monitor.py
