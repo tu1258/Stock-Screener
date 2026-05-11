@@ -8,7 +8,7 @@ import pandas as pd
 
 RS_CSV            = "stock_rs.csv"
 STOCK_DATA_CSV    = "stock_data.csv"
-INPUT_TXT         = "output/daily_watchlist.txt"
+INPUT_TXT         = "output/technical_watchlist.txt"
 OUTPUT_NEWS_CACHE = "output/news_cache.json"
 MIN_AVG_VALUE_10D = 100
 MIN_ADR           = 2.5
