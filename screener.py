@@ -72,7 +72,7 @@ def main():
         (latest_df["adr"] > 2.5) & (latest_df["adr"] < 25) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
         (latest_df["ma50"] >= latest_df["ma200"]) &
-        (latest_df["distance"] < latest_df["adr"] / 100 * latest_df["close"]) &
+        (latest_df["distance"] < latest_df["adr"] / 100 * latest_df["close"] * 1/2) &
         (latest_df["dr_max_20"] <= 25 * latest_df["adr_excl"])
     ]
 
