@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 記憶體與海量儲存超級週期,"SNDK,STX,WDC,MU",4
-2,AI 電力與電網基礎設施,"BE,FCEL,POWL,AGX,MYRG,FPS,DGXX",7
-3,AI 光學互連與矽光子,"LWLG,AAOI,LITE,CIEN,MTSI,GLW,COHR,MRVL",8
-4,AI 專用數據中心與新興雲服務,"DOCN,NBIS,IREN,APLD,HUT,KEEL",6
-5,AI 散熱管理與電子基礎設施工程,"FIX,STRL,LGN,FLEX",4
-6,AI 先進封裝與測試設備,"AMKR,ASX,MKSI,FORM,UCTT,VECO,ACLS,AEHR",8
-7,次世代半導體材料與功率晶片,"AXTI,WOLF,NVTS,ON,VICR,VSH",6
-8,AI 驅動的可觀測性與邊緣智能,"DDOG,AKAM,TWLO,SYNA,BB",5
-9,新太空經濟與月球基礎設施,"RKLB,LUNR,PL,DXYZ",4
-10,精準醫療與神經科學突破,"RVMD,PRAX,MANE,ORKA",4
+1,記憶體結構性超級週期,"MU,SNDK,STX,WDC,SIMO",5
+2,AI 資料中心電力與電網基礎設施,"BE,POWL,FPS,VRT,MYRG,AGX,AESI,FCEL",8
+3,高速光學互連與矽光子,"LITE,CIEN,AAOI,GLW,MTSI,GFS,MRVL,LWLG,CRDO",9
+4,AI 物理層與基礎設施設備,"MXL,AXTI,AEHR,VECO,UCTT,ACLS,MKSI,PENG,LGN,DGXX",10
+5,AI 工廠建設與機電工程,"STRL,FIX,LGN,MYRG",4
+6,邊緣 AI 與裝置端智能,"QCOM,SYNA,HIMX,BB,ON,INTC",6
+7,雲端 AI 基礎設施與 Neocloud,"DOCN,NBIS,APLD,RXT,AKAM,DGXX",6
+8,半導體先進封裝與測試,"ASX,AMKR,FORM,AEHR",4
+9,商業太空經濟與衛星通訊,"RKLB,LUNR,PL,VSAT,DXYZ",5
+10,精準醫療與腫瘤學突破,"RVMD,ORKA,PRAX",3
