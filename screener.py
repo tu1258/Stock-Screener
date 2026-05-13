@@ -21,7 +21,6 @@ def compute_indicators_vectorized(df):
     df["ma5"]   = df.groupby("ticker")["close"].transform(lambda x: x.rolling(5,   min_periods=1).mean())
     df["ma20"]  = df.groupby("ticker")["close"].transform(lambda x: x.rolling(20,  min_periods=1).mean())
     df["ma50"]  = df.groupby("ticker")["close"].transform(lambda x: x.rolling(50,  min_periods=1).mean())
-    df["ma200"] = df.groupby("ticker")["close"].transform(lambda x: x.rolling(200, min_periods=1).mean())
 
     # DR = high/low - 1（單日振幅%）
     df["dr"] = (df["high"] / df["low"] - 1) * 100
@@ -73,7 +72,6 @@ def main():
         (latest_df["avg_value_10"] > 25) &
         (latest_df["adr20"] > 2.5) & (latest_df["adr20"] < 25) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
-        (latest_df["ma50"] >= latest_df["ma200"]) &
         (latest_df["distance"] < latest_df["adr10"] / 100 * latest_df["close"]) &
         (latest_df["dr"] < latest_df["adr5"]) &
         (latest_df["dr_max_20"] <= 25 * latest_df["adr_excl"])
@@ -95,7 +93,6 @@ def main():
         (latest_df["avg_value_10"] > 25) &
         (latest_df["adr20"] > 2.5) & (latest_df["adr20"] < 25) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
-        (latest_df["ma50"] >= latest_df["ma200"]) &
         (latest_df["dr_max_20"] <= 25 * latest_df["adr_excl"])
     ]
 
