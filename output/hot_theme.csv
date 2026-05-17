@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 物理層基礎設施：電力與散熱管理,"VRT,FIX,POWL,FPS,LGN,BE,FCEL,PLUG,STRL,AGX,MYRG",11
-2,光子學與高速光學互連：解決數據傳輸瓶頸,"AAOI,POET,LITE,COHR,MTSI,CIEN,VIAV,LWLG,AXTI,TSEM,VECO",11
-3,AI 存儲與記憶體超級週期：從週期性轉向結構性,"MU,SNDK,WDC,STX,SIMO,INTC",6
-4,新興 AI 雲端與 GPU 算力基礎設施 (Neoclouds),"RXT,NBIS,APLD,DOCN,DGXX,AKAM,PENG",7
-5,半導體測試與先進封裝設備 (Semi-Cap),"AEHR,FORM,VECO,ACLS,KLIC,Q",6
-6,太空經濟與新一代國防科技 (Space 2.0),"RKLB,LUNR,PL,DXYZ,QUCY,MRAM,LASR",7
-7,能源基礎設施轉型：加密礦場轉向 AI 託管,"HUT,WULF,KEEL,PUMP,AESI",5
-8,邊緣 AI 與物理 AI：IoT 與機器人感知,"SYNA,HIMX,MXL,NVTS,AIIO,SMTC",6
-9,精準醫療與標靶腫瘤藥物突破,"RVMD,CELC,IBRX,LQDA,ORKA,PRAX",6
-10,AI 數據工程與可觀測性軟體,"DDOG,INOD,TWLO,XMTR",4
+1,AI 物理層：光通訊與矽光子,"AAOI,LITE,VIAV,CIEN,COHR,MTSI,VECO,GLW,AXTI,POET,LWLG,MXL",12
+2,AI 能源與電力分配基礎設施,"VRT,POWL,FPS,VICR,NVTS,WOLF,BE,FCEL,PLUG",9
+3,AI 資料中心營造與機電工程,"STRL,FIX,MYRG,AGX,LGN",5
+4,AI 記憶體與海量儲存超級週期,"MU,SNDK,STX,WDC,SIMO",5
+5,次世代 AI 晶片與客製化矽智財,"AMD,INTC,MRVL,ALAB,TSEM,SITM,MXL,STM,ON,ASX,SYNA",11
+6,AI 算力託管與新型雲端服務商,"NBIS,APLD,WULF,HUT,KEEL,DGXX,DOCN,AKAM",8
+7,太空基礎設施與地理空間 AI,"RKLB,LUNR,PL,DXYZ",4
+8,代理型 AI 與系統觀測軟體,"DDOG,TWLO,INOD,RXT,AKAM",5
+9,精準醫療與標靶腫瘤藥物,"RVMD,ORKA,PRAX,CELC,LQDA,IBRX",6
+10,能源服務轉型與電力基建,"PUMP,AESI,SEDG",3
