@@ -73,8 +73,7 @@ def main():
         (latest_df["adr20"] > 2.5) & (latest_df["adr20"] < 25) &
         (latest_df["avg_bar"] >= latest_df["ma50"]) &
         (latest_df["distance"] < latest_df["adr10"] / 100 * latest_df["close"]) &
-        (latest_df["dr"] < latest_df["adr5"]) &
-        (latest_df["dr_max_20"] <= 25 * latest_df["adr_excl"])
+        (latest_df["dr"] < latest_df["adr5"])
     ]
 
     final_tickers = (
@@ -92,8 +91,7 @@ def main():
     universe_filtered = latest_df[
         (latest_df["avg_value_10"] > 25) &
         (latest_df["adr20"] > 2.5) & (latest_df["adr20"] < 25) &
-        (latest_df["avg_bar"] >= latest_df["ma50"]) &
-        (latest_df["dr_max_20"] <= 25 * latest_df["adr_excl"])
+        (latest_df["avg_bar"] >= latest_df["ma50"])
     ]
 
     universe_tickers = (
