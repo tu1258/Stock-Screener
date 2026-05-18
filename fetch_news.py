@@ -51,19 +51,14 @@ def load_rs95_liquid(rs_csv, stock_data_csv):
         lambda x: x.rolling(20).mean()
     )
 
-    # 暴漲過濾
-    price_df["dr_sum_20"] = price_df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).sum())
-    price_df["dr_max_20"] = price_df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).max())
-    price_df["adr_excl"]  = (price_df["dr_sum_20"] - price_df["dr_max_20"]) / 19
 
     latest = price_df.groupby("ticker").tail(1).copy()
     latest["ticker"] = latest["ticker"].str.upper()
     latest = latest.set_index("ticker")
 
     adr_ok_set   = set(latest[latest["adr"] > MIN_ADR].index)
-    no_spike_set = set(latest[latest["dr_max_20"] <= 25 * latest["adr_excl"]].index)
 
-    valid_set = liquid_set & no_spike_set & adr_ok_set
+    valid_set = liquid_set & adr_ok_set
     return sorted([(t, rs) for t, rs in rs_map.items() if t in valid_set], key=lambda x: -x[1])
 
 
