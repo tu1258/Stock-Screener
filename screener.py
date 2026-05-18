@@ -15,7 +15,8 @@ def compute_indicators_vectorized(df):
     df = df.sort_values(["ticker", "date"]).copy()
 
     # 10日平均成交值
-    df["avg_value_10"] = df.groupby("ticker")["volume"].transform(lambda x: x.rolling(10).mean()) * df["close"] / 1_000_000
+    df["daily_value"] = df["volume"] * df["close"]
+    df["avg_value_10"] = df.groupby("ticker")["daily_value"].transform(lambda x: x.rolling(10).mean()) / 1_000_000
 
     # 均線
     df["ma5"]   = df.groupby("ticker")["close"].transform(lambda x: x.rolling(5,   min_periods=1).mean())
@@ -40,11 +41,6 @@ def compute_indicators_vectorized(df):
     df["trade_chg"] = df["close"] - df["open"]
     df["trade_money_flow"] = df["volume"] * df["trade_chg"]
     df["trade_money_flow_avg"] = df.groupby('ticker')['trade_money_flow'].transform(lambda x: x.rolling(10).mean())
-
-    # 暴漲過濾：排除20日內最大單日DR後，剩19日的均值
-    df["dr_sum_20"] = df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).sum())
-    df["dr_max_20"] = df.groupby("ticker")["dr"].transform(lambda x: x.rolling(20).max())
-    df["adr_excl"]  = (df["dr_sum_20"] - df["dr_max_20"]) / 19
 
     return df
 
