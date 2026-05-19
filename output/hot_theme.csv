@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 物理層：電力與電網基礎設施,"BE,FCEL,POWL,VRT,HUT,APLD,WULF,PUMP,AESI,AGX,MYRG",11
-2,AI 物理層：光學互連與光子技術,"MXL,AXTI,AAOI,POET,LWLG,LITE,CIEN,COHR,MTSI,VECO,GLW",11
-3,記憶體與儲存裝置超級週期,"SNDK,MU,STX,WDC,SIMO",5
-4,代理型 AI 與分散式推論雲端,"RXT,DOCN,NBIS,AKAM,DDOG,TWLO",6
-5,AI 數據中心建造與工程服務,"STRL,FIX,LGN,MYRG,AGX",5
-6,特種半導體代工與測試設備,"INTC,AMD,TSEM,SITM,AEHR,KLIC,FORM,GFS,ASX,ACLS,Q",11
-7,太空經濟與低軌衛星基礎設施,"PL,LUNR,RKLB,DXYZ",4
-8,精準腫瘤學與標靶療法,"LQDA,CELC,IBRX,RVMD,ORKA",5
-9,自動駕駛物流與物理 AI,"AUR,AIIO,SYNA",3
-10,AI 數據工程與可觀測性平台,"INOD,DDOG",2
+1,AI 實體基礎設施 - 光通訊與矽光子,"AAOI,LITE,CIEN,COHR,TSEM,LWLG,POET,AXTI,MRVL,MTSI,GLW,MXL",12
+2,AI 實體基礎設施 - 電力與散熱管理,"POWL,FPS,AGX,MYRG,FIX,BE,FCEL,NVTS,VICR,ON,WOLF",11
+3,AI 實體基礎設施 - 記憶體與存儲超級週期,"SNDK,STX,WDC,MU,MRAM,SIMO",6
+4,AI 實體基礎設施 - 邊緣運算與觀測軟體,"SYNA,HIMX,SMTC,AKAM,DDOG,AIIO",6
+5,AI 實體基礎設施 - 雲端託管與主權 AI,"RXT,DOCN,NBIS,DGXX,KEEL",5
+6,航太與國防科技 - 衛星經濟與月球基礎設施,"RKLB,LUNR,FLY,BKSY,PL,VSAT,QUCY",7
+7,半導體設備與材料 - 國產化與先進封裝,"AXTI,AEHR,KLIC,VECO,INTC,UMC,ASX",7
+8,能源轉型與 AI 電力供應轉型,"HUT,PUMP,KGS,LBRT,DGXX,AEHL",6
+9,基礎設施建設 - 資料中心與工業再造,"STRL,LGN,MYRG,FIX,AGX",5
+10,醫療保健 - 科技驅動與管理式醫療,"OSCR,CNC,LQDA,CELC,RVMD",5
