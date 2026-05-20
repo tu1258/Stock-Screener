@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 實體基礎設施 - 光通訊與矽光子,"AAOI,LITE,CIEN,COHR,TSEM,LWLG,POET,AXTI,MRVL,MTSI,GLW,MXL",12
-2,AI 實體基礎設施 - 電力與散熱管理,"POWL,FPS,AGX,MYRG,FIX,BE,FCEL,NVTS,VICR,ON,WOLF",11
-3,AI 實體基礎設施 - 記憶體與存儲超級週期,"SNDK,STX,WDC,MU,MRAM,SIMO",6
-4,AI 實體基礎設施 - 邊緣運算與觀測軟體,"SYNA,HIMX,SMTC,AKAM,DDOG,AIIO",6
-5,AI 實體基礎設施 - 雲端託管與主權 AI,"RXT,DOCN,NBIS,DGXX,KEEL",5
-6,航太與國防科技 - 衛星經濟與月球基礎設施,"RKLB,LUNR,FLY,BKSY,PL,VSAT,QUCY",7
-7,半導體設備與材料 - 國產化與先進封裝,"AXTI,AEHR,KLIC,VECO,INTC,UMC,ASX",7
-8,能源轉型與 AI 電力供應轉型,"HUT,PUMP,KGS,LBRT,DGXX,AEHL",6
-9,基礎設施建設 - 資料中心與工業再造,"STRL,LGN,MYRG,FIX,AGX",5
-10,醫療保健 - 科技驅動與管理式醫療,"OSCR,CNC,LQDA,CELC,RVMD",5
+1,AI 物理基礎設施 - 電力與冷卻,"BE,POWL,FPS,FIX,AGX,MYRG,BW,FCEL,LGN,KGS,DGXX",11
+2,次世代 AI 連接 - 矽光子與光學互連,"MXL,AXTI,AAOI,LITE,CIEN,COHR,GLW,MTSI,POET,TSEM,MRVL",11
+3,AI 記憶體與海量儲存超級週期,"SNDK,MU,STX,WDC,SIMO",5
+4,代理式 AI 硬體轉向 - CPU 與邊緣 AI,"INTC,AMD,ARM,DELL,SYNA,HIMX",6
+5,AI 原生雲與託管基礎設施,"RXT,DOCN,NBIS,DDOG,TWLO",5
+6,太空經濟與國防科技,"QUCY,RKLB,LUNR,PL,BKSY,FLY,DXYZ,VSAT",8
+7,能源轉運算 - 比特幣礦商轉型 AI/HPC,"HUT,WULF,KEEL",3
+8,精準腫瘤學與罕見疾病突破,"RVMD,CELC,LQDA",3
+9,AI 原生工業與半導體材料,"XMTR,FLEX,SANM,KLIC,VECO,WOLF,MRAM,AIIO",8
+10,託管醫療與保險科技復甦,"CNC,OSCR",2
