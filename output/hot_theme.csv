@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 物理基礎設施 - 電力與冷卻,"BE,POWL,FPS,FIX,AGX,MYRG,BW,FCEL,LGN,KGS,DGXX",11
-2,次世代 AI 連接 - 矽光子與光學互連,"MXL,AXTI,AAOI,LITE,CIEN,COHR,GLW,MTSI,POET,TSEM,MRVL",11
-3,AI 記憶體與海量儲存超級週期,"SNDK,MU,STX,WDC,SIMO",5
-4,代理式 AI 硬體轉向 - CPU 與邊緣 AI,"INTC,AMD,ARM,DELL,SYNA,HIMX",6
-5,AI 原生雲與託管基礎設施,"RXT,DOCN,NBIS,DDOG,TWLO",5
-6,太空經濟與國防科技,"QUCY,RKLB,LUNR,PL,BKSY,FLY,DXYZ,VSAT",8
-7,能源轉運算 - 比特幣礦商轉型 AI/HPC,"HUT,WULF,KEEL",3
-8,精準腫瘤學與罕見疾病突破,"RVMD,CELC,LQDA",3
-9,AI 原生工業與半導體材料,"XMTR,FLEX,SANM,KLIC,VECO,WOLF,MRAM,AIIO",8
-10,託管醫療與保險科技復甦,"CNC,OSCR",2
+1,AI 實體基礎設施：電力與電網系統,"BE,POWL,FPS,MYRG,LGN,STRL,FCEL,BW,DGXX",9
+2,AI 存儲與記憶體超級週期,"MU,SNDK,STX,WDC,SIMO",5
+3,AI 光子學與高速光學互連,"AAOI,LITE,CIEN,MRVL,COHR,GLW,ALAB,LWLG,POET",9
+4,特種 AI 半導體：ASIC 與連接架構,"AMD,ARM,MRVL,ALAB,MXL,NVTS,TSEM,LSCC,INTC",9
+5,太空經濟與軌道情報基礎設施,"RKLB,LUNR,PL,VSAT,DXYZ,BKSY,FLY,SATS",8
+6,AI 原生雲端、安全與觀測平台,"DOCN,DDOG,NBIS,RXT,FTNT,AKAM,FROG",7
+7,半導體設備與先進封裝技術,"AEHR,KLIC,ASX,ACMR,FORM,AXTI,GFS",7
+8,精準醫療：腫瘤學與神經科學突破,"RVMD,CELC,PRAX,HCWB,LQDA",5
+9,管理醫療與保險科技獲利復甦,"OSCR,CNC,BTSG",3
+10,AI 驅動的工業製造與供應鏈現代化,"XMTR,FLEX,SANM,SYNA",4
