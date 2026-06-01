@@ -41,8 +41,8 @@ REIT - Specialty,Real Estate,55.0,18
 Gold,Basic Materials,55.0,51
 Diagnostics & Research,Healthcare,55.0,48
 Marine Shipping,Industrials,54.9,38
+Oil & Gas Integrated,Energy,54.8,20
 Utilities - Independent Power Producers,Utilities,54.8,8
-Oil & Gas Integrated,Energy,54.7,20
 Medical Care Facilities,Healthcare,54.4,49
 Scientific & Technical Instruments,Technology,54.4,34
 REIT - Office,Real Estate,53.5,19
@@ -77,8 +77,8 @@ Real Estate - Diversified,Real Estate,48.3,3
 REIT - Residential,Real Estate,47.5,21
 Beverages - Brewers,Consumer Defensive,47.4,7
 Credit Services,Financial,47.0,52
+Staffing & Employment Services,Industrials,46.9,17
 Utilities - Regulated Gas,Utilities,46.9,16
-Staffing & Employment Services,Industrials,46.8,17
 Oil & Gas E&P,Energy,46.1,78
 Industrial Distribution,Industrials,45.4,22
 Apparel Retail,Consumer Cyclical,45.3,32
@@ -88,11 +88,11 @@ Leisure,Consumer Cyclical,44.7,33
 Insurance - Diversified,Financial,44.5,12
 Utilities - Regulated Water,Utilities,43.8,13
 Uranium,Energy,43.7,13
-Specialty Retail,Consumer Cyclical,43.7,47
-Specialty Business Services,Industrials,43.7,43
+Specialty Retail,Consumer Cyclical,43.6,47
 Grocery Stores,Consumer Defensive,43.6,13
 Restaurants,Consumer Cyclical,43.6,53
 Drug Manufacturers - Specialty & Generic,Healthcare,43.5,83
+Specialty Business Services,Industrials,43.3,43
 Gambling,Consumer Cyclical,43.2,13
 Integrated Freight & Logistics,Industrials,43.0,31
 Luxury Goods,Consumer Cyclical,42.7,11
@@ -114,7 +114,7 @@ Agricultural Inputs,Basic Materials,39.5,13
 Insurance - Property & Casualty,Financial,39.3,45
 Farm Products,Consumer Defensive,39.1,19
 Education & Training Services,Consumer Defensive,39.1,44
-Residential Construction,Consumer Cyclical,38.8,19
+Residential Construction,Consumer Cyclical,38.9,19
 Financial Data & Stock Exchanges,Financial,38.1,15
 Medical Devices,Healthcare,37.9,139
 Lumber & Wood Production,Basic Materials,37.2,6
