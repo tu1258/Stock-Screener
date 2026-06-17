@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 基礎設施：光學連接與網路通訊,"AAOI,AXTI,COHR,LITE,TSEM,POET,MTSI,MRVL,SMTC,NOK",10
-2,AI 基礎設施：先進半導體設備與測試,"AEHR,VECO,UCTT,ACMR,ACLS,KLAC,AMAT,LRCX,ONTO,FORM,MKSI,TER",12
-3,AI 基礎設施：電力管理與散熱解決方案,"VSH,VICR,NVTS,ON,WOLF,FLEX",6
-4,AI 基礎設施：先進存儲與記憶體超大週期,"MU,WDC,STX,SIMO,SNDK",5
-5,AI 基礎設施：資料中心電力供應與電網現代化,"FPS,BE,FCEL,POWL",4
-6,AI 基礎設施：實體層建設與「礦商轉 AI」轉型,"HUT,KEEL,WULF,CIFR,STRL",5
-7,次世代運算架構：代理 AI 與邊緣推論,"ARM,AMD,INTC,PENG,DOCN,LSCC,HPE,DELL",8
-8,先進半導體封裝與 OSAT 服務,"AMKR,ASX,GFS",3
-9,精準醫療與罕見疾病生物技術,"TNGX,RVMD,TVTX,LQDA,RGNT,TWST",6
-10,國防科技與國家安全：無人機與先進材料,"UMAC,LASE,CRS,VELO,TTMI",5
+1,AI 記憶體與儲存超級週期,"MU,SNDK,WDC,STX,SIMO",5
+2,AI 光學互連與網路瓶頸解決方案,"MRVL,ALAB,AAOI,TSEM,SMTC,CRDO,LITE,COHR,POET",9
+3,資料中心電力基礎設施與能源轉型,"FPS,FCEL,BE,POWL,FLEX,VSH,NVTS,WOLF,ON",9
+4,半導體設備與先進封裝製程,"AMAT,LRCX,KLAC,VECO,ACMR,FORM,TER,AEHR,UCTT,AXTI",10
+5,數位基礎設施：加密礦商轉型 AI 算力中心,"KEEL,HUT,WULF,CIFR,APLD,RIOT",6
+6,企業級 AI 伺服器與邊緣運算硬體,"DELL,HPE,PENG,DOCN,ARM,INTC,SYNA",7
+7,國防自主與實體 AI 感測技術,"UMAC,LASE,OUST,CRS",4
+8,精準醫療與合成生物學突破,"TNGX,LQDA,TVTX,TWST,TXG",5
+9,網路安全與政府雲端基礎設施,"FTNT,BB,BAND",3
+10,金融科技與代幣化資產基礎設施,"PURR,SNEX,SNX",3
