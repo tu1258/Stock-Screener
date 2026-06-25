@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 記憶體與儲存超循環,"MU,WDC,SNDK,STX,SIMO,AXTI",6
-2,AI 光學連接與網路瓶頸解決方案,"MRVL,ALAB,TSEM,AAOI,LITE,COHR,CRDO,SMTC",8
-3,AI 資料中心電力供應與熱能管理,"VICR,FPS,POWL,BE,FLEX,VSH,AGX",7
-4,半導體設備與先進封裝技術,"AMAT,LRCX,KLAC,ASX,AMKR,FORM,ACMR,VECO,AEHR,UCTT",10
-5,加密貨幣礦商轉型 AI 算力基礎設施,"WULF,CIFR,HUT,KEEL,WYFI",5
-6,主權 AI 與專業化雲端基礎設施 (Neocloud),"SHAZ,NBIS,RXT,DOCN,HPE",5
-7,邊緣 AI 與次世代運算架構 (CPU 復興),"ARM,DELL,INTC,AMD,MXL",5
-8,次世代免疫學與精準腫瘤生技,"SYRE,ORKA,TGTX,TVTX,LQDA,RVMD,TNGX,ELVN",8
-9,AI 驅動之企業數位轉型與金融科技,"NAVN,SEZL,OSCR,FTNT,BB",5
-10,物理 AI 與自動化感測基礎設施,"OUST,STRL,MTRN,VSH",4
+1,AI 網絡連接與光學互連,"MXL,ALAB,AAOI,LITE,COHR,GLW,CRDO,SMTC,TSEM,AXTI",10
+2,AI 電力基礎設施與電網現代化,"FPS,BE,POWL,AGX,MYRG,FCEL",6
+3,AI 存儲與記憶體超級週期,"MU,SNDK,WDC,STX,SIMO,LRCX",6
+4,新興 AI 雲端與加密貨幣轉型基礎設施,"SHAZ,NBIS,KEEL,WYFI,HUT,WULF,CIFR,RXT",8
+5,半導體設備與製程控制,"AMAT,LRCX,KLAC,AEHR,ACMR,VECO,FORM,MKSI,UCTT,ICHR",10
+6,先進封裝與測試 (OSAT),"AMKR,ASX,TER,ACMR",4
+7,精準腫瘤學與靶向療法,"TNGX,RVMD,DFTX,ALKS",4
+8,免疫學與罕見病創新,"QURE,ORKA,LQDA,SYRE,TVTX,TGTX",6
+9,AI 原生企業軟體與自動化,"NAVN,SEZL,DOCN,BAND",4
+10,特種工業與數據中心建設,"STRL,MYRG,AGX,FLEX",4
