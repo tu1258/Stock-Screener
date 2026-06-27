@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 記憶體與儲存超級週期,"MU,SNDK,WDC,STX,SIMO",5
-2,AI 數據中心光學互連與矽光子,"AAOI,CRDO,COHR,LITE,SMTC,TSEM,MXL,AXTI",8
-3,半導體設備與先進封裝製程,"AMAT,LRCX,KLAC,ONTO,FORM,ACMR,VECO,ICHR,UCTT",9
-4,AI 數據中心電力供應與電網基礎設施,"BE,FPS,POWL,AGX,MYRG,FCEL,VSH",7
-5,新興 AI 雲端基礎設施與 GPU 算力服務,"RXT,SHAZ,NBIS,WYFI,KEEL,DOCN",6
-6,AI 伺服器系統與液冷散熱整合,"DELL,HPE,FLEX,STRL",4
-7,精準腫瘤與免疫療法臨床突破,"RVMD,TNGX,ORKA,SYRE,KYMR,TGTX,TVTX",7
-8,數位醫療平台與高複雜度護理服務,"OSCR,BTSG,HNGE,BFLY",4
-9,邊緣 AI 與客製化晶片架構,"ARM,AMD,INTC,ALAB,ALGM,GFS",6
-10,宏觀波動與高利率環境受益金融,"SNEX,SEZL,PURR",3
+1,AI 記憶體與儲存超級週期,"SNDK,MU,WDC,STX,SIMO",5
+2,AI 半導體設備與材料 (WFE),"ICHR,UCTT,AXTI,ACMR,AEHR,AMAT,VECO,KLAC,TER,LRCX",10
+3,AI 資料中心電力與能源基礎設施,"FCEL,BE,AGX,FPS,VICR",5
+4,AI 高速連接與光學網路,"MRVL,ALAB,AAOI,LITE,TSEM,VIAV,GLW",7
+5,專業 AI 雲端與高效能運算 (HPC) 基礎設施,"RXT,SHAZ,NBIS,WYFI,KEEL,HUT,PENG",7
+6,精準腫瘤與次世代基因療法,"DFTX,QURE,TNGX,RVMD,TVTX,TGTX,MRNA",7
+7,AI 驅動企業軟體與網路安全,"BB,FTNT,FROG,NAVN,BAND",5
+8,AI 物理層建設與工業回流,"STRL,AGX,FLEX,HPE",4
+9,先進半導體封裝與測試 (OSAT),"ASX,KLAC,TER,LRCX",4
+10,次世代醫療科技與多體學平台,"BFLY,TXG,RGNT",3
