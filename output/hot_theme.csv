@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 記憶體與儲存超級週期,"SNDK,MU,WDC,STX,SIMO",5
-2,AI 半導體設備與材料 (WFE),"ICHR,UCTT,AXTI,ACMR,AEHR,AMAT,VECO,KLAC,TER,LRCX",10
-3,AI 資料中心電力與能源基礎設施,"FCEL,BE,AGX,FPS,VICR",5
-4,AI 高速連接與光學網路,"MRVL,ALAB,AAOI,LITE,TSEM,VIAV,GLW",7
-5,專業 AI 雲端與高效能運算 (HPC) 基礎設施,"RXT,SHAZ,NBIS,WYFI,KEEL,HUT,PENG",7
-6,精準腫瘤與次世代基因療法,"DFTX,QURE,TNGX,RVMD,TVTX,TGTX,MRNA",7
-7,AI 驅動企業軟體與網路安全,"BB,FTNT,FROG,NAVN,BAND",5
-8,AI 物理層建設與工業回流,"STRL,AGX,FLEX,HPE",4
-9,先進半導體封裝與測試 (OSAT),"ASX,KLAC,TER,LRCX",4
-10,次世代醫療科技與多體學平台,"BFLY,TXG,RGNT",3
+1,AI 光學連接與網路基礎設施,"AAOI,LITE,AXTI,ALAB,GLW,MRVL,MXL,TSEM",8
+2,AI 電力供應與能源基礎設施,"FCEL,FPS,BE,AGX,HUT,KEEL,WYFI,VICR,VSH",9
+3,半導體設備與晶圓製造設備,"AMAT,LRCX,KLAC,AEHR,ACMR,VECO,UCTT,ICHR,MKSI,COHU",10
+4,AI 記憶體與儲存超級週期,"MU,SNDK,WDC,STX,SIMO",5
+5,專業 AI 雲端與主權基礎設施,"NBIS,SHAZ,RXT,DOCN,INTC,UMC,ASX",7
+6,AI 優化伺服器與硬體整合,"DELL,HPE,PENG,FLEX,TTMI",5
+7,次世代免疫學與罕見腎病藥物,"SYRE,TVTX,TGTX,ORKA,APGE",5
+8,中樞神經系統與精神疾病創新藥物,"DFTX,ALKS,QURE,RVMD",4
+9,企業級 AI 軟體與自動化應用,"BB,NAVN,FROG,FTNT,BAND",5
+10,數位醫療與科技賦能保險,"BFLY,OSCR,HNGE,BTSG",4
