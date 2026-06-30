@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 記憶體與儲存超級週期,"MU,SNDK,WDC,STX,SIMO",5
-2,AI 光學連接與通訊基礎設施,"MRVL,AAOI,GLW,LITE,COHR,MXL,ALAB,TSEM",8
-3,半導體設備與晶圓製造,"AMAT,LRCX,KLAC,ACMR,AEHR,ONTO,ICHR,UCTT,VECO,MKSI",10
-4,AI 資料中心電力與能源基礎設施,"FCEL,FPS,AGX,BE,VICR,HUT",6
-5,新興 AI 雲端與主權 AI,"RXT,SHAZ,NBIS,DOCN,WYFI,KEEL",6
-6,免疫學與精準腫瘤生物技術,"ORKA,SYRE,TGTX,RVMD,ELVN,DFTX,QURE",7
-7,企業級 AI 軟體與數位轉型,"BB,NAVN,FROG,FTNT,HPE,BAND",6
-8,基因組學與 AI 驅動藥物研發,"TWST,TXG,MRNA",3
-9,美國半導體自主與晶圓代工轉型,"INTC,UMC,ASX",3
-10,數位醫療與健康科技,"BFLY,OSCR,HNGE,BTSG",4
+1,AI 記憶體與儲存超級週期,"MU,SNDK,WDC,SIMO,STX",5
+2,光學互連與高速網路基礎設施,"ALAB,MRVL,AXTI,AAOI,COHR,LITE,TSEM,SMTC",8
+3,半導體設備與先進封裝技術,"ICHR,UCTT,ACMR,AEHR,KLAC,AMAT,LRCX,ONTO,TER,VECO",10
+4,AI 資料中心電力與散熱解決方案,"FLEX,FPS,BE,FCEL,VICR,AGX,MYRG",7
+5,新興 AI 雲端與基礎設施轉型 (Neoclouds),"RXT,SHAZ,NBIS,DOCN,HUT,KEEL,WYFI",7
+6,AI 原生藥物研發與精準腫瘤學,"ABSI,TNGX,RVMD,TXG,MRNA,ELVN,GH",7
+7,代理型 AI 與物理機器人感知,"OUST,TER,ARM,ALAB",4
+8,網路安全平台化與 AI 防禦,"PANW,BB",2
+9,AI 驅動企業效率與金融科技轉型,"NAVN,DAVE,SEZL,ENVA",4
+10,超大規模資料中心基礎建設施工,"STRL,AGX,MYRG",3
