@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 記憶體與儲存超級週期,"MU,SNDK,WDC,SIMO,STX",5
-2,光學互連與高速網路基礎設施,"ALAB,MRVL,AXTI,AAOI,COHR,LITE,TSEM,SMTC",8
-3,半導體設備與先進封裝技術,"ICHR,UCTT,ACMR,AEHR,KLAC,AMAT,LRCX,ONTO,TER,VECO",10
-4,AI 資料中心電力與散熱解決方案,"FLEX,FPS,BE,FCEL,VICR,AGX,MYRG",7
-5,新興 AI 雲端與基礎設施轉型 (Neoclouds),"RXT,SHAZ,NBIS,DOCN,HUT,KEEL,WYFI",7
-6,AI 原生藥物研發與精準腫瘤學,"ABSI,TNGX,RVMD,TXG,MRNA,ELVN,GH",7
-7,代理型 AI 與物理機器人感知,"OUST,TER,ARM,ALAB",4
-8,網路安全平台化與 AI 防禦,"PANW,BB",2
-9,AI 驅動企業效率與金融科技轉型,"NAVN,DAVE,SEZL,ENVA",4
-10,超大規模資料中心基礎建設施工,"STRL,AGX,MYRG",3
+1,AI 記憶體與儲存超週期,"MU,SNDK,WDC,STX,SIMO",5
+2,半導體設備與製程控制,"AMAT,KLAC,LRCX,ONTO,TER,ICHR,UCTT,MKSI,VECO,FORM,ACLS,AMKR",12
+3,AI 互連與光學網路,"ALAB,MRVL,MXL,GLW,COHR,AAOI,CRDO,SMTC,TSEM",9
+4,AI 資料中心電力與散熱基礎設施,"VICR,FLEX,BE,FCEL,FPS,AGX,VSH",7
+5,AI 原生雲與特種基礎設施 (Neocloud),"SHAZ,NBIS,WYFI,KEEL,HUT,DOCN,RXT,BLZE",8
+6,AI 驅動藥物研發與精準腫瘤學,"ABSI,RLAY,TNGX,RVMD,MRNA,ELVN,SLS,DFTX",8
+7,次世代 CPU 與邊緣 AI 架構,"ARM,AMD,INTC",3
+8,高成長金融科技與替代信貸,"SEZL,ENVA",2
+9,特種基礎設施建設與電網現代化,"STRL,AGX",2
+10,罕見疾病與免疫學創新,"QURE,TVTX,TGTX,ORKA,SYRE",5
