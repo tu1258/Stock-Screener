@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 基礎設施與算力工廠,"SNDK,MU,ALAB,SHAZ,DELL,SIMO,NBIS,ARM,DOCN,PENG",10
-2,AI 驅動藥物研發與精準醫療,"ABSI,SLS,DFTX,MRNA,TNGX,RVMD,RLAY,GH,KYMR,TVTX",10
-3,AI 數據中心電力與能源管理,"FCEL,BE,VICR,VSH",4
-4,記憶體與存儲超級週期,"SNDK,MU,WDC,STX,SIMO",5
-5,AI 網路連接與光學通訊,"MXL,ALAB,MRVL,CRDO,AXTI",5
-6,半導體先進封裝與設備,"ASX,ACMR,KLIC,ICHR,UCTT,MKSI,MTRN",7
-7,網路安全平台化與 AI 防禦,"PANW,FTNT,TENB,DDOG,FROG,BB",6
-8,金融科技與 AI 信用評分,"SEZL,DAVE,ENVA,NAVN",4
-9,太空經濟與衛星通訊,"IRDM,VSAT,STM",3
-10,數位健康與現代化保險,"OSCR,HNGE,HUM",3
+1,AI 基礎設施 - 存儲與記憶體,"SNDK,MU,WDC,STX,SIMO",5
+2,AI 基礎設施 - 網路連接與先進封裝,"MXL,MRVL,ALAB,CRDO,ACMR,KLIC,ICHR,UCTT,AMAT,MKSI",10
+3,AI 專用雲端與算力平台,"BLZE,SHAZ,PENG,WYFI,DOCN,NBIS",6
+4,AI 驅動生技與精準醫療,"ABSI,RLAY,TNGX,RVMD,KYMR,TGTX,ABVX,DFTX,SLS,QURE",10
+5,AI 基礎設施 - 電力與熱能管理,"FCEL,BE,VSH,VICR,FLEX",5
+6,網路安全平台化與 AI 防禦,"PANW,FTNT,TENB,BB,DDOG",5
+7,數位金融與替代信貸,"SEZL,DAVE,ENVA",3
+8,太空經濟與衛星通訊,"IRDM,VSAT,STM,CAST",4
+9,企業級 AI 軟體與數位轉型,"NAVN,FROG,DDOG",3
+10,高階材料與工業基礎建設,"CRS,MTRN,CDNL",3
