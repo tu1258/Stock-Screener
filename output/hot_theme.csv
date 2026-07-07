@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 基礎設施 - 存儲與記憶體,"SNDK,MU,WDC,STX,SIMO",5
-2,AI 基礎設施 - 網路連接與先進封裝,"MXL,MRVL,ALAB,CRDO,ACMR,KLIC,ICHR,UCTT,AMAT,MKSI",10
-3,AI 專用雲端與算力平台,"BLZE,SHAZ,PENG,WYFI,DOCN,NBIS",6
-4,AI 驅動生技與精準醫療,"ABSI,RLAY,TNGX,RVMD,KYMR,TGTX,ABVX,DFTX,SLS,QURE",10
-5,AI 基礎設施 - 電力與熱能管理,"FCEL,BE,VSH,VICR,FLEX",5
-6,網路安全平台化與 AI 防禦,"PANW,FTNT,TENB,BB,DDOG",5
-7,數位金融與替代信貸,"SEZL,DAVE,ENVA",3
-8,太空經濟與衛星通訊,"IRDM,VSAT,STM,CAST",4
-9,企業級 AI 軟體與數位轉型,"NAVN,FROG,DDOG",3
-10,高階材料與工業基礎建設,"CRS,MTRN,CDNL",3
+1,AI 半導體與設備製造,"ALAB,MXL,ICHR,MU,INTC,AMD,ACMR,AMAT,KLIC,MKSI",10
+2,AI 能源與電力基礎設施,"FCEL,BE,WYFI,VSH,VICR,FLEX,HUT",7
+3,AI 存儲與記憶體擴張,"SNDK,BLZE,MU,SIMO,WDC,STX",6
+4,AI 網路連接與光通訊,"ALAB,MXL,CRDO,MRVL,AXTI",5
+5,精準腫瘤學與標靶治療,"SLS,TNGX,RVMD,GH,ELVN",5
+6,AI 驅動藥物研發與基因組學,"ABSI,TWST,MRNA,TXG,ORKA",5
+7,AI 賦能網路安全平台,"PANW,TENB,FTNT,OKTA,DDOG",5
+8,免疫學與蛋白質降解技術,"APGE,SYRE,KYMR,TGTX,ALKS",5
+9,數位醫療與保險科技轉型,"HNGE,OSCR,BTSG,HUM",4
+10,太空經濟與衛星通訊基礎設施,"VSAT,IRDM,STM,OUST",4
