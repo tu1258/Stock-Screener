@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 半導體與設備製造,"ALAB,MXL,ICHR,MU,INTC,AMD,ACMR,AMAT,KLIC,MKSI",10
-2,AI 能源與電力基礎設施,"FCEL,BE,WYFI,VSH,VICR,FLEX,HUT",7
-3,AI 存儲與記憶體擴張,"SNDK,BLZE,MU,SIMO,WDC,STX",6
-4,AI 網路連接與光通訊,"ALAB,MXL,CRDO,MRVL,AXTI",5
-5,精準腫瘤學與標靶治療,"SLS,TNGX,RVMD,GH,ELVN",5
-6,AI 驅動藥物研發與基因組學,"ABSI,TWST,MRNA,TXG,ORKA",5
-7,AI 賦能網路安全平台,"PANW,TENB,FTNT,OKTA,DDOG",5
-8,免疫學與蛋白質降解技術,"APGE,SYRE,KYMR,TGTX,ALKS",5
-9,數位醫療與保險科技轉型,"HNGE,OSCR,BTSG,HUM",4
-10,太空經濟與衛星通訊基礎設施,"VSAT,IRDM,STM,OUST",4
+1,AI 記憶體與儲存架構,"SNDK,MU,SIMO,WDC,STX",5
+2,AI 晶片與先進封裝設備,"AMAT,ACMR,AXTI,UCTT,MKSI,KLIC,ASX",7
+3,AI 資料中心高速連接與光學網路,"MXL,ALAB,MRVL,CRDO,AXTI",5
+4,AI 資料中心電力與能源解決方案,"FCEL,BE,VSH,VICR",4
+5,企業級 AI 網路安全平台,"PANW,OKTA,FTNT,TENB,DDOG",5
+6,AI 驅動藥物研發與精準醫療,"ABSI,RLAY,ORKA,TWST,GH",5
+7,邊緣 AI 與自主系統,"ARM,AMD,INTC,OUST",4
+8,精準腫瘤學與次世代癌症療法,"SLS,TNGX,RVMD,ELVN,IBRX",5
+9,免疫學與罕見疾病生物技術,"SYRE,LQDA,QURE,KYMR,TGTX,DNTH",6
+10,金融科技與信用服務轉型,"SEZL,DAVE,ENVA",3
