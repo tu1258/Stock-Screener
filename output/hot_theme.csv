@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 記憶體與儲存架構,"SNDK,MU,SIMO,WDC,STX",5
-2,AI 晶片與先進封裝設備,"AMAT,ACMR,AXTI,UCTT,MKSI,KLIC,ASX",7
-3,AI 資料中心高速連接與光學網路,"MXL,ALAB,MRVL,CRDO,AXTI",5
-4,AI 資料中心電力與能源解決方案,"FCEL,BE,VSH,VICR",4
-5,企業級 AI 網路安全平台,"PANW,OKTA,FTNT,TENB,DDOG",5
-6,AI 驅動藥物研發與精準醫療,"ABSI,RLAY,ORKA,TWST,GH",5
-7,邊緣 AI 與自主系統,"ARM,AMD,INTC,OUST",4
-8,精準腫瘤學與次世代癌症療法,"SLS,TNGX,RVMD,ELVN,IBRX",5
-9,免疫學與罕見疾病生物技術,"SYRE,LQDA,QURE,KYMR,TGTX,DNTH",6
-10,金融科技與信用服務轉型,"SEZL,DAVE,ENVA",3
+1,AI 基礎設施與算力工廠,"SHAZ,PENG,DELL,AMD,INTC,DOCN,NBIS",7
+2,AI 存儲與記憶體超級週期,"SNDK,MU,SIMO,WDC,STX",5
+3,AI 網路連接與矽光子技術,"MXL,ALAB,MRVL,CRDO,AXTI",5
+4,AI 驅動藥物研發與基因組學,"ABSI,TWST,TXG,GH,ORKA,PRAX",6
+5,數據中心電力與能源轉型,"FCEL,WYFI,BE,HUT,VICR,VSH",6
+6,半導體設備與先進封裝,"ACMR,UCTT,ASX,AMAT,ICHR",5
+7,精準腫瘤與次世代免疫療法,"TNGX,RVMD,ELVN,IBRX,TGTX,KYMR,DNTH",7
+8,AI 賦能網路安全與可觀測性,"TENB,OKTA,DDOG,PANW,FROG",5
+9,數位金融與 AI 信用評分,"SEZL,DAVE",2
+10,企業級 AI 軟體與自動化,"BB,NAVN",2
