@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 基礎設施與算力工廠,"SHAZ,PENG,DELL,AMD,INTC,DOCN,NBIS",7
-2,AI 存儲與記憶體超級週期,"SNDK,MU,SIMO,WDC,STX",5
-3,AI 網路連接與矽光子技術,"MXL,ALAB,MRVL,CRDO,AXTI",5
-4,AI 驅動藥物研發與基因組學,"ABSI,TWST,TXG,GH,ORKA,PRAX",6
-5,數據中心電力與能源轉型,"FCEL,WYFI,BE,HUT,VICR,VSH",6
-6,半導體設備與先進封裝,"ACMR,UCTT,ASX,AMAT,ICHR",5
-7,精準腫瘤與次世代免疫療法,"TNGX,RVMD,ELVN,IBRX,TGTX,KYMR,DNTH",7
-8,AI 賦能網路安全與可觀測性,"TENB,OKTA,DDOG,PANW,FROG",5
-9,數位金融與 AI 信用評分,"SEZL,DAVE",2
-10,企業級 AI 軟體與自動化,"BB,NAVN",2
+1,半導體設備與先進封裝,"AMAT,ACMR,UCTT,ICHR,MKSI,ASX",6
+2,AI 存儲與記憶體超級週期,"MU,SNDK,WDC,STX,SIMO",5
+3,AI 數據中心電力與能源解決方案,"BE,FCEL,WYFI,HUT",4
+4,高速連接與 AI 網絡架構,"MRVL,ALAB,CRDO,MXL,VICR",5
+5,智能體 AI 與網絡安全平台化,"CRWD,PANW,FTNT,TENB,OKTA,BB",6
+6,AI 原生雲與主權基礎設施,"NBIS,DOCN,SHAZ,RXT,HPE,DELL",6
+7,精準腫瘤與罕見病生物技術,"RVMD,IBRX,TGTX,DNTH,ALKS,SLS",6
+8,AI 驅動藥物研發與基因組學,"RLAY,TWST,TXG,MRNA,KYMR",5
+9,AI 賦能金融科技與數位信貸,"SEZL,DAVE,ENVA",3
+10,量子計算與前沿運算,"QNT,STM",2
