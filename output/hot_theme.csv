@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,半導體設備與先進封裝,"AMAT,ACMR,UCTT,ICHR,MKSI,ASX",6
-2,AI 存儲與記憶體超級週期,"MU,SNDK,WDC,STX,SIMO",5
-3,AI 數據中心電力與能源解決方案,"BE,FCEL,WYFI,HUT",4
-4,高速連接與 AI 網絡架構,"MRVL,ALAB,CRDO,MXL,VICR",5
-5,智能體 AI 與網絡安全平台化,"CRWD,PANW,FTNT,TENB,OKTA,BB",6
-6,AI 原生雲與主權基礎設施,"NBIS,DOCN,SHAZ,RXT,HPE,DELL",6
-7,精準腫瘤與罕見病生物技術,"RVMD,IBRX,TGTX,DNTH,ALKS,SLS",6
-8,AI 驅動藥物研發與基因組學,"RLAY,TWST,TXG,MRNA,KYMR",5
-9,AI 賦能金融科技與數位信貸,"SEZL,DAVE,ENVA",3
-10,量子計算與前沿運算,"QNT,STM",2
+1,AI 存儲與記憶體超週期,"SNDK,MU,WDC,SIMO,STX,PENG",6
+2,AI 數據中心互連與光通訊,"MXL,ALAB,MRVL,CRDO,AXTI",5
+3,先進封裝與半導體設備,"ICHR,ACMR,UCTT,AMAT,MKSI,KLIC",6
+4,主權 AI 與專用雲基礎設施,"SHAZ,RXT,WYFI,NBIS",4
+5,AI 伺服器與運算基礎設施,"DELL,HPE,INTC,AMD",4
+6,次世代運算架構與 IP 授權,"ARM,AMD",2
+7,精準腫瘤學與標靶治療,"SLS,RVMD,TNGX,GH",4
+8,次世代免疫學與蛋白質降解,"SYRE,ORKA,KYMR,TGTX,MANE",5
+9,AI 驅動資安平台化,"TENB,PANW,FTNT,OKTA,DDOG",5
+10,AI 金融科技與數位信貸,"SEZL,DAVE,ENVA",3
