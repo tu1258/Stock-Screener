@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 基礎設施與連網技術,"ALAB,MRVL,CRDO,MXL,ASX,VICR,SHAZ,PENG,RXT,WYFI",10
-2,次世代記憶體與儲存循環,"MU,SNDK,WDC,STX,SIMO",5
-3,半導體設備與先進封裝,"AMAT,ACMR,UCTT,MKSI,KLIC,ICHR,UMC",7
-4,精準腫瘤學與基因組學,"SLS,RVMD,TNGX,MRNA,IBRX,TGTX,TWST,TXG",8
-5,企業級 AI 網路安全平台,"PANW,FTNT,OKTA,TENB,DDOG,BB",6
-6,臨床階段神經科學與免疫療法,"DFTX,MANE,DNTH,SYRE,ORKA,KYMR,HNGE,TVTX,ERAS",9
-7,AI 伺服器與邊緣運算整合,"DELL,HPE,AMD,INTC,ARM,FCEL",6
-8,數位金融與企業 SaaS 轉型,"SEZL,DAVE,ENVA,NAVN",4
-9,太空經濟與衛星通訊,"IRDM,STM",2
-10,量子計算與深科技,"QNT,HPE",2
+1,AI 基礎設施與高速連通性,"AMD,MRVL,ALAB,CRDO,MXL,SNDK,MU,WDC,STX,DELL,HPE,UMC,SIMO",13
+2,次世代生物技術與 AI 藥物研發,"SLS,DFTX,RVMD,TNGX,MRNA,KYMR,TVTX,IBRX,TGTX,ERAS,SYRE",11
+3,新型雲端服務與主權 AI 基礎設施,"SHAZ,PENG,NBIS,WYFI,RXT",5
+4,半導體設備與先進封裝材料,"AMAT,ACMR,UCTT,ICHR,MKSI,KLIC,MTRN,AXTI",8
+5,網路安全平台化與 AI 身份防禦,"PANW,FTNT,TENB,OKTA,DDOG",5
+6,基因組學與精準醫療診斷,"TXG,TWST,GH",3
+7,物理 AI 與工業自動化感測,"BB,OUST,STM",3
+8,數位金融與信用服務轉型,"SEZL,DAVE,ENVA",3
+9,量子計算商業化與前沿運算,"QNT,HPE",2
+10,企業級 AI 軟體與工作流自動化,"NAVN,FROG,DDOG",3
