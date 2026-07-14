@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 基礎設施與高速連通性,"AMD,MRVL,ALAB,CRDO,MXL,SNDK,MU,WDC,STX,DELL,HPE,UMC,SIMO",13
-2,次世代生物技術與 AI 藥物研發,"SLS,DFTX,RVMD,TNGX,MRNA,KYMR,TVTX,IBRX,TGTX,ERAS,SYRE",11
-3,新型雲端服務與主權 AI 基礎設施,"SHAZ,PENG,NBIS,WYFI,RXT",5
-4,半導體設備與先進封裝材料,"AMAT,ACMR,UCTT,ICHR,MKSI,KLIC,MTRN,AXTI",8
-5,網路安全平台化與 AI 身份防禦,"PANW,FTNT,TENB,OKTA,DDOG",5
-6,基因組學與精準醫療診斷,"TXG,TWST,GH",3
-7,物理 AI 與工業自動化感測,"BB,OUST,STM",3
-8,數位金融與信用服務轉型,"SEZL,DAVE,ENVA",3
-9,量子計算商業化與前沿運算,"QNT,HPE",2
-10,企業級 AI 軟體與工作流自動化,"NAVN,FROG,DDOG",3
+1,AI 存儲與記憶體超級週期,"SNDK,MU,WDC,STX,SIMO",5
+2,AI 基礎設施 - 連接與網絡,"MXL,ALAB,MRVL,HPE,FTNT",5
+3,半導體設備與先進封裝,"AMAT,ICHR,ACMR,UCTT,ASX",5
+4,AI 驅動的資安平台化,"PANW,FTNT,OKTA,TENB,BB",5
+5,次世代免疫學與標靶蛋白質降解,"ORKA,SYRE,TGTX,KYMR,MRNA",5
+6,企業級 AI 基礎設施與新興雲服務,"PENG,SHAZ,RXT,WYFI,DELL",5
+7,精準腫瘤學與 AI 藥物研發,"RVMD,GH,TNGX,TWST,SLS",5
+8,高效率金融科技與數位銀行,"SEZL,DAVE,NAVN",3
+9,AI 電力與潔淨能源基礎設施,"FCEL,WYFI",2
+10,管理式醫療與居家醫療科技,"HUM,OSCR,BTSG,HNGE",4
