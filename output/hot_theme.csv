@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI 網路與高速連接技術,"MXL,ALAB,MRVL,TSEM,AXTI",5
-2,AI 記憶體超級週期,"SNDK,MU,SIMO,WDC,STX",5
-3,代理型 AI 資安防護平台,"CRWD,PANW,FTNT,OKTA,TENB,QLYS",6
-4,AI 資料中心基礎設施與電力管理,"DELL,HPE,PENG,VICR,FCEL,WYFI",6
-5,半導體設備與先進封裝復甦,"AMAT,ACMR,ICHR,UCTT,ASX",5
-6,精準腫瘤學與標靶治療,"SLS,DFTX,RVMD,MRNA",4
-7,次世代免疫學與罕見疾病藥物,"SYRE,ORKA,CRNX,LQDA",4
-8,AI 驅動基因組學與合成生物學,"TWST,TXG,GH",3
-9,高成長金融科技與數位銀行,"SEZL,DAVE,OSCR",3
-10,企業級 AI 軟體與自動化流程,"BB,NAVN,DDOG,FROG",4
+1,實體人工智慧與機器人,BB,1
+2,軟體定義汽車 (SDV),BB,1
+3,關鍵通訊與企業網路安全,BB,1
+4,AI 交易擴展：軟體與基礎設施,BB,1
+5,資訊技術服務,BB,1
+6,奢侈品與高端消費,,0
+7,重型建設機械,,0
+8,抵押貸款金融,,0
+9,獨立電力生產,,0
+10,綜合石油與天然氣,,0
