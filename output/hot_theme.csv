@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,奢侈品與高端消費,RACE,1
-2,個人服務,BFAM,1
-3,包裝食品與防禦性消費,HSY,1
-4,汽車製造,"TSLA,RACE",2
-5,金融數據與交易所,"SPGI,MSCI,ICE",3
-6,電力設備與電網基礎設施,"ETN,PH,GEV",3
-7,綜合石油天然氣,"XOM,CVX,SHEL",3
-8,電信服務,"T,VZ",2
-9,獨立發電商與能源轉型,"VST,CEG",2
-10,工業房地產信託,PLD,1
+1,實體人工智慧 (Physical AI),BB,1
+2,軟體定義汽車 (Software-Defined Vehicles),BB,1
+3,關鍵任務資安與危機管理 (Cybersecurity & Crisis Management),BB,1
+4,奢侈品與高端消費 (Luxury Goods),,0
+5,個人化服務經濟 (Personal Services),,0
+6,防禦性包裝食品 (Packaged Foods),,0
+7,汽車製造與供應鏈轉型 (Auto Manufacturers),,0
+8,抵押貸款與金融基礎設施 (Mortgage Finance),,0
+9,金融數據與交易所服務 (Financial Data & Stock Exchanges),,0
+10,電力設備與工業自動化 (Electrical Equipment & Parts),,0
