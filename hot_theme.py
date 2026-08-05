@@ -23,7 +23,7 @@ MIN_AVG_VALUE_10D = 100
 MIN_ADR           = 2.5
 
 GEMINI_MODEL_SUMMARY = "gemma-4-31b-it"
-GEMINI_MODEL_THEMES  = "gemini-3-flash-preview"
+GEMINI_MODEL_THEMES  = "gemma-4-31b-it"
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
