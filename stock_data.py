@@ -11,12 +11,49 @@ DAYS          = 400
 
 def fetch_finviz_data(limit=None):
     print("  從 Finviz 取得所有股票資料...")
+
     foverview = Overview()
-    foverview.set_filter(filters_dict={"Industry": "Stocks only (ex-Funds)"})
+    foverview.set_filter(
+        filters_dict={"Industry": "Stocks only (ex-Funds)"}
+    )
+
     df = foverview.screener_view(verbose=1)
-    df = df[df["Industry"] != "Shell Companies"].reset_index(drop=True)
+
+    # finvizfinance 2026-07 bug：
+    # ticker 的第一個字母會被重複，例如 AAPL -> AAAPL
+    ticker = df["Ticker"].astype(str).str.strip().str.upper()
+
+    duplicated_first_letter = (
+        ticker.str.len().ge(2)
+        & ticker.str[0].eq(ticker.str[1])
+    )
+
+    duplicated_ratio = duplicated_first_letter.mean()
+
+    if duplicated_ratio > 0.80:
+        print(
+            f"  偵測到 finvizfinance ticker 重複字首 bug "
+            f"（{duplicated_ratio:.1%}），自動修正"
+        )
+        ticker = ticker.str[1:]
+
+    df["Ticker"] = ticker
+
+    # 基本驗證，避免 Finviz 格式再次改變卻繼續污染資料
+    invalid = ~df["Ticker"].str.fullmatch(r"[A-Z0-9.-]{1,10}")
+
+    if invalid.any():
+        invalid_examples = df.loc[invalid, "Ticker"].head(10).tolist()
+        raise RuntimeError(
+            f"Finviz 回傳異常 ticker：{invalid_examples}"
+        )
+
+    df = df[df["Industry"] != "Shell Companies"].copy()
+    df = df.drop_duplicates(subset=["Ticker"]).reset_index(drop=True)
+
     if limit:
         df = df.head(limit)
+
     print(f"\n  完成，共 {len(df)} 筆")
     return df[["Ticker", "Sector", "Industry"]]
     
