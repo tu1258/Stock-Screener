@@ -22,8 +22,8 @@ OUTPUT_HOT_WL     = "output/hot_theme_watchlist.txt"
 MIN_AVG_VALUE_10D = 100
 MIN_ADR           = 2.5
 
-GEMINI_MODEL_SUMMARY = "gemini-3.5-flash"
-GEMINI_MODEL_THEMES  = "gemini-3.5-flash"
+GEMINI_MODEL_SUMMARY = "gemini-3.1-flash-lite"
+GEMINI_MODEL_THEMES  = "gemini-3.1-flash-lite"
 
 TODAY = datetime.date.today().strftime("%Y-%m-%d")
 
