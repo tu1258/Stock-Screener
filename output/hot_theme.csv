@@ -1,11 +1,7 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI基礎設施與數據中心硬體,"MRVL,DELL,P,LITE,HPE,AXTI",6
-2,AI驅動的生物技術與精準醫療,"MRNA,ABCL,TWST,TXG,IOVA,RVMD",6
-3,AI記憶體超級週期,"SKHY,MU,SNDK",3
-4,企業軟體與AI工作流自動化,"TEAM,PAYC,CHYM",3
-5,半導體測試與品質保證,AEHR,1
-6,加密貨幣金融整合與財庫管理,"PURR,ASST",2
-7,零售轉型與品牌復甦,"ANF,CAKE",2
-8,能源煉化與利潤率擴張,PBF,1
-9,醫療診斷與心血管AI,HTFL,1
-10,孤兒藥與代謝健康開發,AMLX,1
+1,AI基礎設施與數據中心硬體,"DELL,MRVL,MU,SNDK,LITE,AEHR,HPE",7
+2,企業級AI軟體與自動化,"TEAM,OKTA,PATH,FROG,ZETA",5
+3,精準醫療與腫瘤免疫療法,"MRNA,IOVA,RVMD,AMLX",4
+4,AI驅動的生物科技基礎設施,"TWST,TXG,HTFL",3
+5,數位金融與去中心化基礎設施,"PURR,CHYM,ASST",3
+6,零售轉型與品牌動能,ANF,1
