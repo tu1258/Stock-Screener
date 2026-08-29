@@ -1,7 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI基礎設施與數據中心硬體,"DELL,MRVL,MU,SNDK,LITE,AEHR,HPE",7
-2,企業級AI軟體與自動化,"TEAM,OKTA,PATH,FROG,ZETA",5
-3,精準醫療與腫瘤免疫療法,"MRNA,IOVA,RVMD,AMLX",4
-4,AI驅動的生物科技基礎設施,"TWST,TXG,HTFL",3
-5,數位金融與去中心化基礎設施,"PURR,CHYM,ASST",3
-6,零售轉型與品牌動能,ANF,1
+1,高效能運算與硬體基礎設施,"NVDA,AMD,AVGO,MU,TSM",5
+2,企業數位轉型與諮詢服務,"ACN,IBM,CTSH,IT",4
+3,財產與意外保險成長週期,"CB,PGR,WRB,HIG",4
+4,工業租賃與設備資本支出,"URI,HRI,FTV",3
+5,防禦性消費與飲料產業,"PEP,KO,MNST",3
+6,房地產抵押貸款與金融服務,"BXMT,STWD,AGNC",3
+7,鋼鐵與基礎材料供應鏈,"NUE,STLD,RS",3
+8,區域性銀行與信貸擴張,"FITB,HBAN,KEY",3
+9,食品分銷與供應鏈效率,"SYY,USFD",2
+10,生物科技創新與研發動能,"VRTX,REGN,AMGN",3
