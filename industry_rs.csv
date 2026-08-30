@@ -1,145 +1,145 @@
 industry,sector,avg_rs,ticker_count
-Computer Hardware,Technology,97.0,43
-Consulting Services,Industrials,95.0,22
-Rental & Leasing Services,Industrials,92.0,21
-Insurance - Property & Casualty,Financial,87.0,44
-Information Technology Services,Technology,80.0,74
-REIT - Mortgage,Real Estate,78.0,39
-REIT - Residential,Real Estate,73.0,21
-Steel,Basic Materials,68.0,21
-Banks - Regional,Financial,64.5,324
-Beverages - Non-Alcoholic,Consumer Defensive,64.0,19
-Mortgage Finance,Financial,63.0,13
-Real Estate Services,Real Estate,62.0,46
-Software - Application,Technology,56.0,226
-Food Distribution,Consumer Defensive,52.0,12
-Biotechnology,Healthcare,50.5,593
-Oil & Gas E&P,Energy,46.0,77
-Capital Markets,Financial,45.3,98
-Internet Content & Information,Communication Services,43.0,70
-Education & Training Services,Consumer Defensive,41.0,43
-Farm Products,Consumer Defensive,40.0,20
-Restaurants,Consumer Cyclical,31.0,52
-Telecom Services,Communication Services,25.0,57
-Integrated Freight & Logistics,Industrials,14.0,33
-Resorts & Casinos,Consumer Cyclical,14.0,17
-"Furnishings, Fixtures & Appliances",Consumer Cyclical,12.5,29
-Medical Distribution,Healthcare,12.0,12
-Luxury Goods,Consumer Cyclical,7.0,11
-Broadcasting,Communication Services,0.0,15
-Advertising Agencies,Communication Services,,39
-Aerospace & Defense,Industrials,,90
-Agricultural Inputs,Basic Materials,,13
-Airlines,Industrials,,18
-Airports & Air Services,Industrials,,8
-Aluminum,Basic Materials,,4
-Apparel Manufacturing,Consumer Cyclical,,23
-Apparel Retail,Consumer Cyclical,,33
-Asset Management,Financial,,146
-Auto & Truck Dealerships,Consumer Cyclical,,27
-Auto Manufacturers,Consumer Cyclical,,29
-Auto Parts,Consumer Cyclical,,55
-Banks - Diversified,Financial,,20
-Beverages - Brewers,Consumer Defensive,,7
-Beverages - Wineries & Distilleries,Consumer Defensive,,12
-Building Materials,Basic Materials,,17
-Building Products & Equipment,Industrials,,36
-Business Equipment & Supplies,Industrials,,5
-Chemicals,Basic Materials,,17
-Coking Coal,Basic Materials,,4
-Communication Equipment,Technology,,44
-Confectioners,Consumer Defensive,,5
-Conglomerates,Industrials,,27
-Consumer Electronics,Technology,,19
-Copper,Basic Materials,,8
-Credit Services,Financial,,51
-Department Stores,Consumer Cyclical,,4
-Diagnostics & Research,Healthcare,,46
-Discount Stores,Consumer Defensive,,9
-Drug Manufacturers - General,Healthcare,,21
-Drug Manufacturers - Specialty & Generic,Healthcare,,85
-Electrical Equipment & Parts,Industrials,,53
-Electronic Components,Technology,,45
-Electronic Gaming & Multimedia,Communication Services,,20
-Electronics & Computer Distribution,Technology,,8
-Engineering & Construction,Industrials,,52
-Entertainment,Communication Services,,48
-Farm & Heavy Construction Machinery,Industrials,,26
-Financial Conglomerates,Financial,,7
-Financial Data & Stock Exchanges,Financial,,15
-Footwear & Accessories,Consumer Cyclical,,13
-Gambling,Consumer Cyclical,,14
-Gold,Basic Materials,,51
-Grocery Stores,Consumer Defensive,,14
-Health Information Services,Healthcare,,42
-Healthcare Plans,Healthcare,,11
-Home Improvement Retail,Consumer Cyclical,,5
-Household & Personal Products,Consumer Defensive,,31
-Industrial Distribution,Industrials,,23
-Infrastructure Operations,Industrials,,1
-Insurance - Diversified,Financial,,12
-Insurance - Life,Financial,,18
-Insurance - Reinsurance,Financial,,8
-Insurance - Specialty,Financial,,16
-Insurance Brokers,Financial,,22
-Internet Retail,Consumer Cyclical,,39
-Leisure,Consumer Cyclical,,32
-Lodging,Consumer Cyclical,,11
-Lumber & Wood Production,Basic Materials,,6
-Marine Shipping,Industrials,,38
-Medical Care Facilities,Healthcare,,48
-Medical Devices,Healthcare,,140
-Medical Instruments & Supplies,Healthcare,,54
-Metal Fabrication,Industrials,,18
-Oil & Gas Drilling,Energy,,10
-Oil & Gas Equipment & Services,Energy,,50
-Oil & Gas Integrated,Energy,,20
-Oil & Gas Midstream,Energy,,58
-Oil & Gas Refining & Marketing,Energy,,19
-Other Industrial Metals & Mining,Basic Materials,,53
-Other Precious Metals & Mining,Basic Materials,,20
-Packaged Foods,Consumer Defensive,,60
-Packaging & Containers,Consumer Cyclical,,22
-Paper & Paper Products,Basic Materials,,5
-Personal Services,Consumer Cyclical,,13
-Pharmaceutical Retailers,Healthcare,,5
-Pollution & Treatment Controls,Industrials,,16
-Publishing,Communication Services,,8
-REIT - Diversified,Real Estate,,17
-REIT - Healthcare Facilities,Real Estate,,17
-REIT - Hotel & Motel,Real Estate,,15
-REIT - Industrial,Real Estate,,15
-REIT - Office,Real Estate,,20
-REIT - Retail,Real Estate,,26
-REIT - Specialty,Real Estate,,19
-Railroads,Industrials,,12
-Real Estate - Development,Real Estate,,14
-Real Estate - Diversified,Real Estate,,2
-Recreational Vehicles,Consumer Cyclical,,15
-Residential Construction,Consumer Cyclical,,19
-Scientific & Technical Instruments,Technology,,33
-Security & Protection Services,Industrials,,22
-Semiconductor Equipment & Materials,Technology,,29
-Semiconductors,Technology,,70
-Silver,Basic Materials,,6
-Software - Infrastructure,Technology,,175
-Solar,Technology,,22
-Specialty Business Services,Industrials,,43
-Specialty Chemicals,Basic Materials,,60
-Specialty Industrial Machinery,Industrials,,78
-Specialty Retail,Consumer Cyclical,,44
-Staffing & Employment Services,Industrials,,17
-Textile Manufacturing,Consumer Cyclical,,5
-Thermal Coal,Energy,,5
-Tobacco,Consumer Defensive,,11
-Tools & Accessories,Industrials,,10
-Travel Services,Consumer Cyclical,,18
-Trucking,Industrials,,16
-Uranium,Energy,,13
-Utilities - Diversified,Utilities,,7
-Utilities - Independent Power Producers,Utilities,,9
-Utilities - Regulated Electric,Utilities,,41
-Utilities - Regulated Gas,Utilities,,16
-Utilities - Regulated Water,Utilities,,13
-Utilities - Renewable,Utilities,,22
-Waste Management,Industrials,,21
+Infrastructure Operations,Industrials,95.0,1
+Silver,Basic Materials,90.5,6
+Copper,Basic Materials,84.9,8
+Coking Coal,Basic Materials,79.5,4
+Gold,Basic Materials,74.7,52
+Diagnostics & Research,Healthcare,71.9,46
+Electronics & Computer Distribution,Technology,70.0,8
+Other Precious Metals & Mining,Basic Materials,69.6,19
+Banks - Diversified,Financial,69.3,20
+Oil & Gas Drilling,Energy,68.9,10
+Oil & Gas Refining & Marketing,Energy,67.4,19
+Marine Shipping,Industrials,66.7,38
+Oil & Gas Midstream,Energy,66.4,58
+Staffing & Employment Services,Industrials,64.5,17
+Thermal Coal,Energy,63.4,5
+Insurance - Property & Casualty,Financial,63.2,44
+Healthcare Plans,Healthcare,63.1,11
+REIT - Hotel & Motel,Real Estate,62.3,15
+Oil & Gas Integrated,Energy,61.6,20
+Insurance Brokers,Financial,61.4,22
+Banks - Regional,Financial,61.3,324
+Lumber & Wood Production,Basic Materials,60.8,6
+Utilities - Regulated Water,Utilities,59.5,13
+Financial Data & Stock Exchanges,Financial,59.3,15
+Oil & Gas E&P,Energy,59.1,77
+Oil & Gas Equipment & Services,Energy,58.8,50
+Medical Care Facilities,Healthcare,58.3,48
+Insurance - Reinsurance,Financial,57.2,8
+"Furnishings, Fixtures & Appliances",Consumer Cyclical,56.9,30
+Railroads,Industrials,56.5,12
+Computer Hardware,Technology,56.2,43
+Drug Manufacturers - General,Healthcare,55.6,21
+Medical Instruments & Supplies,Healthcare,54.4,53
+Packaging & Containers,Consumer Cyclical,54.3,22
+Asset Management,Financial,54.0,146
+Consulting Services,Industrials,54.0,22
+Health Information Services,Healthcare,53.9,42
+Entertainment,Communication Services,53.7,48
+REIT - Industrial,Real Estate,52.9,15
+Specialty Chemicals,Basic Materials,52.9,60
+Discount Stores,Consumer Defensive,52.8,9
+Steel,Basic Materials,52.8,21
+REIT - Healthcare Facilities,Real Estate,52.7,17
+Tools & Accessories,Industrials,52.7,10
+Trucking,Industrials,52.3,16
+Business Equipment & Supplies,Industrials,52.2,5
+Insurance - Life,Financial,52.1,18
+Biotechnology,Healthcare,52.0,593
+REIT - Office,Real Estate,51.8,20
+Software - Application,Technology,51.8,226
+Semiconductors,Technology,51.5,70
+Aluminum,Basic Materials,51.0,4
+Industrial Distribution,Industrials,50.8,23
+Lodging,Consumer Cyclical,50.7,11
+Farm & Heavy Construction Machinery,Industrials,50.7,26
+Drug Manufacturers - Specialty & Generic,Healthcare,50.6,85
+Semiconductor Equipment & Materials,Technology,50.3,29
+Software - Infrastructure,Technology,50.2,175
+Household & Personal Products,Consumer Defensive,50.0,31
+Rental & Leasing Services,Industrials,49.9,21
+Other Industrial Metals & Mining,Basic Materials,49.8,53
+Food Distribution,Consumer Defensive,49.8,12
+Insurance - Diversified,Financial,49.6,12
+Conglomerates,Industrials,49.5,27
+Financial Conglomerates,Financial,49.1,7
+Specialty Business Services,Industrials,49.1,43
+Residential Construction,Consumer Cyclical,49.1,19
+Broadcasting,Communication Services,49.0,14
+Real Estate - Diversified,Real Estate,49.0,3
+Apparel Retail,Consumer Cyclical,48.8,33
+Footwear & Accessories,Consumer Cyclical,47.8,13
+Restaurants,Consumer Cyclical,47.8,52
+Communication Equipment,Technology,47.6,44
+Credit Services,Financial,47.4,51
+Insurance - Specialty,Financial,47.3,16
+Publishing,Communication Services,46.9,8
+REIT - Retail,Real Estate,46.8,26
+Metal Fabrication,Industrials,46.4,18
+Travel Services,Consumer Cyclical,46.2,18
+REIT - Residential,Real Estate,46.0,20
+Apparel Manufacturing,Consumer Cyclical,46.0,23
+Electronic Gaming & Multimedia,Communication Services,45.3,20
+Building Products & Equipment,Industrials,45.1,36
+Medical Devices,Healthcare,44.8,141
+Information Technology Services,Technology,44.8,74
+REIT - Specialty,Real Estate,44.5,19
+Packaged Foods,Consumer Defensive,44.4,60
+Electronic Components,Technology,44.1,45
+Beverages - Brewers,Consumer Defensive,43.9,7
+Capital Markets,Financial,43.6,98
+Waste Management,Industrials,43.5,21
+Utilities - Diversified,Utilities,43.4,7
+Department Stores,Consumer Cyclical,43.2,4
+Agricultural Inputs,Basic Materials,43.2,13
+REIT - Diversified,Real Estate,43.1,17
+Uranium,Energy,42.8,13
+Grocery Stores,Consumer Defensive,42.8,14
+Telecom Services,Communication Services,42.4,57
+Farm Products,Consumer Defensive,42.2,20
+Specialty Retail,Consumer Cyclical,41.9,44
+Advertising Agencies,Communication Services,41.6,39
+REIT - Mortgage,Real Estate,41.5,39
+Beverages - Non-Alcoholic,Consumer Defensive,41.5,19
+Real Estate Services,Real Estate,41.4,46
+Personal Services,Consumer Cyclical,41.4,13
+Security & Protection Services,Industrials,41.3,22
+Utilities - Regulated Gas,Utilities,40.9,16
+Gambling,Consumer Cyclical,40.9,14
+Auto Parts,Consumer Cyclical,40.6,55
+Aerospace & Defense,Industrials,40.4,90
+Specialty Industrial Machinery,Industrials,40.4,78
+Internet Retail,Consumer Cyclical,40.3,39
+Leisure,Consumer Cyclical,39.8,32
+Paper & Paper Products,Basic Materials,39.6,5
+Utilities - Regulated Electric,Utilities,39.4,41
+Scientific & Technical Instruments,Technology,39.4,33
+Chemicals,Basic Materials,39.0,17
+Home Improvement Retail,Consumer Cyclical,38.8,5
+Integrated Freight & Logistics,Industrials,38.8,33
+Confectioners,Consumer Defensive,38.4,5
+Resorts & Casinos,Consumer Cyclical,37.4,17
+Internet Content & Information,Communication Services,37.1,70
+Electrical Equipment & Parts,Industrials,37.1,53
+Textile Manufacturing,Consumer Cyclical,37.0,5
+Engineering & Construction,Industrials,36.7,52
+Auto & Truck Dealerships,Consumer Cyclical,36.7,26
+Real Estate - Development,Real Estate,34.5,13
+Tobacco,Consumer Defensive,32.6,11
+Building Materials,Basic Materials,32.3,17
+Consumer Electronics,Technology,32.2,19
+Recreational Vehicles,Consumer Cyclical,32.1,15
+Pollution & Treatment Controls,Industrials,31.7,16
+Education & Training Services,Consumer Defensive,31.4,43
+Airlines,Industrials,30.4,18
+Auto Manufacturers,Consumer Cyclical,29.9,29
+Beverages - Wineries & Distilleries,Consumer Defensive,29.5,11
+Utilities - Renewable,Utilities,29.5,22
+Utilities - Independent Power Producers,Utilities,29.0,9
+Medical Distribution,Healthcare,29.0,12
+Luxury Goods,Consumer Cyclical,27.1,11
+Mortgage Finance,Financial,23.2,13
+Pharmaceutical Retailers,Healthcare,23.0,5
+Airports & Air Services,Industrials,22.1,8
+Solar,Technology,21.6,22
