@@ -1,9 +1,9 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI基礎設施與數據中心硬體,"DELL,HPE,MU,SKHY,SNDK",5
-2,精準腫瘤學與細胞療法,"MRNA,IOVA,RVMD,AMLX",4
-3,企業級AI軟體與自動化,"TEAM,PAYC,ESTC,PATH,OKTA,ZETA",6
-4,數位資產與區塊鏈金融基礎設施,"USDE,PURR,ASST",3
-5,AI驅動的醫療診斷與基因技術,"TWST,HTFL",2
-6,能源轉型與煉油效率,"PBF,DK",2
-7,軌道AI與太空基礎設施,SPCX,1
-8,品牌轉型與消費韌性,"ANF,CAKE",2
+1,AI基礎設施與數據中心硬體,"DELL,HPE,MU,SNDK,SKHY",5
+2,AI驅動的企業軟體與自動化,"TEAM,PAYC,ESTC,PATH,OKTA,ZETA",6
+3,精準腫瘤學與次世代免疫療法,"MRNA,IOVA,RVMD,SLS,AMLX",5
+4,去中心化金融與數位資產基礎設施,"USDE,PURR,ASST",3
+5,AI醫療診斷與生物技術工具,"TWST,TXG,HTFL",3
+6,零售轉型與品牌動能,"ANF,CAKE",2
+7,能源轉型與煉油利潤週期,"PBF,DK",2
+8,軌道計算與太空AI基礎設施,SPCX,1
