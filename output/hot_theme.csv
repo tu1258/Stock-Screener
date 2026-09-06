@@ -1,3 +1,9 @@
 ﻿rank,theme,tickers,ticker_count
-1,能源精煉與裂解價差,VLO,1
-2,企業級AI行銷科技,ZETA,1
+1,AI基礎設施與硬體,"SKHY,MU,SNDK,DELL",4
+2,AI驅動的企業軟體與自動化,"TEAM,OKTA,GTLB,ZETA,ESTC",5
+3,精準腫瘤學與生物技術創新,"MRNA,RVMD,TXG,SLS",4
+4,數位資產與加密貨幣金融,"PURR,ASST,CHYM,DAVE",4
+5,能源煉化與供應鏈緊縮,"PBF,MPC,DINO,DK,VLO,PSX",6
+6,數位醫療與健康科技,"HNGE,OSCR",2
+7,雲端運算與AI算力基礎設施,NBIS,1
+8,零售轉型與品牌復甦,"ANF,CAKE",2
