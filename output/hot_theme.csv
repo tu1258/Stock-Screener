@@ -1,11 +1,7 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI基礎設施與數據中心硬體,"SKHY,DELL,MU,HPE,MXL,SMTC,MRVL,STX,AEHR",9
-2,AI驅動的藥物研發與生物技術,"MRNA,TWST,RVMD,ROIV",4
-3,企業級AI軟體與工作流優化,"TEAM,RNG,OKTA,ZETA",4
-4,能源精煉與供應鏈瓶頸,"PBF,DINO,DK,MPC,VLO,PSX",6
-5,比特幣財庫與加密金融,"PURR,ASST",2
-6,AI算力與晶片代工,"UMC,ASX,AXTI,SIMO",4
-7,AI能源解決方案,BE,1
-8,數位健康與慢性病管理,HNGE,1
-9,品牌零售轉型,ANF,1
-10,AI雲端基礎設施,NBIS,1
+1,AI基礎設施與數據存儲,"SNDK,STX",2
+2,企業級AI應用與協作平台,"TEAM,OKTA,RNG,ZETA",4
+3,精準醫療與多組學技術,"TXG,TWST,RVMD,ROIV",4
+4,能源煉化與供應鏈溢價,"PBF,VLO,PSX",3
+5,機構級去中心化金融,PURR,1
+6,半導體代工與存儲器,"UMC,SKHY",2
