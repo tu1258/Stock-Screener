@@ -1,7 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI基礎設施與數據存儲,"SNDK,STX",2
-2,企業級AI應用與協作平台,"TEAM,OKTA,RNG,ZETA",4
-3,精準醫療與多組學技術,"TXG,TWST,RVMD,ROIV",4
-4,能源煉化與供應鏈溢價,"PBF,VLO,PSX",3
-5,機構級去中心化金融,PURR,1
-6,半導體代工與存儲器,"UMC,SKHY",2
+1,AI基礎設施與數據中心硬體,"DELL,HPE,MRVL,SMTC,LITE,SNDK",6
+2,精準醫療與基因組學,"MRNA,TXG,TWST,RVMD,SYRE",5
+3,能源供應鏈與煉油利差,"PBF,DK,DINO,VLO,MPC,PSX",6
+4,企業AI軟體與自動化工作流,"TEAM,OKTA,ZETA,GTLB",4
+5,AI記憶體與半導體製造,"MU,SKHY,UMC,MXL,SIMO",5
+6,數位金融與金融科技轉型,"PURR,CHYM",2
+7,醫療保健科技與數位健康,"OSCR,HNGE",2
+8,AI PC與終端硬體更新週期,HPQ,1
+9,能源運輸與地緣政治對沖,FRO,1
+10,通訊與航太連接技術,SWKS,1
