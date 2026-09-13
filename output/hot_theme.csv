@@ -1,11 +1,11 @@
 ﻿rank,theme,tickers,ticker_count
-1,AI基礎設施與數據中心硬體,"DELL,HPE,MRVL,SMTC,LITE,SNDK",6
-2,精準醫療與基因組學,"MRNA,TXG,TWST,RVMD,SYRE",5
-3,能源供應鏈與煉油利差,"PBF,DK,DINO,VLO,MPC,PSX",6
-4,企業AI軟體與自動化工作流,"TEAM,OKTA,ZETA,GTLB",4
-5,AI記憶體與半導體製造,"MU,SKHY,UMC,MXL,SIMO",5
-6,數位金融與金融科技轉型,"PURR,CHYM",2
-7,醫療保健科技與數位健康,"OSCR,HNGE",2
-8,AI PC與終端硬體更新週期,HPQ,1
-9,能源運輸與地緣政治對沖,FRO,1
-10,通訊與航太連接技術,SWKS,1
+1,AI基础设施与数据中心硬件,"DELL,HPE,MRVL,SMTC,LITE,AMD,MU,SKHY,SNDK",9
+2,精准医疗与生物技术创新,"MRNA,TWST,RVMD,ROIV",4
+3,能源基础设施与炼油,"PBF,DK,DINO,VLO,MPC,SM",6
+4,企业AI软件与工作流自动化,"TEAM,OKTA,GTLB,ZETA",4
+5,数字资产与区块链金融,"PURR,ASST",2
+6,高性能存储与控制器,"SIMO,MU,SNDK",3
+7,AI赋能的医疗健康服务,"HNGE,OSCR,CHYM",3
+8,消费电子与AI硬件升级,"HPQ,GPRO",2
+9,半导体代工与制造,"UMC,SWKS",2
+10,零售与消费品复苏,ANF,1
