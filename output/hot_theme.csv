@@ -1,11 +1,10 @@
 ﻿rank,theme,tickers,ticker_count
-1,銅礦開採與工業金屬,"FCX,SCCO,TECK",3
-2,房地產開發與建設,"LEN,DHI,TOL",3
-3,綜合物流與供應鏈優化,"UPS,FDX,GXO",3
-4,能源轉型與整合石油,"XOM,CVX,COP",3
-5,生物技術創新,"VRTX,REGN,AMGN",3
-6,醫療儀器與設備,"ISRG,BSX,EW",3
-7,區域性銀行與金融復甦,"FITB,HBAN,KEY",3
-8,物流運輸與卡車運輸,"JBHT,ODFL,SAIA",3
-9,多元化保險服務,"PGR,CB,ALL",3
-10,防禦性消費與飲料,"PEP,KO,MNST",3
+1,AI基礎設施與數據中心連接,"SMTC,MXL,MRVL,AMD,NTAP,AXTI",6
+2,能源供應鏈與煉油利潤,"DK,DINO,VLO,MPC,SM,APA",6
+3,企業級AI軟體與代理人平台,"CRM,FTNT",2
+4,精準醫療與基因組學,"IOVA,ILMN,CORT,RVTY,CRL",5
+5,半導體製造與先進封裝,"UMC,MU,INTC,ASX",4
+6,AI PC與硬體更新週期,HPQ,1
+7,地緣政治與能源運輸,FRO,1
+8,消費零售與品牌動能,ANF,1
+9,半導體併購與整合,SWKS,1
